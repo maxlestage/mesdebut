@@ -1,10 +1,15 @@
 # Mes Débuts 🎓
 
-Une petite application de quiz pour apprendre en s'amusant, sans installation : tout tient dans un seul fichier `index.html`.
+Une petite application de quiz **React** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
 
-## Comment jouer
+## Démarrer
 
-Ouvre simplement le fichier `index.html` dans un navigateur (double-clic suffit).
+```bash
+npm install
+npm run dev       # serveur de développement
+npm run build     # build de production dans dist/
+npm run preview   # prévisualiser le build
+```
 
 ## Ce qu'on peut apprendre
 
@@ -18,3 +23,19 @@ Ouvre simplement le fichier `index.html` dans un navigateur (double-clic suffit)
 Les quiz de calcul ont trois niveaux : 🌱 Facile, 🌿 Moyen, 🌳 Difficile.
 
 Chaque quiz comporte 10 questions à choix multiples, avec un score, des étoiles et des encouragements à la fin. 🌟
+
+## Structure
+
+```
+src/
+  questions.js          # données (jours, mois) et génération des questions
+  App.jsx               # navigation entre les écrans
+  components/
+    Menu.jsx            # menu principal
+    Category.jsx        # choix réviser / quiz (jours et mois)
+    Learn.jsx           # écran de révision
+    Levels.jsx          # choix du niveau (calcul)
+    Quiz.jsx            # déroulement du quiz
+    End.jsx             # écran de score
+  styles.css            # styles mobile first
+```
