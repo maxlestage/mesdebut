@@ -1,0 +1,7 @@
+{
+  "name": "Mes Débuts",
+  "description": "Quiz pour apprendre les jours, les mois et le calcul — PWA React mobile first",
+  "keywords": ["react", "pwa", "quiz", "éducation", "enfants"],
+  "buildpacks": [{ "url": "heroku/nodejs" }],
+  "stack": "heroku-24"
+}
