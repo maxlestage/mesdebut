@@ -38,6 +38,9 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 
 - 📅 **Les jours de la semaine** — révision de la liste, puis quiz (avant/après, position, etc.)
 - 🗓️ **Les mois de l'année** — révision de la liste, puis quiz
+- 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
+- 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
+- 🔢 **Les nombres en lettres** — savoir lire et écrire les nombres de 0 à 100 (soixante-dix, quatre-vingts…), avec 3 niveaux
 - ➕ **Addition**
 - ➖ **Soustraction** (jamais de résultat négatif)
 - ✖️ **Multiplication**
