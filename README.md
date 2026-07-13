@@ -11,7 +11,28 @@ npm install
 npm run dev       # serveur de développement
 npm run build     # build de production dans dist/
 npm run preview   # prévisualiser le build
+npm start         # serveur de production (sert dist/, utilisé par Heroku)
 ```
+
+## Déployer sur Heroku
+
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/maxlestage/mesdebut)
+
+Ou avec la CLI Heroku :
+
+```bash
+heroku login
+heroku create mesdebut        # ou le nom que tu veux
+git push heroku master        # Heroku build et démarre tout seul
+heroku open
+```
+
+Le buildpack Node.js de Heroku installe les dépendances, lance `heroku-postbuild`
+(qui fait le `vite build`), puis démarre `npm start` (le petit serveur Express
+`server.js` qui sert `dist/` avec les bons en-têtes de cache pour la PWA).
+
+On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
+(Deploy → GitHub → Enable Automatic Deploys) pour déployer à chaque push.
 
 ## Ce qu'on peut apprendre
 
@@ -42,4 +63,7 @@ src/
   styles.css            # styles mobile first
 public/                 # icônes PWA (générées, écran d'accueil)
 vite.config.js          # config Vite + manifest PWA (vite-plugin-pwa)
+server.js               # serveur Express de production (Heroku)
+Procfile                # commande de démarrage Heroku
+app.json                # métadonnées pour le bouton « Deploy to Heroku »
 ```
