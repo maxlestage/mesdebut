@@ -1,4 +1,5 @@
 import { LEARN_DATA } from '../questions.js'
+import Shape from './Shape.jsx'
 
 export default function Learn({ category, onQuiz, onBack }) {
   const data = LEARN_DATA[category]
@@ -18,6 +19,8 @@ export default function Learn({ category, onQuiz, onBack }) {
                   className={`color-dot${item.color === '#ffffff' ? ' swatch-light' : ''}`}
                   style={{ background: item.color }}
                 />
+              ) : item.shape ? (
+                <Shape name={item.shape} size={30} />
               ) : (
                 <span className="num">{i + 1}</span>
               )}
