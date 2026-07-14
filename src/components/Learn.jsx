@@ -13,7 +13,14 @@ export default function Learn({ category, onQuiz, onBack }) {
         <ul className="learn-list">
           {data.items.map((item, i) => (
             <li key={item.label}>
-              <span className="num">{i + 1}</span>
+              {item.color ? (
+                <span
+                  className={`color-dot${item.color === '#ffffff' ? ' swatch-light' : ''}`}
+                  style={{ background: item.color }}
+                />
+              ) : (
+                <span className="num">{i + 1}</span>
+              )}
               <span>
                 {item.label}
                 {item.sub && <small className="learn-sub">{item.sub}</small>}
