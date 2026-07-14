@@ -53,7 +53,17 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
         <span>Question {index + 1} / {NB_QUESTIONS}</span>
         <span>⭐ {score}</span>
       </div>
-      <div className="question">{question.q}</div>
+      <div className="question">
+        <span>
+          {question.q}
+          {question.swatch && (
+            <span
+              className={`swatch${question.swatch === '#ffffff' ? ' swatch-light' : ''}`}
+              style={{ background: question.swatch }}
+            />
+          )}
+        </span>
+      </div>
       <div className="answers">
         {question.options.map(option => (
           <button
