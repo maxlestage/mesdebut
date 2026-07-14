@@ -221,16 +221,24 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 .final-msg { color: #666; margin-bottom: 18px; font-size: 1.05rem; }
 
 .back-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
   margin-top: auto;
-  padding: 14px 8px 4px;
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 0.95rem;
+  padding: 12px 24px;
+  min-height: 48px;
+  background: #f4f2ff;
+  border: 2px solid #e2ddff;
+  border-radius: 999px;
+  color: #6a5fc9;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  text-decoration: underline;
+  text-decoration: none;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
+.back-link:active { transform: scale(0.95); background: #e9e4ff; }
 
 /* ============================================================
    Écrans plus grands : la carte devient flottante et centrée
@@ -258,5 +266,11 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 
   .answer-btn:hover:not(:disabled) { border-color: #667eea; background: #efeaff; }
 
-  .back-link { margin-top: 18px; padding: 0; }
+  .back-link { margin-top: 20px; }
+  .back-link:hover {
+    background: #e9e4ff;
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    transform: translateY(-1px);
+  }
 }
