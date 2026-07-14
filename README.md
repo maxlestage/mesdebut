@@ -41,6 +41,7 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 - 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
 - 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
 - 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
+- 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
 - 🔢 **Les nombres en lettres** — savoir lire et écrire les nombres de 0 à 100 (soixante-dix, quatre-vingts…), avec 3 niveaux
 - ➕ **Addition**
 - ➖ **Soustraction** (jamais de résultat négatif)
