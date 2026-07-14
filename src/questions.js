@@ -21,6 +21,7 @@ export const CATEGORIES = {
   mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", kind: 'sequence' },
   saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', kind: 'sequence' },
   alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", kind: 'sequence' },
+  couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', kind: 'sequence' },
   nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', kind: 'math' },
   addition: { emoji: '➕', label: 'Addition', title: 'Addition', kind: 'math' },
   soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', kind: 'math' },
@@ -35,6 +36,47 @@ export const LEVELS = [
 ]
 
 // contenu des écrans de révision
+// couleurs : nom + code pour la pastille
+export const COULEURS = [
+  { name: 'rouge', hex: '#e53935' },
+  { name: 'bleu', hex: '#1e88e5' },
+  { name: 'jaune', hex: '#fdd835' },
+  { name: 'vert', hex: '#43a047' },
+  { name: 'orange', hex: '#fb8c00' },
+  { name: 'violet', hex: '#8e24aa' },
+  { name: 'rose', hex: '#f06292' },
+  { name: 'marron', hex: '#795548' },
+  { name: 'gris', hex: '#9e9e9e' },
+  { name: 'noir', hex: '#212121' },
+  { name: 'blanc', hex: '#ffffff' },
+]
+
+// mélanges de peinture classiques
+const MELANGES = [
+  { a: 'bleu', b: 'jaune', donne: 'vert' },
+  { a: 'rouge', b: 'jaune', donne: 'orange' },
+  { a: 'rouge', b: 'bleu', donne: 'violet' },
+  { a: 'rouge', b: 'blanc', donne: 'rose' },
+  { a: 'noir', b: 'blanc', donne: 'gris' },
+]
+
+// objets choisis pour que l'accord du nom de couleur reste correct
+const OBJETS_COULEUR = [
+  { objet: 'un citron', couleur: 'jaune' },
+  { objet: 'une banane', couleur: 'jaune' },
+  { objet: 'le soleil', couleur: 'jaune' },
+  { objet: 'le ciel', couleur: 'bleu' },
+  { objet: 'un sapin', couleur: 'vert' },
+  { objet: 'une tomate', couleur: 'rouge' },
+  { objet: 'une fraise', couleur: 'rouge' },
+  { objet: 'une carotte', couleur: 'orange' },
+  { objet: 'un cochon', couleur: 'rose' },
+  { objet: 'le chocolat', couleur: 'marron' },
+  { objet: 'un éléphant', couleur: 'gris' },
+  { objet: 'un corbeau', couleur: 'noir' },
+  { objet: 'le lait', couleur: 'blanc' },
+]
+
 export const LEARN_DATA = {
   jours: { title: '📖 Les 7 jours de la semaine', items: JOURS.map(j => ({ label: cap(j) })) },
   mois: { title: "📖 Les 12 mois de l'année", items: MOIS.map(m => ({ label: cap(m) })) },
@@ -48,6 +90,10 @@ export const LEARN_DATA = {
     ],
   },
   alphabet: { title: '📖 Les 26 lettres de l\'alphabet', grid: ALPHABET },
+  couleurs: {
+    title: '📖 Les 11 couleurs',
+    items: COULEURS.map(c => ({ label: cap(c.name), color: c.hex })),
+  },
 }
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
@@ -146,6 +192,39 @@ function makeMoisSaisonQuestion() {
     q: `En quelle saison est le mois de ${mois} ?`,
     answer: cap(saison),
     choices: SAISONS.filter(s => s !== saison).map(cap),
+  }
+}
+
+// ---------- couleurs ----------
+function otherColorNames(exclude, count) {
+  return shuffle(COULEURS.filter(c => !exclude.includes(c.name))).slice(0, count).map(c => cap(c.name))
+}
+
+function makeCouleursQuestion() {
+  const type = pick(['pastille', 'pastille', 'melange', 'objet']) // la reconnaissance visuelle revient plus souvent
+  if (type === 'pastille') {
+    const c = pick(COULEURS)
+    return {
+      q: 'Quelle est cette couleur ?',
+      key: `pastille:${c.name}`, // le texte est identique pour toutes : on déduplique sur la couleur
+      swatch: c.hex,
+      answer: cap(c.name),
+      choices: otherColorNames([c.name], 3),
+    }
+  }
+  if (type === 'melange') {
+    const m = pick(MELANGES)
+    return {
+      q: `Quelle couleur obtient-on en mélangeant du ${m.a} et du ${m.b} ?`,
+      answer: cap(m.donne),
+      choices: otherColorNames([m.a, m.b, m.donne], 3),
+    }
+  }
+  const o = pick(OBJETS_COULEUR)
+  return {
+    q: `De quelle couleur est ${o.objet} ?`,
+    answer: cap(o.couleur),
+    choices: otherColorNames([o.couleur], 3),
   }
 }
 
@@ -274,6 +353,7 @@ function makeQuestion(category, level) {
       display: l => `la lettre ${l}`,
     })
   }
+  if (category === 'couleurs') return makeCouleursQuestion()
   if (category === 'nombres') return makeNombresQuestion(level)
   return makeMathQuestion(category, level)
 }
@@ -285,8 +365,9 @@ export function buildQuestions(category, level) {
   while (qs.length < NB_QUESTIONS && guard < 300) {
     guard++
     const q = makeQuestion(category, level)
-    if (seen.has(q.q)) continue // éviter deux fois la même question
-    seen.add(q.q)
+    const key = q.key || q.q
+    if (seen.has(key)) continue // éviter deux fois la même question
+    seen.add(key)
     qs.push({ ...q, options: shuffle([q.answer, ...q.choices]) })
   }
   return qs
