@@ -22,6 +22,7 @@ export const CATEGORIES = {
   saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', kind: 'sequence' },
   alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", kind: 'sequence' },
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', kind: 'sequence' },
+  formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', kind: 'sequence' },
   nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', kind: 'math' },
   addition: { emoji: '➕', label: 'Addition', title: 'Addition', kind: 'math' },
   soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', kind: 'math' },
@@ -77,6 +78,36 @@ const OBJETS_COULEUR = [
   { objet: 'le lait', couleur: 'blanc' },
 ]
 
+// formes géométriques : nom + petite description pour la révision
+export const FORMES = [
+  { name: 'cercle', sub: 'parfaitement rond' },
+  { name: 'carré', sub: '4 côtés égaux' },
+  { name: 'triangle', sub: '3 côtés' },
+  { name: 'rectangle', sub: '4 côtés, 2 longs et 2 courts' },
+  { name: 'losange', sub: '4 côtés égaux, penché' },
+  { name: 'ovale', sub: 'comme un œuf' },
+  { name: 'étoile', sub: '5 branches' },
+  { name: 'cœur', sub: 'comme dans « je t\'aime »' },
+  { name: 'hexagone', sub: '6 côtés' },
+  { name: 'octogone', sub: '8 côtés' },
+]
+
+// nombre de côtés (formes où la question a un sens)
+const FORME_COTES = { triangle: 3, carré: 4, rectangle: 4, losange: 4, hexagone: 6, octogone: 8 }
+// nombres de côtés qui désignent une seule forme (pour la question inverse)
+const COTES_UNIQUES = { 3: 'triangle', 6: 'hexagone', 8: 'octogone' }
+
+// objets du quotidien à la forme non ambiguë (complément prêt à insérer)
+const OBJETS_FORME = [
+  { objet: "d'une pièce de monnaie", forme: 'cercle' },
+  { objet: "d'un ballon", forme: 'cercle' },
+  { objet: "d'un œuf", forme: 'ovale' },
+  { objet: "d'une part de pizza", forme: 'triangle' },
+  { objet: "d'un panneau stop", forme: 'octogone' },
+  { objet: "d'une porte", forme: 'rectangle' },
+  { objet: 'des alvéoles des abeilles', forme: 'hexagone' },
+]
+
 export const LEARN_DATA = {
   jours: { title: '📖 Les 7 jours de la semaine', items: JOURS.map(j => ({ label: cap(j) })) },
   mois: { title: "📖 Les 12 mois de l'année", items: MOIS.map(m => ({ label: cap(m) })) },
@@ -93,6 +124,10 @@ export const LEARN_DATA = {
   couleurs: {
     title: '📖 Les 11 couleurs',
     items: COULEURS.map(c => ({ label: cap(c.name), color: c.hex })),
+  },
+  formes: {
+    title: '📖 Les 10 formes géométriques',
+    items: FORMES.map(f => ({ label: cap(f.name), sub: f.sub, shape: f.name })),
   },
 }
 
@@ -228,6 +263,61 @@ function makeCouleursQuestion() {
   }
 }
 
+// ---------- formes géométriques ----------
+function otherShapeNames(exclude, count) {
+  return shuffle(FORMES.filter(f => !exclude.includes(f.name))).slice(0, count).map(f => cap(f.name))
+}
+
+function makeFormesQuestion() {
+  const type = pick(['visuelle', 'visuelle', 'cotes', 'inverse', 'objet']) // la reconnaissance visuelle revient plus souvent
+  if (type === 'visuelle') {
+    const f = pick(FORMES)
+    return {
+      q: 'Quelle est cette forme ?',
+      key: `forme:${f.name}`, // le texte est identique pour toutes : on déduplique sur la forme
+      shape: f.name,
+      answer: cap(f.name),
+      choices: otherShapeNames([f.name], 3),
+    }
+  }
+  if (type === 'cotes') {
+    // une fois sur six, la question sur les branches de l'étoile
+    if (rand(0, 5) === 0) {
+      return {
+        q: 'Combien de branches a une étoile ?',
+        answer: '5',
+        choices: shuffle(['3', '4', '6', '7']).slice(0, 3),
+      }
+    }
+    const name = pick(Object.keys(FORME_COTES))
+    const n = FORME_COTES[name]
+    const distractors = new Set()
+    let d = 3
+    while (distractors.size < 3) { if (d !== n) distractors.add(String(d)); d++ }
+    return {
+      q: `Combien de côtés a un ${name} ?`,
+      shape: name,
+      answer: String(n),
+      choices: shuffle([...distractors]).slice(0, 3),
+    }
+  }
+  if (type === 'inverse') {
+    const n = pick(Object.keys(COTES_UNIQUES))
+    const name = COTES_UNIQUES[n]
+    return {
+      q: `Quelle forme a ${n} côtés ?`,
+      answer: cap(name),
+      choices: otherShapeNames([name], 3),
+    }
+  }
+  const o = pick(OBJETS_FORME)
+  return {
+    q: `Quelle est la forme ${o.objet} ?`,
+    answer: cap(o.forme),
+    choices: otherShapeNames([o.forme], 3),
+  }
+}
+
 // ---------- nombres en lettres ----------
 const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
   'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf']
@@ -354,6 +444,7 @@ function makeQuestion(category, level) {
     })
   }
   if (category === 'couleurs') return makeCouleursQuestion()
+  if (category === 'formes') return makeFormesQuestion()
   if (category === 'nombres') return makeNombresQuestion(level)
   return makeMathQuestion(category, level)
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { buildQuestions, pickPraise, NB_QUESTIONS } from '../questions.js'
+import Shape from './Shape.jsx'
 
 export default function Quiz({ category, level, onFinish, onQuit }) {
   const questions = useMemo(() => buildQuestions(category, level), [category, level])
@@ -61,6 +62,11 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
               className={`swatch${question.swatch === '#ffffff' ? ' swatch-light' : ''}`}
               style={{ background: question.swatch }}
             />
+          )}
+          {question.shape && (
+            <span className="shape-figure">
+              <Shape name={question.shape} size={80} />
+            </span>
           )}
         </span>
       </div>

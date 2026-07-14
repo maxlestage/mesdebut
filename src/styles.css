@@ -67,6 +67,7 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 .c-mois           { background: linear-gradient(135deg, #21b3f6, #2179f6); }
 .c-saisons        { background: linear-gradient(135deg, #8bc34a, #5a9216); }
 .c-couleurs       { background: linear-gradient(135deg, #ff8a65, #d84315); }
+.c-formes         { background: linear-gradient(135deg, #78909c, #455a64); }
 .c-alphabet       { background: linear-gradient(135deg, #26c6da, #0097a7); }
 .c-nombres        { background: linear-gradient(135deg, #5c6bc0, #3949ab); }
 .c-addition       { background: linear-gradient(135deg, #4cd964, #2eb350); }
@@ -141,6 +142,16 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 .swatch-light { border: 2px solid #ccc; }
+
+/* figure géométrique dans une question */
+.shape-figure {
+  display: block;
+  margin-top: 12px;
+}
+.shape-figure svg { display: block; margin: 0 auto; }
+
+/* les petites figures de la liste de révision ne doivent pas rétrécir */
+.learn-list li svg { flex-shrink: 0; }
 
 /* grille des lettres de l'alphabet */
 .letter-grid {
