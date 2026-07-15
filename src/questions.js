@@ -117,6 +117,12 @@ const OBJETS_FORME = [
   { objet: 'des alvéoles des abeilles', forme: 'hexagone' },
 ]
 
+// items { num, label } pour tous les nombres de a à b (cap et numberToWords sont hissés)
+function numberRangeItems(a, b) {
+  return Array.from({ length: b - a + 1 }, (_, i) => a + i)
+    .map(n => ({ num: n, label: cap(numberToWords(n)) }))
+}
+
 export const LEARN_DATA = {
   jours: { title: '📖 Les 7 jours de la semaine', items: JOURS.map(j => ({ label: cap(j) })) },
   mois: { title: "📖 Les 12 mois de l'année", items: MOIS.map(m => ({ label: cap(m) })) },
@@ -156,10 +162,15 @@ export const LEARN_DATA = {
   },
   nombres: {
     title: '📖 Les nombres en lettres',
-    intro: 'Le chiffre et son écriture',
-    // 0 à 20 en continu, puis les dizaines et leurs pièges (soixante-dix, quatre-vingts…)
-    items: [...Array.from({ length: 21 }, (_, i) => i), 30, 40, 50, 60, 70, 71, 80, 81, 90, 91, 100]
-      .map(n => ({ label: cap(numberToWords(n)), num: n })),
+    intro: 'Appuie sur une dizaine pour dérouler tous les nombres',
+    // accordéon : une section par dizaine, à dérouler pour voir chaque nombre
+    groups: [
+      ...Array.from({ length: 10 }, (_, d) => ({
+        label: `De ${d * 10} à ${d * 10 + 9}`,
+        items: numberRangeItems(d * 10, d * 10 + 9),
+      })),
+      { label: 'Cent', items: numberRangeItems(100, 100) },
+    ],
   },
 }
 
