@@ -1,5 +1,6 @@
 import { LEARN_DATA } from '../questions.js'
 import Shape from './Shape.jsx'
+import Marbles from './Marbles.jsx'
 
 export default function Learn({ category, onQuiz, onBack }) {
   const data = LEARN_DATA[category]
@@ -22,11 +23,14 @@ export default function Learn({ category, onQuiz, onBack }) {
               ) : item.shape ? (
                 <Shape name={item.shape} size={30} />
               ) : (
-                <span className="num">{i + 1}</span>
+                <span className="num">{item.num != null ? item.num : i + 1}</span>
               )}
               <span>
                 {item.label}
                 {item.sub && <small className="learn-sub">{item.sub}</small>}
+                {item.marbles != null && (
+                  <small className="learn-sub"><Marbles count={item.marbles} size={16} /></small>
+                )}
               </span>
             </li>
           ))}

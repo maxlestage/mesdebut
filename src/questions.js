@@ -23,6 +23,7 @@ export const CATEGORIES = {
   alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", kind: 'sequence' },
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', kind: 'sequence' },
   formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', kind: 'sequence' },
+  chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', kind: 'sequence' },
   nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', kind: 'math' },
   addition: { emoji: '➕', label: 'Addition', title: 'Addition', kind: 'math' },
   soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', kind: 'math' },
@@ -78,6 +79,10 @@ const OBJETS_COULEUR = [
   { objet: 'le lait', couleur: 'blanc' },
 ]
 
+// nombres en toutes lettres (les 10 premiers servent aussi aux chiffres)
+const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
+  'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf']
+
 // formes géométriques : nom + petite description pour la révision
 export const FORMES = [
   { name: 'cercle', sub: 'parfaitement rond' },
@@ -128,6 +133,10 @@ export const LEARN_DATA = {
   formes: {
     title: '📖 Les 10 formes géométriques',
     items: FORMES.map(f => ({ label: cap(f.name), sub: f.sub, shape: f.name })),
+  },
+  chiffres: {
+    title: '📖 Les chiffres de 0 à 9',
+    items: Array.from({ length: 10 }, (_, i) => ({ label: cap(UNITES[i]), num: i, marbles: i })),
   },
 }
 
@@ -318,9 +327,42 @@ function makeFormesQuestion() {
   }
 }
 
+// ---------- chiffres de 0 à 9, avec des billes à compter ----------
+function digitDistractors(answer, min, max) {
+  const others = []
+  for (let i = min; i <= max; i++) if (i !== answer) others.push(String(i))
+  return shuffle(others).slice(0, 3)
+}
+
+function makeChiffresQuestion() {
+  const type = pick(['compter', 'compter', 'apres', 'avant']) // compter des billes revient plus souvent
+  if (type === 'compter') {
+    const n = rand(1, 9)
+    return {
+      q: 'Combien de billes comptes-tu ?',
+      key: `billes:${n}`, // le texte est identique : on déduplique sur le nombre de billes
+      marbles: n,
+      answer: String(n),
+      choices: digitDistractors(n, Math.max(0, n - 3), Math.min(9, n + 3)),
+    }
+  }
+  if (type === 'apres') {
+    const i = rand(0, 8)
+    return {
+      q: `Quel chiffre vient juste après ${i} ?`,
+      answer: String(i + 1),
+      choices: digitDistractors(i + 1, 0, 9),
+    }
+  }
+  const i = rand(1, 9)
+  return {
+    q: `Quel chiffre vient juste avant ${i} ?`,
+    answer: String(i - 1),
+    choices: digitDistractors(i - 1, 0, 9),
+  }
+}
+
 // ---------- nombres en lettres ----------
-const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
-  'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf']
 const DIZAINES = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' }
 
 export function numberToWords(n) {
@@ -445,6 +487,7 @@ function makeQuestion(category, level) {
   }
   if (category === 'couleurs') return makeCouleursQuestion()
   if (category === 'formes') return makeFormesQuestion()
+  if (category === 'chiffres') return makeChiffresQuestion()
   if (category === 'nombres') return makeNombresQuestion(level)
   return makeMathQuestion(category, level)
 }
