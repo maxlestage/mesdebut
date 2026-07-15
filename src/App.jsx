@@ -19,7 +19,14 @@ export default function App() {
 
   const openCategory = (cat) => {
     setCategory(cat)
-    setScreen(CATEGORIES[cat].kind === 'sequence' ? 'category' : 'levels')
+    setScreen(CATEGORIES[cat].hasLearn ? 'category' : 'levels')
+  }
+
+  // depuis la révision ou l'écran de catégorie : passer par les niveaux si la
+  // catégorie en a, sinon lancer directement le quiz
+  const goToQuiz = () => {
+    if (CATEGORIES[category].hasLevels) setScreen('levels')
+    else startQuiz()
   }
 
   const startQuiz = (lvl = level) => {
@@ -41,12 +48,12 @@ export default function App() {
           <Category
             category={category}
             onLearn={() => setScreen('learn')}
-            onQuiz={() => startQuiz()}
+            onQuiz={goToQuiz}
             onBack={goMenu}
           />
         )}
         {screen === 'learn' && (
-          <Learn category={category} onQuiz={() => startQuiz()} onBack={goMenu} />
+          <Learn category={category} onQuiz={goToQuiz} onBack={goMenu} />
         )}
         {screen === 'levels' && (
           <Levels category={category} onSelect={startQuiz} onBack={goMenu} />
