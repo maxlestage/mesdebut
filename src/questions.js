@@ -24,6 +24,7 @@ export const CATEGORIES = {
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', kind: 'sequence' },
   formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', kind: 'sequence' },
   chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', kind: 'sequence' },
+  cinquante: { emoji: '🔟', label: "Jusqu'à 50", title: "Les nombres jusqu'à 50", kind: 'sequence' },
   nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', kind: 'math' },
   addition: { emoji: '➕', label: 'Addition', title: 'Addition', kind: 'math' },
   soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', kind: 'math' },
@@ -82,6 +83,7 @@ const OBJETS_COULEUR = [
 // nombres en toutes lettres (les 10 premiers servent aussi aux chiffres)
 const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
   'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf']
+const DIZAINES = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' }
 
 // formes géométriques : nom + petite description pour la révision
 export const FORMES = [
@@ -137,6 +139,18 @@ export const LEARN_DATA = {
   chiffres: {
     title: '📖 Les chiffres de 0 à 9',
     items: Array.from({ length: 10 }, (_, i) => ({ label: cap(UNITES[i]), num: i, marbles: i })),
+  },
+  cinquante: {
+    title: '📖 Les dizaines jusqu\'à 50',
+    intro: 'Une rangée de 10 billes = 1 dizaine',
+    items: [10, 20, 30, 40, 50].map(n => ({
+      label: cap(numberToWords(n)),
+      num: n,
+      marbles: n,
+      perRow: 10,
+      colorByRow: true,
+      sub: `${n / 10} dizaine${n > 10 ? 's' : ''}`,
+    })),
   },
 }
 
@@ -362,9 +376,84 @@ function makeChiffresQuestion() {
   }
 }
 
-// ---------- nombres en lettres ----------
-const DIZAINES = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' }
+// ---------- nombres jusqu'à 50, dizaines et unités ----------
+// 3 nombres proches et distincts dans [min, max] (dont les pièges ±10 et ±1)
+function nearbyNumbers(n, min, max) {
+  const candidates = shuffle([n - 10, n + 10, n - 1, n + 1, n - 2, n + 2, n - 11, n + 11])
+    .filter(c => c >= min && c <= max && c !== n)
+  const set = new Set(candidates.slice(0, 3).map(String))
+  let extra = min
+  while (set.size < 3) { if (extra !== n) set.add(String(extra)); extra++ }
+  return [...set]
+}
 
+function makeCinquanteQuestion() {
+  const type = pick(['compter', 'compter', 'dizaines', 'unites', 'composer', 'suite'])
+
+  if (type === 'compter') {
+    const n = rand(11, 50)
+    return {
+      q: 'Combien de billes comptes-tu ?',
+      key: `billes50:${n}`, // le texte est identique : on déduplique sur le nombre
+      marbles: n,
+      perRow: 10,
+      colorByRow: true,
+      answer: String(n),
+      choices: nearbyNumbers(n, 11, 50),
+    }
+  }
+  if (type === 'dizaines') {
+    const n = rand(11, 50)
+    const d = Math.floor(n / 10)
+    return {
+      q: `Dans le nombre ${n}, combien y a-t-il de dizaines ?`,
+      answer: String(d),
+      choices: digitDistractors(d, 0, 5),
+    }
+  }
+  if (type === 'unites') {
+    const n = rand(11, 49)
+    const u = n % 10
+    return {
+      q: `Dans le nombre ${n}, combien y a-t-il d'unités ?`,
+      answer: String(u),
+      choices: digitDistractors(u, 0, 9),
+    }
+  }
+  if (type === 'composer') {
+    const d = rand(1, 4)
+    const u = rand(1, 9)
+    const n = 10 * d + u
+    const inversion = 10 * u + d // le piège classique : dizaines et unités inversées
+    const candidates = [inversion, n - 1, n + 1, 10 * d, n + 10, n - 10]
+      .filter(c => c >= 1 && c <= 50 && c !== n)
+    const set = new Set(candidates.map(String))
+    let extra = n + 2
+    while (set.size < 3) { set.add(String(extra)); extra++ }
+    return {
+      q: `Avec ${d} dizaine${d > 1 ? 's' : ''} et ${u} unité${u > 1 ? 's' : ''}, quel nombre écris-tu ?`,
+      answer: String(n),
+      choices: shuffle([...set]).slice(0, 3),
+    }
+  }
+  // suite : le nombre d'avant ou d'après, avec les passages de dizaine
+  if (rand(0, 1)) {
+    const n = rand(10, 49)
+    return {
+      q: `Quel nombre vient juste après ${n} ?`,
+      answer: String(n + 1),
+      choices: nearbyNumbers(n + 1, 0, 51),
+    }
+  }
+  const n = rand(11, 50)
+  return {
+    q: `Quel nombre vient juste avant ${n} ?`,
+    answer: String(n - 1),
+    choices: nearbyNumbers(n - 1, 0, 50),
+  }
+}
+
+// ---------- nombres en lettres ----------
 export function numberToWords(n) {
   if (n < 20) return UNITES[n]
   if (n === 100) return 'cent'
@@ -488,6 +577,7 @@ function makeQuestion(category, level) {
   if (category === 'couleurs') return makeCouleursQuestion()
   if (category === 'formes') return makeFormesQuestion()
   if (category === 'chiffres') return makeChiffresQuestion()
+  if (category === 'cinquante') return makeCinquanteQuestion()
   if (category === 'nombres') return makeNombresQuestion(level)
   return makeMathQuestion(category, level)
 }

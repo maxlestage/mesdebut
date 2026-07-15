@@ -71,7 +71,12 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
           )}
           {question.marbles != null && (
             <span className="shape-figure">
-              <Marbles count={question.marbles} />
+              <Marbles
+                count={question.marbles}
+                perRow={question.perRow || 5}
+                colorByRow={!!question.colorByRow}
+                size={question.marbles > 10 ? 22 : 28}
+              />
             </span>
           )}
         </span>
