@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { buildQuestions, pickPraise, NB_QUESTIONS } from '../questions.js'
 import Shape from './Shape.jsx'
+import Marbles from './Marbles.jsx'
 
 export default function Quiz({ category, level, onFinish, onQuit }) {
   const questions = useMemo(() => buildQuestions(category, level), [category, level])
@@ -66,6 +67,11 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
           {question.shape && (
             <span className="shape-figure">
               <Shape name={question.shape} size={80} />
+            </span>
+          )}
+          {question.marbles != null && (
+            <span className="shape-figure">
+              <Marbles count={question.marbles} />
             </span>
           )}
         </span>
