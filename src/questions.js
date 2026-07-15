@@ -16,20 +16,22 @@ const MOIS_SAISON = {
   octobre: 'automne', novembre: 'automne',
 }
 
+// hasLearn : propose un écran de révision ; hasLevels : propose un choix de niveau.
+// Les deux peuvent coexister (ex. « Les nombres » : réviser puis choisir un niveau).
 export const CATEGORIES = {
-  jours: { emoji: '📅', label: 'Les jours', title: 'Les jours de la semaine', kind: 'sequence' },
-  mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", kind: 'sequence' },
-  saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', kind: 'sequence' },
-  alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", kind: 'sequence' },
-  couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', kind: 'sequence' },
-  formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', kind: 'sequence' },
-  chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', kind: 'sequence' },
-  cinquante: { emoji: '🔟', label: "Jusqu'à 50", title: "Les nombres jusqu'à 50", kind: 'sequence' },
-  nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', kind: 'math' },
-  addition: { emoji: '➕', label: 'Addition', title: 'Addition', kind: 'math' },
-  soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', kind: 'math' },
-  multiplication: { emoji: '✖️', label: 'Multiplication', title: 'Multiplication', kind: 'math' },
-  division: { emoji: '➗', label: 'Division', title: 'Division', kind: 'math' },
+  jours: { emoji: '📅', label: 'Les jours', title: 'Les jours de la semaine', hasLearn: true },
+  mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", hasLearn: true },
+  saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', hasLearn: true },
+  alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", hasLearn: true },
+  couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', hasLearn: true },
+  formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', hasLearn: true },
+  chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', hasLearn: true },
+  cinquante: { emoji: '🔟', label: "Jusqu'à 50", title: "Les nombres jusqu'à 50", hasLearn: true },
+  nombres: { emoji: '🔢', label: 'Les nombres', title: 'Les nombres en lettres', hasLearn: true, hasLevels: true },
+  addition: { emoji: '➕', label: 'Addition', title: 'Addition', hasLevels: true },
+  soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', hasLevels: true },
+  multiplication: { emoji: '✖️', label: 'Multiplication', title: 'Multiplication', hasLevels: true },
+  division: { emoji: '➗', label: 'Division', title: 'Division', hasLevels: true },
 }
 
 export const LEVELS = [
@@ -151,6 +153,13 @@ export const LEARN_DATA = {
       colorByRow: true,
       sub: `${n / 10} dizaine${n > 10 ? 's' : ''}`,
     })),
+  },
+  nombres: {
+    title: '📖 Les nombres en lettres',
+    intro: 'Le chiffre et son écriture',
+    // 0 à 20 en continu, puis les dizaines et leurs pièges (soixante-dix, quatre-vingts…)
+    items: [...Array.from({ length: 21 }, (_, i) => i), 30, 40, 50, 60, 70, 71, 80, 81, 90, 91, 100]
+      .map(n => ({ label: cap(numberToWords(n)), num: n })),
   },
 }
 
@@ -348,8 +357,16 @@ function digitDistractors(answer, min, max) {
   return shuffle(others).slice(0, 3)
 }
 
+// 3 noms de chiffres (en lettres) différents de n, parmi 0 à 9
+function digitWordDistractors(n) {
+  const others = []
+  for (let i = 0; i <= 9; i++) if (i !== n) others.push(cap(UNITES[i]))
+  return shuffle(others).slice(0, 3)
+}
+
 function makeChiffresQuestion() {
-  const type = pick(['compter', 'compter', 'apres', 'avant']) // compter des billes revient plus souvent
+  // compter des billes revient plus souvent ; le chiffre et son écriture se répondent dans les deux sens
+  const type = pick(['compter', 'compter', 'ecrire', 'lire', 'apres', 'avant'])
   if (type === 'compter') {
     const n = rand(1, 9)
     return {
@@ -358,6 +375,22 @@ function makeChiffresQuestion() {
       marbles: n,
       answer: String(n),
       choices: digitDistractors(n, Math.max(0, n - 3), Math.min(9, n + 3)),
+    }
+  }
+  if (type === 'ecrire') { // chiffre → lettres
+    const n = rand(0, 9)
+    return {
+      q: `Comment s'écrit le chiffre ${n} ?`,
+      answer: cap(UNITES[n]),
+      choices: digitWordDistractors(n),
+    }
+  }
+  if (type === 'lire') { // lettres → chiffre
+    const n = rand(0, 9)
+    return {
+      q: `Quel chiffre s'écrit « ${UNITES[n]} » ?`,
+      answer: String(n),
+      choices: digitDistractors(n, 0, 9),
     }
   }
   if (type === 'apres') {
