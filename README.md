@@ -43,6 +43,7 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 - 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
 - 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
 - 🧮 **Les chiffres de 0 à 9** — révision avec des billes à compter (groupées par 5), quiz de comptage de billes et de chiffre d'avant/d'après
+- 🔟 **Les nombres jusqu'à 50** — billes groupées par rangées de 10 (une couleur par dizaine), comptage, dizaines et unités, composition (« 3 dizaines et 4 unités ? ») et suites de nombres
 - 🔢 **Les nombres en lettres** — savoir lire et écrire les nombres de 0 à 100 (soixante-dix, quatre-vingts…), avec 3 niveaux
 - ➕ **Addition**
 - ➖ **Soustraction** (jamais de résultat négatif)

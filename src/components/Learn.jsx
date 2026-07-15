@@ -7,6 +7,7 @@ export default function Learn({ category, onQuiz, onBack }) {
   return (
     <>
       <h1>{data.title}</h1>
+      {data.intro && <p className="subtitle">{data.intro}</p>}
       {data.grid ? (
         <div className="letter-grid">
           {data.grid.map(letter => <span key={letter} className="letter">{letter}</span>)}
@@ -29,7 +30,14 @@ export default function Learn({ category, onQuiz, onBack }) {
                 {item.label}
                 {item.sub && <small className="learn-sub">{item.sub}</small>}
                 {item.marbles != null && (
-                  <small className="learn-sub"><Marbles count={item.marbles} size={16} /></small>
+                  <small className="learn-sub">
+                    <Marbles
+                      count={item.marbles}
+                      size={item.perRow === 10 ? 14 : 16}
+                      perRow={item.perRow || 5}
+                      colorByRow={!!item.colorByRow}
+                    />
+                  </small>
                 )}
               </span>
             </li>
