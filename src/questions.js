@@ -19,6 +19,9 @@ const MOIS_SAISON = {
 // hasLearn : propose un écran de révision ; hasLevels : propose un choix de niveau.
 // Les deux peuvent coexister (ex. « Les nombres » : réviser puis choisir un niveau).
 export const CATEGORIES = {
+  // Mode entrelacé (interleaving) : mélange les thèmes pour renforcer la mémorisation.
+  // Ni révision ni niveau : on va droit au quiz.
+  melange: { emoji: '🧠', label: 'Mélange', title: 'Quiz mélangé' },
   jours: { emoji: '📅', label: 'Les jours', title: 'Les jours de la semaine', hasLearn: true },
   mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", hasLearn: true },
   saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', hasLearn: true },
@@ -626,7 +629,33 @@ function makeQuestion(category, level) {
   return makeMathQuestion(category, level)
 }
 
+// thèmes puisés par le mode Mélange (toutes les catégories réelles, sauf le mélange lui-même)
+const MELANGE_SOURCES = ['chiffres', 'cinquante', 'nombres', 'addition', 'soustraction',
+  'multiplication', 'division', 'jours', 'mois', 'saisons', 'alphabet', 'couleurs', 'formes']
+
+// Entrelacement : on parcourt les thèmes en rotation pour que deux questions
+// voisines viennent presque toujours de thèmes différents.
+function buildInterleaved() {
+  const sources = shuffle(MELANGE_SOURCES)
+  const qs = []
+  const seen = new Set()
+  let i = 0, guard = 0
+  while (qs.length < NB_QUESTIONS && guard < 400) {
+    guard++
+    const cat = sources[i % sources.length]
+    i++
+    const level = rand(1, 2) // difficulté douce et variée pour les thèmes à niveaux
+    const q = makeQuestion(cat, level)
+    const key = `${cat}:${q.key || q.q}`
+    if (seen.has(key)) continue // éviter deux fois la même question
+    seen.add(key)
+    qs.push({ ...q, category: cat, options: shuffle([q.answer, ...q.choices]) })
+  }
+  return qs
+}
+
 export function buildQuestions(category, level) {
+  if (category === 'melange') return buildInterleaved()
   const qs = []
   const seen = new Set()
   let guard = 0
