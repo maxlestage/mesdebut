@@ -4,6 +4,8 @@ Une petite application de quiz **React** (Vite), pensée **mobile first**, pour 
 
 C'est aussi une **PWA** : une fois le site ouvert dans le navigateur du téléphone, on peut l'ajouter à l'écran d'accueil (« Ajouter à l'écran d'accueil » sur iOS, « Installer l'application » sur Android). Elle se lance alors en plein écran comme une vraie application et **fonctionne même sans connexion**.
 
+> 📱 **Version iOS native** : une application **Swift / SwiftUI** avec les mêmes fonctionnalités se trouve dans [`ios/`](ios/). Voir [`ios/README.md`](ios/README.md) pour l'ouvrir dans Xcode.
+
 ## Démarrer
 
 ```bash
