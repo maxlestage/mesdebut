@@ -54,6 +54,8 @@ Les quiz de calcul ont trois niveaux : 🌱 Facile, 🌿 Moyen, 🌳 Difficile.
 
 Chaque quiz comporte 10 questions à choix multiples, avec un score, des étoiles et des encouragements à la fin. 🌟
 
+**Répétition espacée** : quand une réponse est fausse, la même question revient plus loin dans le quiz — une première fois 3 questions plus tard, puis encore 5 questions après — pour retravailler ce qui n'est pas encore acquis. Chaque question ne programme ses reprises qu'une seule fois, pour éviter une file qui s'allonge sans fin.
+
 ## Structure
 
 ```
