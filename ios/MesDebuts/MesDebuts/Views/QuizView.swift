@@ -115,6 +115,12 @@ struct QuizView: View {
         selected = option
         let q = question
         let good = option == q.answer
+
+        // mémoire persistée : on note la réponse pour la répétition espacée entre sessions
+        let itemCategory = q.category ?? category
+        MemoryStore.shared.recordAnswer(key: "\(itemCategory):\(q.dedupKey)",
+                                        category: itemCategory, correct: good)
+
         if good {
             score += 1
             feedbackGood = true
@@ -136,6 +142,7 @@ struct QuizView: View {
             feedbackGood = nil
             feedbackText = ""
         } else {
+            MemoryStore.shared.recordSession(category: category, score: score, total: questions.count)
             onFinish(score, questions.count)
         }
     }
