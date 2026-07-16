@@ -51,6 +51,23 @@ saisons, alphabet, couleurs, formes, chiffres, jusqu'à 50, nombres, et les 4
 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
 répétition espacée en cas d'erreur, et le mode Mélange entrelacé.
 
+## Mémoire persistée (SQLite) 🧠
+
+`Models/MemoryStore.swift` gère la mémoire de l'apprenant dans une base **SQLite**
+(via le module système `SQLite3`, sans dépendance externe — la bibliothèque est
+liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
+*Application Support* de l'app.
+
+- Chaque réponse est enregistrée par notion (`item_memory`) avec un système de
+  **boîtes de Leitner** (1 à 5) : une bonne réponse fait monter la notion d'une
+  boîte (révision plus espacée), une erreur la fait redescendre. Une date de
+  prochaine révision (`due`) est calculée à chaque fois.
+- C'est de la répétition espacée qui **survit d'une session à l'autre**, et même
+  d'un jour à l'autre — le prolongement naturel des principes de neurosciences.
+- Chaque quiz terminé est aussi historisé (`sessions`).
+- Le menu et l'écran de fin affichent la progression : notions maîtrisées
+  (boîte ≥ 4) et notions à réviser aujourd'hui.
+
 ## Réglages du projet
 
 - Cible de déploiement : iOS 16.0

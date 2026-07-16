@@ -8,6 +8,7 @@ struct EndView: View {
 
     var body: some View {
         let summary = endSummary(score: score, total: total)
+        let memory = MemoryStore.shared.summary()
         Group {
             ScreenTitle(text: "Quiz terminé !")
             Text(summary.stars).font(.system(size: 44))
@@ -17,6 +18,11 @@ struct EndView: View {
             Text(summary.message)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+            if memory.mastered > 0 {
+                Text("🧠 \(memory.mastered) notion\(memory.mastered > 1 ? "s" : "") maîtrisée\(memory.mastered > 1 ? "s" : "") au total")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(Color(hex: "#4a3f8f"))
+            }
             BigButton(title: "🔁 Rejouer", action: onReplay)
             BigButton(title: "🏠 Menu principal", secondary: true, action: onMenu)
         }
