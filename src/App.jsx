@@ -19,7 +19,10 @@ export default function App() {
 
   const openCategory = (cat) => {
     setCategory(cat)
-    setScreen(CATEGORIES[cat].hasLearn ? 'category' : 'levels')
+    const c = CATEGORIES[cat]
+    if (c.hasLearn) setScreen('category')
+    else if (c.hasLevels) setScreen('levels')
+    else startQuiz() // ni révision ni niveau (ex. Mélange) → quiz direct
   }
 
   // depuis la révision ou l'écran de catégorie : passer par les niveaux si la
