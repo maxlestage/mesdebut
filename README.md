@@ -56,6 +56,18 @@ Chaque quiz comporte 10 questions à choix multiples, avec un score, des étoile
 
 **Répétition espacée** : quand une réponse est fausse, la même question revient plus loin dans le quiz — une première fois 3 questions plus tard, puis encore 5 questions après — pour retravailler ce qui n'est pas encore acquis. Chaque question ne programme ses reprises qu'une seule fois, pour éviter une file qui s'allonge sans fin.
 
+## Fondé sur la science de l'apprentissage 🧠
+
+L'appli s'appuie sur des principes établis des sciences cognitives :
+
+- **Récupération active** (testing effect) — on répond, on ne relit pas
+- **Feedback immédiat** — la bonne réponse est montrée tout de suite
+- **Répétition espacée** — les questions ratées reviennent à intervalles croissants
+- **Entrelacement** (mode 🧠 Mélange) — les thèmes sont alternés plutôt que révisés en blocs, ce qui force la discrimination et ancre mieux
+- **Double codage** — chaque notion associe une image (billes, formes, couleurs) et un mot
+- **Subitizing / sens du nombre** — les billes sont groupées par 5 et par 10
+- **Renforcement positif** — étoiles et encouragements pour soutenir la motivation
+
 ## Structure
 
 ```

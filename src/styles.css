@@ -63,6 +63,7 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 .menu-btn:active { transform: scale(0.96); }
 .menu-btn .emoji { display: block; font-size: 2rem; margin-bottom: 6px; }
 
+.c-melange        { background: linear-gradient(135deg, #26a69a, #00695c); }
 .c-jours          { background: linear-gradient(135deg, #f6a821, #f68f21); }
 .c-mois           { background: linear-gradient(135deg, #21b3f6, #2179f6); }
 .c-saisons        { background: linear-gradient(135deg, #8bc34a, #5a9216); }
