@@ -125,9 +125,11 @@ struct QuizView: View {
             score += 1
             feedbackGood = true
             feedbackText = QuestionEngine.pickPraise()
+            Haptics.success()
         } else {
             feedbackGood = false
             feedbackText = "❌ La bonne réponse était : \(q.answer)"
+            Haptics.error()
             scheduleRetries(q, at: index)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + (good ? 0.9 : 1.8)) {
