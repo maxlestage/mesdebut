@@ -1,0 +1,38 @@
+name: iOS Build
+
+# Compile l'app iOS à chaque changement (sans signature, sur simulateur).
+# Aucun secret requis — sert à détecter tôt les erreurs de compilation.
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sélectionner Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Compiler (simulateur, sans signature)
+        working-directory: ios/MesDebuts
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project MesDebuts.xcodeproj \
+            -scheme MesDebuts \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
