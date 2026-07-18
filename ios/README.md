@@ -38,8 +38,10 @@ MesDebuts/
     LearnView.swift           # révision (liste, grille, accordéon)
     QuizView.swift            # déroulement du quiz + répétition espacée
     EndView.swift             # score et étoiles
+    ProgressStatsView.swift   # écran « Mes progrès » (stats SQLite par catégorie)
     MarblesView.swift         # billes à compter (Circle + dégradés)
     GeometricShapeView.swift  # formes géométriques (Path/Shape)
+    Haptics.swift             # retour tactile natif sur les réponses
     Theme.swift               # fonds, boutons, carte réutilisables
   Assets.xcassets/            # icône de l'app + couleur d'accent
 ```
@@ -50,6 +52,11 @@ Parité complète avec la version web : les 14 catégories (mélange, jours, moi
 saisons, alphabet, couleurs, formes, chiffres, jusqu'à 50, nombres, et les 4
 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
 répétition espacée en cas d'erreur, et le mode Mélange entrelacé.
+
+Touches natives : **retour tactile** (haptique) sur les bonnes/mauvaises réponses,
+et un écran **« 📊 Mes progrès »** (accessible depuis le menu) qui affiche, à
+partir de la base SQLite, les statistiques par catégorie (vues, % de réussite,
+notions maîtrisées) avec possibilité de tout réinitialiser.
 
 ## Mémoire persistée (SQLite) 🧠
 

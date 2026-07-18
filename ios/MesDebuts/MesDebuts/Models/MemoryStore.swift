@@ -173,6 +173,37 @@ final class MemoryStore {
         return out
     }
 
+    struct CategoryStat {
+        var seen: Int = 0
+        var correct: Int = 0
+        var mastered: Int = 0
+    }
+
+    /// Statistiques agrégées par catégorie (pour l'écran des progrès).
+    func categoryStats() -> [String: CategoryStat] {
+        var out: [String: CategoryStat] = [:]
+        let sql = """
+        SELECT category,
+               COALESCE(SUM(seen), 0),
+               COALESCE(SUM(correct), 0),
+               COALESCE(SUM(CASE WHEN box >= 4 THEN 1 ELSE 0 END), 0)
+        FROM item_memory GROUP BY category;
+        """
+        var s: OpaquePointer?
+        if sqlite3_prepare_v2(db, sql, -1, &s, nil) == SQLITE_OK {
+            while sqlite3_step(s) == SQLITE_ROW {
+                if let cstr = sqlite3_column_text(s, 0) {
+                    let cat = String(cString: cstr)
+                    out[cat] = CategoryStat(seen: Int(sqlite3_column_int(s, 1)),
+                                            correct: Int(sqlite3_column_int(s, 2)),
+                                            mastered: Int(sqlite3_column_int(s, 3)))
+                }
+            }
+        }
+        sqlite3_finalize(s)
+        return out
+    }
+
     struct KeyState {
         var box: Int
         var due: Double

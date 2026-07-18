@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MenuView: View {
     let onSelect: (String) -> Void
+    var onProgress: () -> Void
 
     @State private var summary = MemoryStore.Summary()
 
@@ -35,6 +36,20 @@ struct MenuView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            }
+            if summary.answered > 0 {
+                Button(action: onProgress) {
+                    Text("📊 Mes progrès")
+                        .font(.callout.weight(.bold))
+                        .padding(.horizontal, 24)
+                        .frame(minHeight: 48)
+                        .foregroundColor(Color(hex: "#6a5fc9"))
+                        .background(Color(hex: "#f4f2ff"))
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color(hex: "#e2ddff"), lineWidth: 2))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
             }
         }
         .onAppear { summary = MemoryStore.shared.summary() }
