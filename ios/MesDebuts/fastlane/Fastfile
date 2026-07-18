@@ -1,0 +1,34 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Construit l'app et l'envoie sur TestFlight"
+  lane :beta do
+    # Authentification via une clé API App Store Connect (fournie par les secrets CI).
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true
+    )
+
+    # Signature automatique « cloud » : Xcode crée/récupère les profils via la clé API.
+    build_app(
+      project: "MesDebuts.xcodeproj",
+      scheme: "MesDebuts",
+      configuration: "Release",
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates " \
+              "DEVELOPMENT_TEAM=#{ENV['APPLE_TEAM_ID']} " \
+              "CURRENT_PROJECT_VERSION=#{ENV['BUILD_NUMBER']}",
+      export_options: {
+        provisioningStyle: "Automatic",
+        teamID: ENV["APPLE_TEAM_ID"]
+      }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
