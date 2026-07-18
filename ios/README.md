@@ -67,6 +67,12 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
 - Chaque quiz terminé est aussi historisé (`sessions`).
 - Le menu et l'écran de fin affichent la progression : notions maîtrisées
   (boîte ≥ 4) et notions à réviser aujourd'hui.
+- **Sélection guidée par la mémoire** : pour les catégories à ensemble fini
+  (jours, mois, saisons, alphabet, couleurs, formes, chiffres, jusqu'à 50,
+  nombres), le quiz fait revenir **en priorité les notions dont la date de
+  révision est dépassée**, puis les notions jamais vues, enfin le reste. Le
+  calcul (addition, soustraction, multiplication, division) reste aléatoire
+  car son espace de questions est infini.
 
 ## Réglages du projet
 

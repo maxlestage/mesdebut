@@ -460,8 +460,18 @@ enum QuestionEngine {
         return qs
     }
 
+    // Catégories à ensemble de questions fini : on peut y prioriser les révisions
+    // dues. Le calcul (addition, etc.) a un espace infini, on le laisse aléatoire.
+    static let memoryBiased: Set<String> = ["jours", "mois", "saisons", "alphabet",
+        "couleurs", "formes", "chiffres", "cinquante", "nombres"]
+
     static func buildQuestions(category: String, level: Int) -> [Question] {
         if category == "melange" { return buildInterleaved() }
+        if memoryBiased.contains(category) { return buildWithMemory(category, level) }
+        return buildRandom(category, level)
+    }
+
+    private static func buildRandom(_ category: String, _ level: Int) -> [Question] {
         var qs: [Question] = []
         var seen = Set<String>()
         var guardCount = 0
@@ -473,6 +483,36 @@ enum QuestionEngine {
             qs.append(q)
         }
         return qs
+    }
+
+    // Sélection guidée par la mémoire : on construit un pool de questions à clés
+    // distinctes, puis on fait passer en premier les notions à réviser (date dépassée),
+    // ensuite les notions jamais vues, enfin le reste. Aléatoire à l'intérieur de
+    // chaque groupe pour varier.
+    private static func buildWithMemory(_ category: String, _ level: Int) -> [Question] {
+        let states = MemoryStore.shared.keyStates(category: category)
+        let now = Date().timeIntervalSince1970
+
+        var pool: [Question] = []
+        var seen = Set<String>()
+        var guardCount = 0
+        while pool.count < 60 && guardCount < 800 {
+            guardCount += 1
+            let q = makeQuestion(category, level)
+            if seen.contains(q.dedupKey) { continue }
+            seen.insert(q.dedupKey)
+            pool.append(q)
+        }
+
+        // 0 = à réviser (dû), 1 = jamais vu, 2 = déjà su
+        func tier(_ q: Question) -> Int {
+            guard let st = states["\(category):\(q.dedupKey)"] else { return 1 }
+            if st.due > 0 && st.due <= now { return 0 }
+            return 2
+        }
+
+        let ordered = pool.shuffled().sorted { tier($0) < tier($1) }
+        return Array(ordered.prefix(nbQuestions))
     }
 
     static func pickPraise() -> String {

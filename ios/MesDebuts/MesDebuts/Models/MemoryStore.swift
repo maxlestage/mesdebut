@@ -173,6 +173,30 @@ final class MemoryStore {
         return out
     }
 
+    struct KeyState {
+        var box: Int
+        var due: Double
+    }
+
+    /// État mémorisé de chaque notion d'une catégorie (clé complète « catégorie:clé »).
+    /// Sert à faire revenir en priorité les notions à réviser.
+    func keyStates(category: String) -> [String: KeyState] {
+        var out: [String: KeyState] = [:]
+        var s: OpaquePointer?
+        if sqlite3_prepare_v2(db, "SELECT key, box, due FROM item_memory WHERE category = ?;", -1, &s, nil) == SQLITE_OK {
+            sqlite3_bind_text(s, 1, category, -1, transient)
+            while sqlite3_step(s) == SQLITE_ROW {
+                if let cstr = sqlite3_column_text(s, 0) {
+                    let key = String(cString: cstr)
+                    out[key] = KeyState(box: Int(sqlite3_column_int(s, 1)),
+                                        due: sqlite3_column_double(s, 2))
+                }
+            }
+        }
+        sqlite3_finalize(s)
+        return out
+    }
+
     /// Réinitialise toute la mémoire (utile pour repartir de zéro).
     func reset() {
         exec("DELETE FROM item_memory;")
