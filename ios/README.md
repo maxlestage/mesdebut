@@ -81,6 +81,14 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
   calcul (addition, soustraction, multiplication, division) reste aléatoire
   car son espace de questions est infini.
 
+## Intégration continue (CI)
+
+- **Build automatique** à chaque push/PR touchant `ios/**` (compile l'app sur
+  simulateur, sans signature — aucun secret requis).
+- **Envoi TestFlight** via fastlane (manuel ou tag `ios-v*`).
+
+Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
+
 ## Réglages du projet
 
 - Cible de déploiement : iOS 16.0
