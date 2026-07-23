@@ -1,4 +1,4 @@
-# Mes Débuts — application iOS native (SwiftUI) 🎓
+# Mes Débuts AVC — application iOS native (SwiftUI) 🎓
 
 Version **100 % native** de l'appli, écrite en **Swift / SwiftUI**. Toute la logique
 pédagogique du quiz (génération des questions, répétition espacée, entrelacement,
