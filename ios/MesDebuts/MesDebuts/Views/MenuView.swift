@@ -10,7 +10,7 @@ struct MenuView: View {
 
     var body: some View {
         Group {
-            ScreenTitle(text: "🎓 Mes Débuts")
+            ScreenTitle(text: "🎓 Mes Débuts AVC")
             ScreenSubtitle(text: "Choisis ce que tu veux apprendre !")
             if summary.answered > 0 {
                 Text(memoryLine)

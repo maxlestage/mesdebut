@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
-        name: 'Mes Débuts — Apprendre en s\'amusant',
-        short_name: 'Mes Débuts',
+        name: 'Mes Débuts AVC — Apprendre en s\'amusant',
+        short_name: 'Mes Débuts AVC',
         description: 'Quiz pour apprendre les jours, les mois, et le calcul : addition, soustraction, multiplication et division.',
         lang: 'fr',
         start_url: '/',
