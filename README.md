@@ -1,4 +1,4 @@
-# Mes Débuts 🎓
+# Mes Débuts AVC 🎓
 
 Une petite application de quiz **React** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
 
