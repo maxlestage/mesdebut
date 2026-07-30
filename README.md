@@ -90,3 +90,7 @@ server.js               # serveur Express de production (Heroku)
 Procfile                # commande de démarrage Heroku
 app.json                # métadonnées pour le bouton « Deploy to Heroku »
 ```
+
+## Crédits
+
+Application réalisée par **Maxime Nathan Lestage**.

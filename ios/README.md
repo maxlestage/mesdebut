@@ -95,3 +95,7 @@ Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 - Orientation : portrait
 - iPhone et iPad
 - Icône générée (🎓 sur dégradé violet), couleur d'accent `#667eea`
+
+## Crédits
+
+Application réalisée par **Maxime Nathan Lestage**.
