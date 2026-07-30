@@ -13,6 +13,7 @@ export default function Menu({ onSelect }) {
           </button>
         ))}
       </div>
+      <p className="credits">par Maxime Nathan Lestage</p>
     </>
   )
 }

@@ -51,6 +51,10 @@ struct MenuView: View {
                 .buttonStyle(.plain)
                 .padding(.top, 4)
             }
+            Text("par Maxime Nathan Lestage")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .padding(.top, 6)
         }
         .onAppear { summary = MemoryStore.shared.summary() }
     }
