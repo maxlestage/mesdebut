@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MesDebutsApp: App {
+struct MesDebutsAVCApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
