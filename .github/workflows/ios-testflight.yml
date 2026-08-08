@@ -31,8 +31,8 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-          working-directory: ios/MesDebuts
+          working-directory: ios/MesDebutsAVC
 
       - name: Build & envoi sur TestFlight
-        working-directory: ios/MesDebuts
+        working-directory: ios/MesDebutsAVC
         run: bundle exec fastlane beta
