@@ -11,7 +11,7 @@ Il faut un **Mac avec Xcode 16 ou plus récent** (le projet utilise les groupes 
 fichiers synchronisés, disponibles à partir de Xcode 16).
 
 ```bash
-open ios/MesDebuts/MesDebuts.xcodeproj
+open ios/MesDebutsAVC/MesDebutsAVC.xcodeproj
 ```
 
 1. Sélectionne un simulateur iPhone (ou ton iPhone branché) dans la barre en haut.
@@ -20,13 +20,13 @@ open ios/MesDebuts/MesDebuts.xcodeproj
 Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 **compte Apple Developer** (99 €/an) et régler la signature dans
 *Signing & Capabilities* (choisir ton équipe ; le bundle id par défaut est
-`com.mesdebuts.MesDebuts`, à personnaliser).
+`com.mesdebutsavc.MesDebutsAVC`, à personnaliser).
 
 ## Structure
 
 ```
-MesDebuts/
-  MesDebutsApp.swift          # point d'entrée @main
+MesDebutsAVC/
+  MesDebutsAVCApp.swift          # point d'entrée @main
   Models/
     Models.swift              # types (Question, catégories, révision) + utilitaires (Color hex, cap)
     QuestionEngine.swift      # port de questions.js : données + génération des questions

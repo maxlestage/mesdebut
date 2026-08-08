@@ -26,12 +26,12 @@ jobs:
           xcode-version: latest-stable
 
       - name: Compiler (simulateur, sans signature)
-        working-directory: ios/MesDebuts
+        working-directory: ios/MesDebutsAVC
         run: |
           set -o pipefail
           xcodebuild \
-            -project MesDebuts.xcodeproj \
-            -scheme MesDebuts \
+            -project MesDebutsAVC.xcodeproj \
+            -scheme MesDebutsAVC \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \

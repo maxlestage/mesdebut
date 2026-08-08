@@ -13,7 +13,7 @@ compilation. Le second nécessite les réglages ci-dessous.
 ## Préalables côté Apple (une seule fois)
 
 1. **Compte Apple Developer** actif (99 €/an).
-2. Dans **App Store Connect**, créer l'app avec le bundle id `com.mesdebuts.MesDebuts`
+2. Dans **App Store Connect**, créer l'app avec le bundle id `com.mesdebutsavc.MesDebutsAVC`
    (ou change-le partout : `project.pbxproj`, `fastlane/Appfile`).
 3. Créer une **clé API App Store Connect** (Utilisateurs et accès → Intégrations →
    Clés App Store Connect), rôle **App Manager**. Télécharger le fichier `.p8`
