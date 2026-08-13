@@ -1,5 +1,5 @@
 {
-  "name": "Mes Débuts AVC",
+  "name": "Mes débuts AVC",
   "description": "Quiz pour apprendre les jours, les mois et le calcul — PWA React mobile first",
   "keywords": ["react", "pwa", "quiz", "éducation", "enfants"],
   "buildpacks": [{ "url": "heroku/nodejs" }],
