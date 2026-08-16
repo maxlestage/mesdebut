@@ -33,6 +33,13 @@ jobs:
           bundler-cache: true
           working-directory: ios/MesDebutsAVC
 
+      - name: Installer XcodeGen
+        run: brew install xcodegen
+
+      - name: Générer le projet Xcode
+        working-directory: ios/MesDebutsAVC
+        run: xcodegen generate
+
       - name: Build & envoi sur TestFlight
         working-directory: ios/MesDebutsAVC
         run: bundle exec fastlane beta

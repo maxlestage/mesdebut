@@ -25,6 +25,13 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Installer XcodeGen
+        run: brew install xcodegen
+
+      - name: Générer le projet Xcode
+        working-directory: ios/MesDebutsAVC
+        run: xcodegen generate
+
       - name: Compiler (simulateur, sans signature)
         working-directory: ios/MesDebutsAVC
         run: |
