@@ -10,11 +10,14 @@ Deux workflows GitHub Actions (dans `.github/workflows/`) :
 Le premier ne demande aucune configuration : il sert à détecter tôt les erreurs de
 compilation. Le second nécessite les réglages ci-dessous.
 
+Les deux commencent par installer **XcodeGen** et lancer `xcodegen generate` :
+le projet Xcode n'est pas versionné, il est reconstruit à partir de `project.yml`.
+
 ## Préalables côté Apple (une seule fois)
 
 1. **Compte Apple Developer** actif (99 €/an).
 2. Dans **App Store Connect**, créer l'app avec le bundle id `com.mesdebutsavc.MesDebutsAVC`
-   (ou change-le partout : `project.pbxproj`, `fastlane/Appfile`).
+   (ou change-le partout : `project.yml`, `fastlane/Appfile`).
 3. Créer une **clé API App Store Connect** (Utilisateurs et accès → Intégrations →
    Clés App Store Connect), rôle **App Manager**. Télécharger le fichier `.p8`
    (téléchargeable une seule fois) et noter le **Key ID** et l'**Issuer ID**.

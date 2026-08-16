@@ -7,15 +7,25 @@ native (billes, formes, accordéon, animations SwiftUI).
 
 ## Ouvrir et lancer
 
-Il faut un **Mac avec Xcode 16 ou plus récent** (le projet utilise les groupes de
-fichiers synchronisés, disponibles à partir de Xcode 16).
+Le projet Xcode est **généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen)**
+à partir de [`project.yml`](MesDebutsAVC/project.yml) : il n'est pas versionné.
+Il faut donc le générer une première fois (et après chaque modification de
+`project.yml`) :
 
 ```bash
-open ios/MesDebutsAVC/MesDebutsAVC.xcodeproj
+brew install xcodegen                 # une seule fois
+cd ios/MesDebutsAVC && xcodegen generate
+open MesDebutsAVC.xcodeproj
 ```
 
 1. Sélectionne un simulateur iPhone (ou ton iPhone branché) dans la barre en haut.
 2. Appuie sur ▶︎ (Cmd-R) pour compiler et lancer.
+
+**Ajouter un fichier source** ne demande aucune manipulation : il suffit de le
+placer dans `MesDebutsAVC/` et de relancer `xcodegen generate`. Les réglages du
+projet (bundle id, nom affiché, orientation, options de build) se modifient dans
+`project.yml`, jamais dans Xcode — sinon les changements seraient perdus à la
+prochaine génération.
 
 Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 **compte Apple Developer** (99 €/an) et régler la signature dans
@@ -25,8 +35,9 @@ Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 ## Structure
 
 ```
+project.yml                   # spec XcodeGen (source de vérité du projet)
 MesDebutsAVC/
-  MesDebutsAVCApp.swift          # point d'entrée @main
+  MesDebutsAVCApp.swift       # point d'entrée @main
   Models/
     Models.swift              # types (Question, catégories, révision) + utilitaires (Color hex, cap)
     QuestionEngine.swift      # port de questions.js : données + génération des questions
@@ -90,6 +101,8 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
 Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 
 ## Réglages du projet
+
+Tous définis dans `project.yml` :
 
 - Cible de déploiement : iOS 16.0
 - Orientation : portrait
