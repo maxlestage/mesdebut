@@ -5,19 +5,16 @@ Deux workflows GitHub Actions (dans `.github/workflows/`) :
 | Workflow | Rôle | Déclenchement | Secrets |
 |---|---|---|---|
 | `ios-build.yml` | **Compile** l'app sur simulateur (sans signature) | push/PR touchant `ios/**` | aucun |
-| `ios-testflight.yml` | **Build signé + envoi sur TestFlight** (fastlane) | manuel, ou tag `ios-v*` | oui (voir plus bas) |
+| `ios-testflight.yml` | **Build signé + envoi sur TestFlight** (xcodebuild + altool) | manuel, ou tag `ios-v*` | oui (voir plus bas) |
 
 Le premier ne demande aucune configuration : il sert à détecter tôt les erreurs de
 compilation. Le second nécessite les réglages ci-dessous.
-
-Les deux commencent par installer **XcodeGen** et lancer `xcodegen generate` :
-le projet Xcode n'est pas versionné, il est reconstruit à partir de `project.yml`.
 
 ## Préalables côté Apple (une seule fois)
 
 1. **Compte Apple Developer** actif (99 €/an).
 2. Dans **App Store Connect**, créer l'app avec le bundle id `com.mesdebutsavc.MesDebutsAVC`
-   (ou change-le partout : `project.yml`, `fastlane/Appfile`).
+   (ou change-le dans le projet Xcode : réglage `PRODUCT_BUNDLE_IDENTIFIER`).
 3. Créer une **clé API App Store Connect** (Utilisateurs et accès → Intégrations →
    Clés App Store Connect), rôle **App Manager**. Télécharger le fichier `.p8`
    (téléchargeable une seule fois) et noter le **Key ID** et l'**Issuer ID**.
@@ -55,8 +52,10 @@ marketing (`MARKETING_VERSION`, ex. 1.0) se change dans le projet Xcode.
 
 ## Notes
 
+- Aucune dépendance externe : le workflow utilise seulement les outils Xcode
+  (`xcodebuild archive`, `xcodebuild -exportArchive`, puis `xcrun altool --upload-app`).
 - La signature utilise la **signature automatique « cloud »** (`-allowProvisioningUpdates`
   + clé API) : pas besoin de gérer manuellement certificats et profils.
-- `skip_waiting_for_build_processing: true` : le workflow n'attend pas la fin du
-  traitement Apple. Le build apparaît dans TestFlight quelques minutes plus tard ;
-  pense à remplir les informations de conformité export si demandé.
+- Le workflow n'attend pas la fin du traitement Apple. Le build apparaît dans
+  TestFlight quelques minutes plus tard ; pense à remplir les informations de
+  conformité export si demandé.

@@ -1,6 +1,7 @@
 name: iOS TestFlight
 
-# Build signé + envoi sur TestFlight via fastlane.
+# Build signé + envoi sur TestFlight, avec les outils Xcode uniquement
+# (xcodebuild + xcrun altool, sans fastlane).
 # Déclenché manuellement, ou en poussant un tag « ios-v* » (ex. ios-v1.0.0).
 # Nécessite les secrets décrits dans ios/CI.md.
 on:
@@ -26,20 +27,60 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Installer fastlane
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: ios/MesDebutsAVC
+      - name: Installer la clé API App Store Connect
+        run: |
+          mkdir -p "$HOME/private_keys"
+          # altool et xcodebuild cherchent la clé sous ce nom exact
+          echo "$ASC_KEY_CONTENT" | base64 --decode > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
 
-      - name: Installer XcodeGen
-        run: brew install xcodegen
-
-      - name: Générer le projet Xcode
+      - name: Archiver
         working-directory: ios/MesDebutsAVC
-        run: xcodegen generate
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project MesDebutsAVC.xcodeproj \
+            -scheme MesDebutsAVC \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/MesDebutsAVC.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            archive
 
-      - name: Build & envoi sur TestFlight
+      - name: Exporter l'IPA
         working-directory: ios/MesDebutsAVC
-        run: bundle exec fastlane beta
+        run: |
+          set -o pipefail
+          cat > ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>destination</key><string>export</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath build/MesDebutsAVC.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/ipa \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+
+      - name: Envoyer sur TestFlight
+        working-directory: ios/MesDebutsAVC
+        run: |
+          set -o pipefail
+          IPA=$(ls build/ipa/*.ipa | head -1)
+          echo "Envoi de $IPA"
+          xcrun altool --upload-app -f "$IPA" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
