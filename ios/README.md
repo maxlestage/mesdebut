@@ -7,25 +7,18 @@ native (billes, formes, accordéon, animations SwiftUI).
 
 ## Ouvrir et lancer
 
-Le projet Xcode est **généré par [XcodeGen](https://github.com/yonaskolb/XcodeGen)**
-à partir de [`project.yml`](MesDebutsAVC/project.yml) : il n'est pas versionné.
-Il faut donc le générer une première fois (et après chaque modification de
-`project.yml`) :
+Il faut un **Mac avec Xcode 16 ou plus récent** (le projet utilise les groupes de
+fichiers synchronisés, disponibles à partir de Xcode 16).
 
 ```bash
-brew install xcodegen                 # une seule fois
-cd ios/MesDebutsAVC && xcodegen generate
-open MesDebutsAVC.xcodeproj
+open ios/MesDebutsAVC/MesDebutsAVC.xcodeproj
 ```
 
 1. Sélectionne un simulateur iPhone (ou ton iPhone branché) dans la barre en haut.
 2. Appuie sur ▶︎ (Cmd-R) pour compiler et lancer.
 
-**Ajouter un fichier source** ne demande aucune manipulation : il suffit de le
-placer dans `MesDebutsAVC/` et de relancer `xcodegen generate`. Les réglages du
-projet (bundle id, nom affiché, orientation, options de build) se modifient dans
-`project.yml`, jamais dans Xcode — sinon les changements seraient perdus à la
-prochaine génération.
+Le dossier `MesDebutsAVC/` est un **groupe synchronisé** : un fichier Swift ajouté
+dedans est repris automatiquement par le projet, sans manipulation.
 
 Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 **compte Apple Developer** (99 €/an) et régler la signature dans
@@ -35,7 +28,7 @@ Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 ## Structure
 
 ```
-project.yml                   # spec XcodeGen (source de vérité du projet)
+MesDebutsAVC.xcodeproj        # projet Xcode (versionné)
 MesDebutsAVC/
   MesDebutsAVCApp.swift       # point d'entrée @main
   Models/
@@ -96,13 +89,11 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
 
 - **Build automatique** à chaque push/PR touchant `ios/**` (compile l'app sur
   simulateur, sans signature — aucun secret requis).
-- **Envoi TestFlight** via fastlane (manuel ou tag `ios-v*`).
+- **Envoi TestFlight** avec `xcodebuild` + `xcrun altool` (manuel ou tag `ios-v*`).
 
 Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 
 ## Réglages du projet
-
-Tous définis dans `project.yml` :
 
 - Cible de déploiement : iOS 16.0
 - Orientation : portrait
