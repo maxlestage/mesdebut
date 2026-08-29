@@ -102,4 +102,4 @@ Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 
 ## Crédits
 
-Application réalisée par **Maxime Nathan Lestage**.
+Conçu et développé par **Maxime Nathan Lestage**.
