@@ -93,4 +93,4 @@ app.json                # métadonnées pour le bouton « Deploy to Heroku »
 
 ## Crédits
 
-Application réalisée par **Maxime Nathan Lestage**.
+Conçu et développé par **Maxime Nathan Lestage**.
