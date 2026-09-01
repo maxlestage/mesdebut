@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
-        name: 'Mes débuts AVC — Apprendre en s\'amusant',
-        short_name: 'Mes débuts AVC',
+        name: 'ReNeuro — Apprendre en s\'amusant',
+        short_name: 'ReNeuro',
         description: 'Quiz pour apprendre les jours, les mois, et le calcul : addition, soustraction, multiplication et division.',
         lang: 'fr',
         start_url: '/',
