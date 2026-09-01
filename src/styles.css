@@ -72,6 +72,7 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 .c-chiffres       { background: linear-gradient(135deg, #ffca28, #f57f17); }
 .c-cinquante      { background: linear-gradient(135deg, #ec407a, #ad1457); }
 .c-alphabet       { background: linear-gradient(135deg, #26c6da, #0097a7); }
+.c-heure          { background: linear-gradient(135deg, #ab47bc, #6a1b9a); }
 .c-nombres        { background: linear-gradient(135deg, #5c6bc0, #3949ab); }
 .c-addition       { background: linear-gradient(135deg, #4cd964, #2eb350); }
 .c-soustraction   { background: linear-gradient(135deg, #ff6b6b, #e04545); }
@@ -244,8 +245,10 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
   background: #faf9ff;
   border-radius: 14px;
   min-height: 60px;
-  padding: 12px 6px;
-  font-size: 1.15rem;
+  padding: 12px 8px;
+  font-size: clamp(0.95rem, 4vw, 1.15rem);
+  line-height: 1.25;
+  overflow-wrap: break-word;
   font-weight: 700;
   color: #4a3f8f;
   cursor: pointer;

@@ -13,7 +13,7 @@ compilation. Le second nécessite les réglages ci-dessous.
 ## Préalables côté Apple (une seule fois)
 
 1. **Compte Apple Developer** actif (99 €/an).
-2. Dans **App Store Connect**, créer l'app avec le bundle id `com.mesdebutsavc.MesDebutsAVC`
+2. Dans **App Store Connect**, créer l'app avec le bundle id `com.reneuro.ReNeuro`
    (ou change-le dans le projet Xcode : réglage `PRODUCT_BUNDLE_IDENTIFIER`).
 3. Créer une **clé API App Store Connect** (Utilisateurs et accès → Intégrations →
    Clés App Store Connect), rôle **App Manager**. Télécharger le fichier `.p8`

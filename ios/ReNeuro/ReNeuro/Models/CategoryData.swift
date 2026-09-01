@@ -14,6 +14,9 @@ extension QuestionEngine {
                          hasLearn: true, gradient: [Color(hex: "#8bc34a"), Color(hex: "#5a9216")]),
         LearningCategory(key: "alphabet", emoji: "🔤", label: "L'alphabet", title: "L'alphabet",
                          hasLearn: true, gradient: [Color(hex: "#26c6da"), Color(hex: "#0097a7")]),
+        LearningCategory(key: "heure", emoji: "🕐", label: "L'heure", title: "Lire l'heure",
+                         hasLearn: true, hasLevels: true,
+                         gradient: [Color(hex: "#ab47bc"), Color(hex: "#6a1b9a")]),
         LearningCategory(key: "couleurs", emoji: "🎨", label: "Les couleurs", title: "Les couleurs",
                          hasLearn: true, gradient: [Color(hex: "#ff8a65"), Color(hex: "#d84315")]),
         LearningCategory(key: "formes", emoji: "📐", label: "Les formes", title: "Les formes géométriques",
@@ -57,6 +60,19 @@ extension QuestionEngine {
             ])
         case "alphabet":
             return .grid(title: "📖 Les 26 lettres de l'alphabet", letters: alphabet)
+        case "heure":
+            return .list(title: "📖 Lire l'heure",
+                         intro: "La petite aiguille donne les heures, la grande donne les minutes",
+                         items: [
+                             LearnItem(label: "Trois heures", sub: "la grande aiguille est sur le 12",
+                                       clockHours: 3, clockMinutes: 0),
+                             LearnItem(label: "Trois heures et quart", sub: "la grande aiguille est sur le 3",
+                                       clockHours: 3, clockMinutes: 15),
+                             LearnItem(label: "Trois heures et demie", sub: "la grande aiguille est sur le 6",
+                                       clockHours: 3, clockMinutes: 30),
+                             LearnItem(label: "Quatre heures moins le quart", sub: "la grande aiguille est sur le 9",
+                                       clockHours: 3, clockMinutes: 45),
+                         ])
         case "couleurs":
             return .list(title: "📖 Les 11 couleurs", intro: nil,
                          items: couleurs.map { LearnItem(label: $0.name.capFirst, colorHex: $0.hex) })

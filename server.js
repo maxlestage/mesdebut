@@ -24,4 +24,4 @@ app.use((req, res) => {
 })
 
 const port = process.env.PORT || 3000
-app.listen(port, () => console.log(`Mes débuts AVC en écoute sur le port ${port}`))
+app.listen(port, () => console.log(`ReNeuro en écoute sur le port ${port}`))

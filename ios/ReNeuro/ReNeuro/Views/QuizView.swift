@@ -58,6 +58,9 @@ struct QuizView: View {
                 if let shape = question.shapeName {
                     GeometricShapeView(name: shape, size: 80)
                 }
+                if let ch = question.clockHours {
+                    ClockView(hours: ch, minutes: question.clockMinutes, size: 170)
+                }
                 if let m = question.marbles {
                     MarblesView(count: m, size: m > 10 ? 22 : 28,
                                 perRow: question.marblesPerRow, colorByRow: question.marblesColorByRow)

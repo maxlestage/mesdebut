@@ -26,6 +26,7 @@ export const CATEGORIES = {
   mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", hasLearn: true },
   saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', hasLearn: true },
   alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", hasLearn: true },
+  heure: { emoji: '🕐', label: "L'heure", title: "Lire l'heure", hasLearn: true, hasLevels: true },
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', hasLearn: true },
   formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', hasLearn: true },
   chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', hasLearn: true },
@@ -162,6 +163,16 @@ export const LEARN_DATA = {
       colorByRow: true,
       sub: `${n / 10} dizaine${n > 10 ? 's' : ''}`,
     })),
+  },
+  heure: {
+    title: "📖 Lire l'heure",
+    intro: 'La petite aiguille donne les heures, la grande donne les minutes',
+    items: [
+      { label: 'Trois heures', sub: 'la grande aiguille est sur le 12', clock: { hours: 3, minutes: 0 } },
+      { label: 'Trois heures et quart', sub: 'la grande aiguille est sur le 3', clock: { hours: 3, minutes: 15 } },
+      { label: 'Trois heures et demie', sub: 'la grande aiguille est sur le 6', clock: { hours: 3, minutes: 30 } },
+      { label: 'Quatre heures moins le quart', sub: 'la grande aiguille est sur le 9', clock: { hours: 3, minutes: 45 } },
+    ],
   },
   nombres: {
     title: '📖 Les nombres en lettres',
@@ -542,6 +553,95 @@ function makeNombresQuestion(level) {
   }
 }
 
+
+// ---------- lire l'heure sur une horloge à aiguilles ----------
+// minutes proposées selon le niveau : heures pleines, puis demies, puis quarts
+const HEURE_MINUTES = [[0], [0, 30], [0, 15, 30, 45]]
+
+// « une heure », « trois heures et quart », « quatre heures moins le quart »…
+export function timeToWords(h, m) {
+  const nom = n => (n === 1 ? 'une heure' : `${numberToWords(n)} heures`)
+  if (m === 0) return nom(h)
+  if (m === 15) return `${nom(h)} et quart`
+  if (m === 30) return `${nom(h)} et demie`
+  if (m === 45) return `${nom(h === 12 ? 1 : h + 1)} moins le quart`
+  return `${nom(h)} ${numberToWords(m)}`
+}
+
+// 3 autres horaires du même niveau, formulés en toutes lettres
+function otherTimes(h, m, level, count) {
+  const minutes = HEURE_MINUTES[level - 1]
+  const answer = timeToWords(h, m)
+  const set = new Set()
+  let guard = 0
+  while (set.size < count && guard < 200) {
+    guard++
+    // on privilégie les pièges : même heure minutes différentes, ou heure voisine
+    const hh = rand(0, 2) === 0 ? h : rand(1, 12)
+    const mm = pick(minutes)
+    const t = timeToWords(hh, mm)
+    if (t !== answer) set.add(t)
+  }
+  let extra = 1
+  while (set.size < count) {
+    const t = timeToWords(extra, minutes[0])
+    if (t !== answer) set.add(t)
+    extra++
+  }
+  return [...set]
+}
+
+// questions sur le rôle des aiguilles, indépendantes du niveau
+const HEURE_NOTIONS = [
+  { q: 'Quelle aiguille indique les heures ?', answer: 'La petite',
+    choices: ['La grande', 'Les deux', 'Aucune'] },
+  { q: 'Quelle aiguille indique les minutes ?', answer: 'La grande',
+    choices: ['La petite', 'Les deux', 'Aucune'] },
+  { q: 'Combien y a-t-il de minutes dans une heure ?', answer: '60',
+    choices: ['12', '30', '100'] },
+  { q: "Combien y a-t-il d'heures sur le cadran d'une horloge ?", answer: '12',
+    choices: ['10', '24', '60'] },
+  { q: 'Quand la grande aiguille est sur le 6, il est…', answer: 'et demie',
+    choices: ['et quart', 'moins le quart', 'pile'] },
+  { q: 'Quand la grande aiguille est sur le 3, il est…', answer: 'et quart',
+    choices: ['et demie', 'moins le quart', 'pile'] },
+  { q: 'Quand la grande aiguille est sur le 12, il est…', answer: 'pile',
+    choices: ['et quart', 'et demie', 'moins le quart'] },
+]
+
+function makeHeureQuestion(level) {
+  // lire l'horloge revient le plus souvent ; on ajoute les notions et une projection
+  const type = pick(['lire', 'lire', 'lire', 'notion', 'plus_tard'])
+
+  if (type === 'notion') {
+    const n = pick(HEURE_NOTIONS)
+    return { q: n.q, answer: n.answer, choices: n.choices }
+  }
+
+  const minutes = HEURE_MINUTES[level - 1]
+  const h = rand(1, 12)
+  const m = pick(minutes)
+
+  if (type === 'plus_tard') {
+    const suivante = h === 12 ? 1 : h + 1
+    return {
+      q: "Dans une heure, quelle heure sera-t-il ?",
+      key: `heure+1:${h}:${m}`,
+      clock: { hours: h, minutes: m },
+      answer: timeToWords(suivante, m),
+      choices: otherTimes(suivante, m, level, 3),
+    }
+  }
+
+  return {
+    q: 'Quelle heure est-il ?',
+    key: `heure:${h}:${m}`, // le texte est identique : on déduplique sur l'horaire
+    clock: { hours: h, minutes: m },
+    answer: timeToWords(h, m),
+    choices: otherTimes(h, m, level, 3),
+  }
+}
+
 // ---------- calcul ----------
 // 3 mauvaises réponses proches du résultat, uniques et positives
 function numberDistractors(answer, count) {
@@ -625,13 +725,15 @@ function makeQuestion(category, level) {
   if (category === 'formes') return makeFormesQuestion()
   if (category === 'chiffres') return makeChiffresQuestion()
   if (category === 'cinquante') return makeCinquanteQuestion()
+  if (category === 'heure') return makeHeureQuestion(level)
   if (category === 'nombres') return makeNombresQuestion(level)
   return makeMathQuestion(category, level)
 }
 
 // thèmes puisés par le mode Mélange (toutes les catégories réelles, sauf le mélange lui-même)
 const MELANGE_SOURCES = ['chiffres', 'cinquante', 'nombres', 'addition', 'soustraction',
-  'multiplication', 'division', 'jours', 'mois', 'saisons', 'alphabet', 'couleurs', 'formes']
+  'multiplication', 'division', 'jours', 'mois', 'saisons', 'alphabet', 'couleurs', 'formes',
+  'heure']
 
 // Entrelacement : on parcourt les thèmes en rotation pour que deux questions
 // voisines viennent presque toujours de thèmes différents.
