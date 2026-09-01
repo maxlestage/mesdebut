@@ -36,6 +36,8 @@ struct LearnRow: View {
                 .frame(width: 30, height: 30)
                 .overlay(Circle().stroke(Color(hex: "#cccccc"),
                                          lineWidth: hex.lowercased() == "#ffffff" ? 2 : 0))
+        } else if let ch = item.clockHours {
+            ClockView(hours: ch, minutes: item.clockMinutes, size: 54)
         } else if let shape = item.shapeName {
             GeometricShapeView(name: shape, size: 30)
         } else {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { LEARN_DATA } from '../questions.js'
 import Shape from './Shape.jsx'
 import Marbles from './Marbles.jsx'
+import Clock from './Clock.jsx'
 
 export default function Learn({ category, onQuiz, onBack }) {
   const data = LEARN_DATA[category]
@@ -59,6 +60,8 @@ export default function Learn({ category, onQuiz, onBack }) {
                   className={`color-dot${item.color === '#ffffff' ? ' swatch-light' : ''}`}
                   style={{ background: item.color }}
                 />
+              ) : item.clock ? (
+                <Clock hours={item.clock.hours} minutes={item.clock.minutes} size={54} />
               ) : item.shape ? (
                 <Shape name={item.shape} size={30} />
               ) : (

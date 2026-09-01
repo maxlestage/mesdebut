@@ -97,12 +97,14 @@ enum QuestionEngine {
     private static func makeQ(_ prompt: String, answer: String, choices: [String],
                               key: String? = nil, marbles: Int? = nil, perRow: Int = 5,
                               colorByRow: Bool = false, swatchHex: String? = nil,
-                              shapeName: String? = nil) -> Question {
+                              shapeName: String? = nil,
+                              clockHours: Int? = nil, clockMinutes: Int = 0) -> Question {
         Question(prompt: prompt, answer: answer, choices: choices,
                  options: ([answer] + choices).shuffled(),
                  dedupKey: key ?? prompt,
                  marbles: marbles, marblesPerRow: perRow, marblesColorByRow: colorByRow,
-                 swatchHex: swatchHex, shapeName: shapeName)
+                 swatchHex: swatchHex, shapeName: shapeName,
+                 clockHours: clockHours, clockMinutes: clockMinutes)
     }
 
     // MARK: - Distracteurs
@@ -382,6 +384,85 @@ enum QuestionEngine {
                      choices: nums.map { String($0) })
     }
 
+
+    // MARK: - Lire l'heure sur une horloge à aiguilles
+
+    // minutes proposées selon le niveau : heures pleines, puis demies, puis quarts
+    static let heureMinutes = [[0], [0, 30], [0, 15, 30, 45]]
+
+    /// « une heure », « trois heures et quart », « quatre heures moins le quart »…
+    static func timeToWords(_ h: Int, _ m: Int) -> String {
+        func nom(_ n: Int) -> String { n == 1 ? "une heure" : "\(numberToWords(n)) heures" }
+        if m == 0 { return nom(h) }
+        if m == 15 { return "\(nom(h)) et quart" }
+        if m == 30 { return "\(nom(h)) et demie" }
+        if m == 45 { return "\(nom(h == 12 ? 1 : h + 1)) moins le quart" }
+        return "\(nom(h)) \(numberToWords(m))"
+    }
+
+    /// 3 autres horaires du même niveau, formulés en toutes lettres
+    private static func otherTimes(_ h: Int, _ m: Int, _ level: Int, _ count: Int) -> [String] {
+        let minutes = heureMinutes[level - 1]
+        let answer = timeToWords(h, m)
+        var set = [String]()
+        var guardCount = 0
+        while set.count < count && guardCount < 200 {
+            guardCount += 1
+            // on privilégie les pièges : même heure minutes différentes, ou heure voisine
+            let hh = rand(0, 2) == 0 ? h : rand(1, 12)
+            let mm = minutes.randomElement()!
+            let t = timeToWords(hh, mm)
+            if t != answer && !set.contains(t) { set.append(t) }
+        }
+        var extra = 1
+        while set.count < count {
+            let t = timeToWords(extra, minutes[0])
+            if t != answer && !set.contains(t) { set.append(t) }
+            extra += 1
+        }
+        return set
+    }
+
+    // questions sur le rôle des aiguilles, indépendantes du niveau
+    private static let heureNotions: [(q: String, answer: String, choices: [String])] = [
+        ("Quelle aiguille indique les heures ?", "La petite", ["La grande", "Les deux", "Aucune"]),
+        ("Quelle aiguille indique les minutes ?", "La grande", ["La petite", "Les deux", "Aucune"]),
+        ("Combien y a-t-il de minutes dans une heure ?", "60", ["12", "30", "100"]),
+        ("Combien y a-t-il d'heures sur le cadran d'une horloge ?", "12", ["10", "24", "60"]),
+        ("Quand la grande aiguille est sur le 6, il est…", "et demie", ["et quart", "moins le quart", "pile"]),
+        ("Quand la grande aiguille est sur le 3, il est…", "et quart", ["et demie", "moins le quart", "pile"]),
+        ("Quand la grande aiguille est sur le 12, il est…", "pile", ["et quart", "et demie", "moins le quart"]),
+    ]
+
+    private static func makeHeure(_ level: Int) -> Question {
+        // lire l'horloge revient le plus souvent ; on ajoute les notions et une projection
+        let type = ["lire", "lire", "lire", "notion", "plus_tard"].randomElement()!
+
+        if type == "notion" {
+            let n = heureNotions.randomElement()!
+            return makeQ(n.q, answer: n.answer, choices: n.choices)
+        }
+
+        let minutes = heureMinutes[level - 1]
+        let h = rand(1, 12)
+        let m = minutes.randomElement()!
+
+        if type == "plus_tard" {
+            let suivante = h == 12 ? 1 : h + 1
+            return makeQ("Dans une heure, quelle heure sera-t-il ?",
+                         answer: timeToWords(suivante, m),
+                         choices: otherTimes(suivante, m, level, 3),
+                         key: "heure+1:\(h):\(m)",
+                         clockHours: h, clockMinutes: m)
+        }
+
+        return makeQ("Quelle heure est-il ?",
+                     answer: timeToWords(h, m),
+                     choices: otherTimes(h, m, level, 3),
+                     key: "heure:\(h):\(m)", // le texte est identique : on déduplique sur l'horaire
+                     clockHours: h, clockMinutes: m)
+    }
+
     // MARK: - Calcul
 
     private static func makeMath(_ op: String, _ level: Int) -> Question {
@@ -429,6 +510,7 @@ enum QuestionEngine {
         case "formes": return makeFormes()
         case "chiffres": return makeChiffres()
         case "cinquante": return makeCinquante()
+        case "heure": return makeHeure(level)
         case "nombres": return makeNombres(level)
         default: return makeMath(category, level)
         }
@@ -438,7 +520,7 @@ enum QuestionEngine {
 
     static let melangeSources = ["chiffres", "cinquante", "nombres", "addition", "soustraction",
                                  "multiplication", "division", "jours", "mois", "saisons",
-                                 "alphabet", "couleurs", "formes"]
+                                 "alphabet", "couleurs", "formes", "heure"]
 
     private static func buildInterleaved() -> [Question] {
         let sources = melangeSources.shuffled()
@@ -463,7 +545,7 @@ enum QuestionEngine {
     // Catégories à ensemble de questions fini : on peut y prioriser les révisions
     // dues. Le calcul (addition, etc.) a un espace infini, on le laisse aléatoire.
     static let memoryBiased: Set<String> = ["jours", "mois", "saisons", "alphabet",
-        "couleurs", "formes", "chiffres", "cinquante", "nombres"]
+        "couleurs", "formes", "chiffres", "cinquante", "nombres", "heure"]
 
     static func buildQuestions(category: String, level: Int) -> [Question] {
         if category == "melange" { return buildInterleaved() }

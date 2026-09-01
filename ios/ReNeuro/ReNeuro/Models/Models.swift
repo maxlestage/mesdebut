@@ -38,6 +38,8 @@ struct Question: Identifiable {
     var marblesColorByRow: Bool = false
     var swatchHex: String? = nil
     var shapeName: String? = nil
+    var clockHours: Int? = nil
+    var clockMinutes: Int = 0
     var category: String? = nil
 }
 
@@ -76,6 +78,8 @@ struct LearnItem: Identifiable {
     var marbles: Int? = nil
     var perRow: Int = 5
     var colorByRow: Bool = false
+    var clockHours: Int? = nil
+    var clockMinutes: Int = 0
 }
 
 struct LearnGroup: Identifiable {

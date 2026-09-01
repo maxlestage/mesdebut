@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MesDebutsAVCApp: App {
+struct ReNeuroApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
