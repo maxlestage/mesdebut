@@ -388,15 +388,22 @@ enum QuestionEngine {
     // MARK: - Lire l'heure sur une horloge à aiguilles
 
     // minutes proposées selon le niveau : heures pleines, puis demies, puis quarts
-    static let heureMinutes = [[0], [0, 30], [0, 15, 30, 45]]
+    static let heureMinutes = [
+        [0],                                              // 🌱 heures pleines
+        [0, 15, 30, 45],                                  // 🌿 quarts et demies
+        [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55],   // 🌳 toutes les 5 minutes
+    ]
 
     /// « une heure », « trois heures et quart », « quatre heures moins le quart »…
     static func timeToWords(_ h: Int, _ m: Int) -> String {
         func nom(_ n: Int) -> String { n == 1 ? "une heure" : "\(numberToWords(n)) heures" }
+        let suivante = h == 12 ? 1 : h + 1
         if m == 0 { return nom(h) }
         if m == 15 { return "\(nom(h)) et quart" }
         if m == 30 { return "\(nom(h)) et demie" }
-        if m == 45 { return "\(nom(h == 12 ? 1 : h + 1)) moins le quart" }
+        if m == 45 { return "\(nom(suivante)) moins le quart" }
+        // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt »
+        if m > 30 { return "\(nom(suivante)) moins \(numberToWords(60 - m))" }
         return "\(nom(h)) \(numberToWords(m))"
     }
 
@@ -432,6 +439,10 @@ enum QuestionEngine {
         ("Quand la grande aiguille est sur le 6, il est…", "et demie", ["et quart", "moins le quart", "pile"]),
         ("Quand la grande aiguille est sur le 3, il est…", "et quart", ["et demie", "moins le quart", "pile"]),
         ("Quand la grande aiguille est sur le 12, il est…", "pile", ["et quart", "et demie", "moins le quart"]),
+        ("Combien de minutes séparent deux chiffres du cadran ?", "5", ["1", "10", "12"]),
+        ("Sur quel chiffre est la grande aiguille à « et quart » ?", "3", ["6", "9", "12"]),
+        ("Sur quel chiffre est la grande aiguille à « et demie » ?", "6", ["3", "9", "12"]),
+        ("Sur quel chiffre est la grande aiguille à « moins le quart » ?", "9", ["3", "6", "12"]),
     ]
 
     private static func makeHeure(_ level: Int) -> Question {

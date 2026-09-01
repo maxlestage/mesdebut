@@ -43,6 +43,14 @@ extension QuestionEngine {
 
     // MARK: - Contenu des révisions
 
+    /// Item de révision pour une horloge : le libellé et le repère de la grande
+    /// aiguille sont déduits de l'horaire, donc toujours cohérents entre eux.
+    static func clockLearnItem(_ h: Int, _ m: Int) -> LearnItem {
+        LearnItem(label: timeToWords(h, m).capFirst,
+                  sub: "la grande aiguille est sur le \(m == 0 ? 12 : m / 5)",
+                  clockHours: h, clockMinutes: m)
+    }
+
     static func learnContent(_ key: String) -> LearnContent {
         switch key {
         case "jours":
@@ -61,18 +69,14 @@ extension QuestionEngine {
         case "alphabet":
             return .grid(title: "📖 Les 26 lettres de l'alphabet", letters: alphabet)
         case "heure":
+            // des heures variées, du plus simple au plus fin
+            let horaires = [(1, 0), (6, 0), (10, 0),
+                            (2, 15), (5, 30), (8, 45),
+                            (4, 5), (9, 20), (11, 40), (12, 50)]
             return .list(title: "📖 Lire l'heure",
-                         intro: "La petite aiguille donne les heures, la grande donne les minutes",
-                         items: [
-                             LearnItem(label: "Trois heures", sub: "la grande aiguille est sur le 12",
-                                       clockHours: 3, clockMinutes: 0),
-                             LearnItem(label: "Trois heures et quart", sub: "la grande aiguille est sur le 3",
-                                       clockHours: 3, clockMinutes: 15),
-                             LearnItem(label: "Trois heures et demie", sub: "la grande aiguille est sur le 6",
-                                       clockHours: 3, clockMinutes: 30),
-                             LearnItem(label: "Quatre heures moins le quart", sub: "la grande aiguille est sur le 9",
-                                       clockHours: 3, clockMinutes: 45),
-                         ])
+                         intro: "La petite aiguille donne les heures, la grande donne les minutes. "
+                              + "Entre deux chiffres du cadran, il y a 5 minutes.",
+                         items: horaires.map { clockLearnItem($0.0, $0.1) })
         case "couleurs":
             return .list(title: "📖 Les 11 couleurs", intro: nil,
                          items: couleurs.map { LearnItem(label: $0.name.capFirst, colorHex: $0.hex) })

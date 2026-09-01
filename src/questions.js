@@ -121,6 +121,16 @@ const OBJETS_FORME = [
   { objet: 'des alvéoles des abeilles', forme: 'hexagone' },
 ]
 
+// item de révision pour une horloge : le libellé et le repère de la grande
+// aiguille sont déduits de l'horaire, donc toujours cohérents entre eux
+function clockLearnItem(h, m) {
+  return {
+    label: cap(timeToWords(h, m)),
+    sub: `la grande aiguille est sur le ${m === 0 ? 12 : m / 5}`,
+    clock: { hours: h, minutes: m },
+  }
+}
+
 // items { num, label } pour tous les nombres de a à b (cap et numberToWords sont hissés)
 function numberRangeItems(a, b) {
   return Array.from({ length: b - a + 1 }, (_, i) => a + i)
@@ -166,13 +176,14 @@ export const LEARN_DATA = {
   },
   heure: {
     title: "📖 Lire l'heure",
-    intro: 'La petite aiguille donne les heures, la grande donne les minutes',
+    intro: 'La petite aiguille donne les heures, la grande donne les minutes. '
+      + 'Entre deux chiffres du cadran, il y a 5 minutes.',
+    // des heures variées, du plus simple au plus fin
     items: [
-      { label: 'Trois heures', sub: 'la grande aiguille est sur le 12', clock: { hours: 3, minutes: 0 } },
-      { label: 'Trois heures et quart', sub: 'la grande aiguille est sur le 3', clock: { hours: 3, minutes: 15 } },
-      { label: 'Trois heures et demie', sub: 'la grande aiguille est sur le 6', clock: { hours: 3, minutes: 30 } },
-      { label: 'Quatre heures moins le quart', sub: 'la grande aiguille est sur le 9', clock: { hours: 3, minutes: 45 } },
-    ],
+      [1, 0], [6, 0], [10, 0],
+      [2, 15], [5, 30], [8, 45],
+      [4, 5], [9, 20], [11, 40], [12, 50],
+    ].map(([h, m]) => clockLearnItem(h, m)),
   },
   nombres: {
     title: '📖 Les nombres en lettres',
@@ -556,15 +567,22 @@ function makeNombresQuestion(level) {
 
 // ---------- lire l'heure sur une horloge à aiguilles ----------
 // minutes proposées selon le niveau : heures pleines, puis demies, puis quarts
-const HEURE_MINUTES = [[0], [0, 30], [0, 15, 30, 45]]
+const HEURE_MINUTES = [
+  [0],                                          // 🌱 heures pleines
+  [0, 15, 30, 45],                              // 🌿 quarts et demies
+  [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], // 🌳 toutes les 5 minutes
+]
 
 // « une heure », « trois heures et quart », « quatre heures moins le quart »…
 export function timeToWords(h, m) {
   const nom = n => (n === 1 ? 'une heure' : `${numberToWords(n)} heures`)
+  const suivante = h === 12 ? 1 : h + 1
   if (m === 0) return nom(h)
   if (m === 15) return `${nom(h)} et quart`
   if (m === 30) return `${nom(h)} et demie`
-  if (m === 45) return `${nom(h === 12 ? 1 : h + 1)} moins le quart`
+  if (m === 45) return `${nom(suivante)} moins le quart`
+  // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt »
+  if (m > 30) return `${nom(suivante)} moins ${numberToWords(60 - m)}`
   return `${nom(h)} ${numberToWords(m)}`
 }
 
@@ -607,6 +625,14 @@ const HEURE_NOTIONS = [
     choices: ['et demie', 'moins le quart', 'pile'] },
   { q: 'Quand la grande aiguille est sur le 12, il est…', answer: 'pile',
     choices: ['et quart', 'et demie', 'moins le quart'] },
+  { q: 'Combien de minutes séparent deux chiffres du cadran ?', answer: '5',
+    choices: ['1', '10', '12'] },
+  { q: "Sur quel chiffre est la grande aiguille à « et quart » ?", answer: '3',
+    choices: ['6', '9', '12'] },
+  { q: "Sur quel chiffre est la grande aiguille à « et demie » ?", answer: '6',
+    choices: ['3', '9', '12'] },
+  { q: "Sur quel chiffre est la grande aiguille à « moins le quart » ?", answer: '9',
+    choices: ['3', '6', '12'] },
 ]
 
 function makeHeureQuestion(level) {
