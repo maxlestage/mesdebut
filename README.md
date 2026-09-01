@@ -1,4 +1,4 @@
-# Mes débuts AVC 🎓
+# ReNeuro 🎓
 
 Une petite application de quiz **React** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
 
@@ -42,6 +42,7 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 - 🗓️ **Les mois de l'année** — révision de la liste, puis quiz
 - 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
 - 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
+- 🕐 **Lire l'heure** — horloges à aiguilles dessinées en SVG : révision (heure pile, et quart, et demie, moins le quart), lecture de l'horloge, rôle des aiguilles et projection « dans une heure », avec 3 niveaux
 - 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
 - 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
 - 🧮 **Les chiffres de 0 à 9** — révision avec le chiffre, son écriture et ses billes ; quiz de comptage de billes, d'écriture du chiffre dans les deux sens (7 ↔ sept) et de chiffre d'avant/d'après

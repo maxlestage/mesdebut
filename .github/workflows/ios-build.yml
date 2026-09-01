@@ -26,12 +26,12 @@ jobs:
           xcode-version: latest-stable
 
       - name: Compiler (simulateur, sans signature)
-        working-directory: ios/MesDebutsAVC
+        working-directory: ios/ReNeuro
         run: |
           set -o pipefail
           xcodebuild \
-            -project MesDebutsAVC.xcodeproj \
-            -scheme MesDebutsAVC \
+            -project ReNeuro.xcodeproj \
+            -scheme ReNeuro \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \

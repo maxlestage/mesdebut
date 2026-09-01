@@ -1,4 +1,4 @@
-# Mes débuts AVC — application iOS native (SwiftUI) 🎓
+# ReNeuro — application iOS native (SwiftUI) 🎓
 
 Version **100 % native** de l'appli, écrite en **Swift / SwiftUI**. Toute la logique
 pédagogique du quiz (génération des questions, répétition espacée, entrelacement,
@@ -11,26 +11,26 @@ Il faut un **Mac avec Xcode 16 ou plus récent** (le projet utilise les groupes 
 fichiers synchronisés, disponibles à partir de Xcode 16).
 
 ```bash
-open ios/MesDebutsAVC/MesDebutsAVC.xcodeproj
+open ios/ReNeuro/ReNeuro.xcodeproj
 ```
 
 1. Sélectionne un simulateur iPhone (ou ton iPhone branché) dans la barre en haut.
 2. Appuie sur ▶︎ (Cmd-R) pour compiler et lancer.
 
-Le dossier `MesDebutsAVC/` est un **groupe synchronisé** : un fichier Swift ajouté
+Le dossier `ReNeuro/` est un **groupe synchronisé** : un fichier Swift ajouté
 dedans est repris automatiquement par le projet, sans manipulation.
 
 Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 **compte Apple Developer** (99 €/an) et régler la signature dans
 *Signing & Capabilities* (choisir ton équipe ; le bundle id par défaut est
-`com.mesdebutsavc.MesDebutsAVC`, à personnaliser).
+`com.reneuro.ReNeuro`, à personnaliser).
 
 ## Structure
 
 ```
-MesDebutsAVC.xcodeproj        # projet Xcode (versionné)
-MesDebutsAVC/
-  MesDebutsAVCApp.swift       # point d'entrée @main
+ReNeuro.xcodeproj        # projet Xcode (versionné)
+ReNeuro/
+  ReNeuroApp.swift       # point d'entrée @main
   Models/
     Models.swift              # types (Question, catégories, révision) + utilitaires (Color hex, cap)
     QuestionEngine.swift      # port de questions.js : données + génération des questions
@@ -45,6 +45,7 @@ MesDebutsAVC/
     ProgressStatsView.swift   # écran « Mes progrès » (stats SQLite par catégorie)
     MarblesView.swift         # billes à compter (Circle + dégradés)
     GeometricShapeView.swift  # formes géométriques (Path/Shape)
+    ClockView.swift           # horloge analogique à aiguilles (Canvas)
     Haptics.swift             # retour tactile natif sur les réponses
     Theme.swift               # fonds, boutons, carte réutilisables
   Assets.xcassets/            # icône de l'app + couleur d'accent
@@ -52,9 +53,9 @@ MesDebutsAVC/
 
 ## Fonctionnalités
 
-Parité complète avec la version web : les 14 catégories (mélange, jours, mois,
-saisons, alphabet, couleurs, formes, chiffres, jusqu'à 50, nombres, et les 4
-opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
+Parité complète avec la version web : les 15 catégories (mélange, jours, mois,
+saisons, alphabet, heure, couleurs, formes, chiffres, jusqu'à 50, nombres, et les
+4 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
 répétition espacée en cas d'erreur, et le mode Mélange entrelacé.
 
 Touches natives : **retour tactile** (haptique) sur les bonnes/mauvaises réponses,

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { buildQuestions, pickPraise, shuffle } from '../questions.js'
 import Shape from './Shape.jsx'
 import Marbles from './Marbles.jsx'
+import Clock from './Clock.jsx'
 
 // identifiant stable d'une question (même clé que la déduplication)
 const qid = (q) => q.key || q.q
@@ -98,6 +99,11 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
           {question.shape && (
             <span className="shape-figure">
               <Shape name={question.shape} size={80} />
+            </span>
+          )}
+          {question.clock && (
+            <span className="shape-figure">
+              <Clock hours={question.clock.hours} minutes={question.clock.minutes} size={170} />
             </span>
           )}
           {question.marbles != null && (

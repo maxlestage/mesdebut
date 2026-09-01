@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1000000000000000000000A5"
-               BuildableName = "MesDebutsAVC.app"
-               BlueprintName = "MesDebutsAVC"
-               ReferencedContainer = "container:MesDebutsAVC.xcodeproj">
+               BuildableName = "ReNeuro.app"
+               BlueprintName = "ReNeuro"
+               ReferencedContainer = "container:ReNeuro.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1000000000000000000000A5"
-            BuildableName = "MesDebutsAVC.app"
-            BlueprintName = "MesDebutsAVC"
-            ReferencedContainer = "container:MesDebutsAVC.xcodeproj">
+            BuildableName = "ReNeuro.app"
+            BlueprintName = "ReNeuro"
+            ReferencedContainer = "container:ReNeuro.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1000000000000000000000A5"
-            BuildableName = "MesDebutsAVC.app"
-            BlueprintName = "MesDebutsAVC"
-            ReferencedContainer = "container:MesDebutsAVC.xcodeproj">
+            BuildableName = "ReNeuro.app"
+            BlueprintName = "ReNeuro"
+            ReferencedContainer = "container:ReNeuro.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
