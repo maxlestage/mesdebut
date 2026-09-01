@@ -34,5 +34,17 @@ jobs:
             -scheme ReNeuro \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
+            -resultBundlePath build/Build.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      # xcodebuild n'imprime pas toujours les diagnostics Swift : on les extrait
+      # du bundle de résultats pour que l'échec soit lisible directement ici.
+      - name: Diagnostics de compilation (en cas d'échec)
+        if: failure()
+        working-directory: ios/ReNeuro
+        run: |
+          echo "===== erreurs de compilation ====="
+          xcrun xcresulttool get build-results --path build/Build.xcresult 2>/dev/null | head -300 \
+            || xcrun xcresulttool get --legacy --path build/Build.xcresult --format json 2>/dev/null | head -c 30000 \
+            || echo "(bundle de résultats indisponible)"
