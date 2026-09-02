@@ -42,7 +42,7 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 - 🗓️ **Les mois de l'année** — révision de la liste, puis quiz
 - 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
 - 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
-- 🕐 **Lire l'heure** — horloges à aiguilles dessinées en SVG : révision de 10 horloges variées, lecture de l'horloge, rôle des aiguilles et repères du cadran, projection « dans une heure ». 3 niveaux de plus en plus fins : 🌱 heures pleines, 🌿 quarts et demies, 🌳 toutes les 5 minutes (soit 132 horaires différents), avec la forme française « moins » (2 h 40 → « trois heures moins vingt »)
+- 🕐 **Lire l'heure** — horloges à aiguilles dessinées en SVG : révision de 10 horloges variées, lecture de l'horloge, rôle des aiguilles et repères du cadran, projection « dans une heure ». 4 niveaux de plus en plus fins : 🌱 heures pleines, 🌿 quarts et demies, 🌳 de 5 en 5, 🏆 minute par minute (720 horaires différents), avec la forme française « moins » (2 h 40 → « trois heures moins vingt ») et la minute au féminin (« onze heures une »)
 - 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
 - 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
 - 🧮 **Les chiffres de 0 à 9** — révision avec le chiffre, son écriture et ses billes ; quiz de comptage de billes, d'écriture du chiffre dans les deux sens (7 ↔ sept) et de chiffre d'avant/d'après

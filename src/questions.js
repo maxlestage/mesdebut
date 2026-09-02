@@ -26,7 +26,16 @@ export const CATEGORIES = {
   mois: { emoji: '🗓️', label: 'Les mois', title: "Les mois de l'année", hasLearn: true },
   saisons: { emoji: '🍂', label: 'Les saisons', title: 'Les saisons', hasLearn: true },
   alphabet: { emoji: '🔤', label: "L'alphabet", title: "L'alphabet", hasLearn: true },
-  heure: { emoji: '🕐', label: "L'heure", title: "Lire l'heure", hasLearn: true, hasLevels: true },
+  heure: {
+    emoji: '🕐', label: "L'heure", title: "Lire l'heure", hasLearn: true, hasLevels: true,
+    // niveaux propres à l'heure : de l'heure pile à la minute près
+    levels: [
+      { id: 1, emoji: '🌱', label: 'Heures pleines' },
+      { id: 2, emoji: '🌿', label: 'Quarts et demies' },
+      { id: 3, emoji: '🌳', label: 'De 5 en 5' },
+      { id: 4, emoji: '🏆', label: 'Minute par minute' },
+    ],
+  },
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', hasLearn: true },
   formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', hasLearn: true },
   chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', hasLearn: true },
@@ -36,6 +45,11 @@ export const CATEGORIES = {
   soustraction: { emoji: '➖', label: 'Soustraction', title: 'Soustraction', hasLevels: true },
   multiplication: { emoji: '✖️', label: 'Multiplication', title: 'Multiplication', hasLevels: true },
   division: { emoji: '➗', label: 'Division', title: 'Division', hasLevels: true },
+}
+
+// Niveaux d'une catégorie : les siens s'ils sont définis, sinon les niveaux communs.
+export function levelsFor(category) {
+  return CATEGORIES[category]?.levels || LEVELS
 }
 
 export const LEVELS = [
@@ -571,24 +585,33 @@ const HEURE_MINUTES = [
   [0],                                          // 🌱 heures pleines
   [0, 15, 30, 45],                              // 🌿 quarts et demies
   [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], // 🌳 toutes les 5 minutes
+  Array.from({ length: 60 }, (_, i) => i),        // 🏆 minute par minute
 ]
 
 // « une heure », « trois heures et quart », « quatre heures moins le quart »…
+// Les minutes du niveau demandé, bornées : un niveau inattendu retombe sur le plus fin.
+function heureMinutes(level) {
+  return HEURE_MINUTES[Math.min(Math.max(level, 1), HEURE_MINUTES.length) - 1]
+}
+
 export function timeToWords(h, m) {
   const nom = n => (n === 1 ? 'une heure' : `${numberToWords(n)} heures`)
+  // la minute est féminine : « onze heures une », « deux heures trente et une »
+  const min = n => numberToWords(n).replace(/\bun$/, 'une')
   const suivante = h === 12 ? 1 : h + 1
   if (m === 0) return nom(h)
   if (m === 15) return `${nom(h)} et quart`
   if (m === 30) return `${nom(h)} et demie`
   if (m === 45) return `${nom(suivante)} moins le quart`
-  // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt »
-  if (m > 30) return `${nom(suivante)} moins ${numberToWords(60 - m)}`
-  return `${nom(h)} ${numberToWords(m)}`
+  // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt ».
+  // Réservé aux minutes rondes : on ne dit pas « moins vingt-neuf ».
+  if (m > 30 && (60 - m) % 5 === 0) return `${nom(suivante)} moins ${min(60 - m)}`
+  return `${nom(h)} ${min(m)}`
 }
 
 // 3 autres horaires du même niveau, formulés en toutes lettres
 function otherTimes(h, m, level, count) {
-  const minutes = HEURE_MINUTES[level - 1]
+  const minutes = heureMinutes(level)
   const answer = timeToWords(h, m)
   const set = new Set()
   let guard = 0
@@ -644,7 +667,7 @@ function makeHeureQuestion(level) {
     return { q: n.q, answer: n.answer, choices: n.choices }
   }
 
-  const minutes = HEURE_MINUTES[level - 1]
+  const minutes = heureMinutes(level)
   const h = rand(1, 12)
   const m = pick(minutes)
 
