@@ -16,7 +16,14 @@ extension QuestionEngine {
                          hasLearn: true, gradient: [Color(hex: "#26c6da"), Color(hex: "#0097a7")]),
         LearningCategory(key: "heure", emoji: "🕐", label: "L'heure", title: "Lire l'heure",
                          hasLearn: true, hasLevels: true,
-                         gradient: [Color(hex: "#ab47bc"), Color(hex: "#6a1b9a")]),
+                         gradient: [Color(hex: "#ab47bc"), Color(hex: "#6a1b9a")],
+                         // niveaux propres à l'heure : de l'heure pile à la minute près
+                         levels: [
+                             Level(id: 1, emoji: "🌱", label: "Heures pleines"),
+                             Level(id: 2, emoji: "🌿", label: "Quarts et demies"),
+                             Level(id: 3, emoji: "🌳", label: "De 5 en 5"),
+                             Level(id: 4, emoji: "🏆", label: "Minute par minute"),
+                         ]),
         LearningCategory(key: "couleurs", emoji: "🎨", label: "Les couleurs", title: "Les couleurs",
                          hasLearn: true, gradient: [Color(hex: "#ff8a65"), Color(hex: "#d84315")]),
         LearningCategory(key: "formes", emoji: "📐", label: "Les formes", title: "Les formes géométriques",

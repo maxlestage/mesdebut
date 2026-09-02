@@ -1,4 +1,4 @@
-import { CATEGORIES, LEVELS } from '../questions.js'
+import { CATEGORIES, levelsFor } from '../questions.js'
 
 export default function Levels({ category, onSelect, onBack }) {
   const cat = CATEGORIES[category]
@@ -7,7 +7,7 @@ export default function Levels({ category, onSelect, onBack }) {
       <h1>{cat.emoji} {cat.title}</h1>
       <p className="subtitle">Choisis ton niveau</p>
       <div className="choice-list">
-        {LEVELS.map(lvl => (
+        {levelsFor(category).map(lvl => (
           <button key={lvl.id} className="big-btn" onClick={() => onSelect(lvl.id)}>
             {lvl.emoji} {lvl.label}
           </button>

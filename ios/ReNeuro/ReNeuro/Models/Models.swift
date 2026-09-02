@@ -51,6 +51,8 @@ struct LearningCategory: Identifiable {
     var hasLearn: Bool = false
     var hasLevels: Bool = false
     let gradient: [Color]
+    /// Niveaux propres à la catégorie ; vide = niveaux communs.
+    var levels: [Level] = []
     var id: String { key }
 }
 
@@ -65,6 +67,11 @@ let LEVELS: [Level] = [
     Level(id: 2, emoji: "🌿", label: "Moyen"),
     Level(id: 3, emoji: "🌳", label: "Difficile"),
 ]
+
+/// Niveaux d'une catégorie : les siens s'ils sont définis, sinon les niveaux communs.
+func levelsFor(_ category: LearningCategory) -> [Level] {
+    category.levels.isEmpty ? LEVELS : category.levels
+}
 
 // MARK: - Contenu des écrans de révision
 

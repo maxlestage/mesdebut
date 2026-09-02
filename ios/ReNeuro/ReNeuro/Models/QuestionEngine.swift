@@ -388,28 +388,40 @@ enum QuestionEngine {
     // MARK: - Lire l'heure sur une horloge à aiguilles
 
     // minutes proposées selon le niveau : heures pleines, puis demies, puis quarts
-    static let heureMinutes = [
+    static let heureMinutesByLevel = [
         [0],                                              // 🌱 heures pleines
         [0, 15, 30, 45],                                  // 🌿 quarts et demies
         [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55],   // 🌳 toutes les 5 minutes
+        Array(0 ..< 60),                                  // 🏆 minute par minute
     ]
+
+    /// Les minutes du niveau demandé, bornées : un niveau inattendu retombe sur le plus fin.
+    static func heureMinutes(_ level: Int) -> [Int] {
+        heureMinutesByLevel[min(max(level, 1), heureMinutesByLevel.count) - 1]
+    }
 
     /// « une heure », « trois heures et quart », « quatre heures moins le quart »…
     static func timeToWords(_ h: Int, _ m: Int) -> String {
         func nom(_ n: Int) -> String { n == 1 ? "une heure" : "\(numberToWords(n)) heures" }
+        // la minute est féminine : « onze heures une », « deux heures trente et une »
+        func minuteMot(_ n: Int) -> String {
+            let mot = numberToWords(n)
+            return mot == "un" ? "une" : (mot.hasSuffix(" et un") ? mot + "e" : mot)
+        }
         let suivante = h == 12 ? 1 : h + 1
         if m == 0 { return nom(h) }
         if m == 15 { return "\(nom(h)) et quart" }
         if m == 30 { return "\(nom(h)) et demie" }
         if m == 45 { return "\(nom(suivante)) moins le quart" }
-        // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt »
-        if m > 30 { return "\(nom(suivante)) moins \(numberToWords(60 - m))" }
-        return "\(nom(h)) \(numberToWords(m))"
+        // passé la demie, on annonce l'heure suivante : 2 h 40 → « trois heures moins vingt ».
+        // Réservé aux minutes rondes : on ne dit pas « moins vingt-neuf ».
+        if m > 30 && (60 - m) % 5 == 0 { return "\(nom(suivante)) moins \(minuteMot(60 - m))" }
+        return "\(nom(h)) \(minuteMot(m))"
     }
 
     /// 3 autres horaires du même niveau, formulés en toutes lettres
     private static func otherTimes(_ h: Int, _ m: Int, _ level: Int, _ count: Int) -> [String] {
-        let minutes = heureMinutes[level - 1]
+        let minutes = heureMinutes(level)
         let answer = timeToWords(h, m)
         var set = [String]()
         var guardCount = 0
@@ -454,7 +466,7 @@ enum QuestionEngine {
             return makeQ(n.q, answer: n.answer, choices: n.choices)
         }
 
-        let minutes = heureMinutes[level - 1]
+        let minutes = heureMinutes(level)
         let h = rand(1, 12)
         let m = minutes.randomElement()!
 

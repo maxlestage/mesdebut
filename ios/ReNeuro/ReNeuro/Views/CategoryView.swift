@@ -25,7 +25,7 @@ struct LevelsView: View {
         Group {
             ScreenTitle(text: "\(category.emoji) \(category.title)")
             ScreenSubtitle(text: "Choisis ton niveau")
-            ForEach(LEVELS) { lvl in
+            ForEach(levelsFor(category)) { lvl in
                 BigButton(title: "\(lvl.emoji) \(lvl.label)") { onSelect(lvl.id) }
             }
             BackButton(title: "← Retour au menu", action: onBack)
