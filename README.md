@@ -85,7 +85,8 @@ src/
     Quiz.jsx            # déroulement du quiz
     End.jsx             # écran de score
   styles.css            # styles mobile first
-public/                 # icônes PWA (générées, écran d'accueil)
+public/                 # icônes PWA et favicon (générés depuis icons/icon.svg)
+icons/                  # source vectorielle des icônes + script de génération
 vite.config.js          # config Vite + manifest PWA (vite-plugin-pwa)
 server.js               # serveur Express de production (Heroku)
 Procfile                # commande de démarrage Heroku
