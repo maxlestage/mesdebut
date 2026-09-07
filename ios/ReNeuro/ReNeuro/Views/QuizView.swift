@@ -48,6 +48,9 @@ struct QuizView: View {
                     .foregroundColor(Color(hex: "#333333"))
                     .multilineTextAlignment(.center)
 
+                if let steps = question.steps {
+                    StepsView(steps: steps, hole: question.stepHole)
+                }
                 if let hex = question.swatchHex {
                     Circle()
                         .fill(Color(hex: hex))

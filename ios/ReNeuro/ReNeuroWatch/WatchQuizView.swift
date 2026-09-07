@@ -61,6 +61,9 @@ struct WatchQuizView: View {
     }
 
     @ViewBuilder private var visual: some View {
+        if let steps = question.steps {
+            StepsView(steps: steps, hole: question.stepHole, compact: true)
+        }
         if let hex = question.swatchHex {
             Circle()
                 .fill(Color(hex: hex))

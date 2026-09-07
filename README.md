@@ -43,6 +43,7 @@ On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 - 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
 - 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
 - 🕐 **Lire l'heure** — horloges à aiguilles dessinées en SVG : révision de 10 horloges variées, lecture de l'horloge, rôle des aiguilles et repères du cadran, projection « dans une heure ». 4 niveaux de plus en plus fins : 🌱 heures pleines, 🌿 quarts et demies, 🌳 de 5 en 5, 🏆 minute par minute (720 horaires différents), avec la forme française « moins » (2 h 40 → « trois heures moins vingt ») et la minute au féminin (« onze heures une »)
+- 📋 **Planifier** — 11 activités du quotidien décomposées en étapes qui s'enchaînent vraiment. Trois niveaux : 🌱 les étapes (par quoi on commence, ce qui suit), 🌿 l'ordre (l'étape qui manque, l'intrus, ce qui vient juste avant), 🌳 le temps (estimer une durée, calculer une heure de fin, tenir dans un créneau). Et **🗓️ Ma journée**, un planificateur : on écrit ses tâches ou on prend une activité connue avec sa durée, on les ordonne, on les coche — chacune démarre quand la précédente finit, donc l'heure de chaque tâche s'affiche et la journée se voit déborder
 - 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
 - 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
 - 🧮 **Les chiffres de 0 à 9** — révision avec le chiffre, son écriture et ses billes ; quiz de comptage de billes, d'écriture du chiffre dans les deux sens (7 ↔ sept) et de chiffre d'avant/d'après
@@ -70,6 +71,9 @@ L'appli s'appuie sur des principes établis des sciences cognitives :
 - **Double codage** — chaque notion associe une image (billes, formes, couleurs) et un mot
 - **Subitizing / sens du nombre** — les billes sont groupées par 5 et par 10
 - **Renforcement positif** — étoiles et encouragements pour soutenir la motivation
+- **Fonctions exécutives** — la catégorie 📋 Planifier entraîne la planification
+  (décomposer, ordonner, estimer une durée) sur des gestes du quotidien, et le
+  planificateur permet de l'appliquer à sa vraie journée
 
 ## Structure
 
