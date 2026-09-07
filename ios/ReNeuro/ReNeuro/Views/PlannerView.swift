@@ -1,3 +1,4 @@
+import Combine
 import SwiftUI
 
 // MARK: - Modèle
@@ -9,6 +10,10 @@ struct PlanTask: Identifiable, Codable, Equatable {
     var fait: Bool = false
     /// Clé de l'activité connue d'où vient la tâche, pour pouvoir en dérouler les étapes.
     var routineKey: String? = nil
+    /// Instant de démarrage tant que le chrono tourne, nil sinon.
+    var demarreA: Date? = nil
+    /// Minutes réellement passées, une fois le chrono arrêté.
+    var reel: Int? = nil
 }
 
 struct DayPlan: Codable, Equatable {
@@ -58,6 +63,9 @@ struct PlannerView: View {
     @State private var texte = ""
     @State private var duree = 15
     @State private var ouverte: UUID?
+    @State private var maintenant = Date()
+
+    private let horloge = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     private let durees = [5, 10, 15, 20, 30, 45, 60]
 
@@ -73,6 +81,41 @@ struct PlannerView: View {
     }
 
     private var total: Int { plan.taches.reduce(0) { $0 + $1.duree } }
+
+    /// Minutes écoulées depuis le démarrage, arrondies à la minute la plus proche.
+    /// On lit l'horloge à l'instant même : `maintenant` ne sert qu'à provoquer
+    /// le réaffichage, sa valeur pourrait avoir jusqu'à une seconde de retard.
+    private func ecoulees(_ t: PlanTask) -> Int {
+        guard let debut = t.demarreA else { return 0 }
+        return max(0, Int((Date().timeIntervalSince(debut) / 60).rounded()))
+    }
+
+    /// Vert quand l'estimation était juste (à 20 % près), orange sinon. On ne
+    /// reproche jamais un dépassement : mal estimer est précisément ce qu'on
+    /// travaille, et le voir suffit à progresser.
+    private func couleurEcart(_ t: PlanTask) -> Color {
+        guard let reel = t.reel else { return .secondary }
+        let marge = max(2.0, Double(t.duree) * 0.2)
+        return abs(Double(reel - t.duree)) <= marge ? Color(hex: "#2eb350") : Color(hex: "#e08a00")
+    }
+
+    private var mesurees: [PlanTask] { plan.taches.filter { $0.reel != nil } }
+
+    private var bilanEstimation: String? {
+        guard !mesurees.isEmpty else { return nil }
+        let prevu = mesurees.reduce(0) { $0 + $1.duree }
+        let reel = mesurees.reduce(0) { $0 + ($1.reel ?? 0) }
+        let pluriel = mesurees.count > 1 ? "s" : ""
+        let debut = "Sur \(mesurees.count) tâche\(pluriel) chronométrée\(pluriel) : "
+            + "\(prevu) min prévues, \(reel) min réelles"
+        let ecart = reel - prevu
+        if abs(Double(ecart)) <= max(3.0, Double(prevu) * 0.15) {
+            return "\(debut) — tes estimations sont justes ! 🎯"
+        }
+        return ecart > 0
+            ? "\(debut) — tu as tendance à sous-estimer, c'est très courant. 🌱"
+            : "\(debut) — tu prends moins de temps que prévu."
+    }
     private var faites: Int { plan.taches.filter(\.fait).count }
 
     private var dateLisible: String {
@@ -116,6 +159,10 @@ struct PlannerView: View {
             BackButton(title: "← Retour au menu", action: onBack)
         }
         .onChange(of: plan) { _ in PlanStore.enregistre(plan) }
+        .onReceive(horloge) { instant in
+            // on ne réveille l'affichage que s'il y a un chrono à faire avancer
+            if plan.taches.contains(where: { $0.demarreA != nil }) { maintenant = instant }
+        }
     }
 
     // MARK: - Morceaux
@@ -160,13 +207,30 @@ struct PlannerView: View {
                     .foregroundColor(tache.fait ? Color(hex: "#7a9a83") : Color(hex: "#333333"))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text("\(tache.duree) min")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                if tache.demarreA != nil {
+                    Text("⏱ \(ecoulees(tache)) min")
+                        .font(.caption.bold())
+                        .foregroundColor(Color(hex: "#e08a00"))
+                } else if let reel = tache.reel {
+                    Text("\(tache.duree) → \(reel) min")
+                        .font(.caption.bold())
+                        .foregroundColor(couleurEcart(tache))
+                } else {
+                    Text("\(tache.duree) min")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
 
             HStack(spacing: 6) {
                 Spacer()
+                if !tache.fait {
+                    if tache.demarreA != nil {
+                        mini("■ arrêter", enCours: true) { arrete(tache) }
+                    } else {
+                        mini("▶ démarrer") { demarre(tache) }
+                    }
+                }
                 if let key = tache.routineKey, routine(key) != nil {
                     mini(ouverte == tache.id ? "▾ étapes" : "▸ étapes") {
                         ouverte = ouverte == tache.id ? nil : tache.id
@@ -192,18 +256,22 @@ struct PlannerView: View {
     }
 
     private func mini(_ titre: String, actif: Bool = true, danger: Bool = false,
+                      enCours: Bool = false,
                       _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(titre)
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 10)
                 .frame(minHeight: 30)
-                .foregroundColor(danger ? Color(hex: "#e04545") : Color(hex: "#4a3f8f"))
-                .background(Color.white)
+                .foregroundColor(danger ? Color(hex: "#e04545")
+                                 : enCours ? Color(hex: "#a97a10") : Color(hex: "#4a3f8f"))
+                .background(enCours ? Color(hex: "#fff7e0") : Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 9))
                 .overlay(
                     RoundedRectangle(cornerRadius: 9)
-                        .stroke(danger ? Color(hex: "#ffd6d6") : Color(hex: "#ddd7f5"), lineWidth: 1.5)
+                        .stroke(danger ? Color(hex: "#ffd6d6")
+                                : enCours ? Color(hex: "#ffd98a") : Color(hex: "#ddd7f5"),
+                                lineWidth: 1.5)
                 )
         }
         .buttonStyle(.plain)
@@ -222,6 +290,12 @@ struct PlannerView: View {
                  + (tout ? " — journée terminée ! 🎉" : ""))
                 .foregroundColor(tout ? Color(hex: "#2eb350") : .secondary)
                 .fontWeight(tout ? .bold : .regular)
+            if let bilanEstimation {
+                Text(bilanEstimation)
+                    .foregroundColor(Color(hex: "#6a5fbb"))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+            }
         }
         .font(.subheadline)
         .foregroundColor(.secondary)
@@ -275,8 +349,31 @@ struct PlannerView: View {
         if routineKey == nil { texte = "" }
     }
 
+    /// Démarre une tâche — et arrête celle qui tournait : on fait une chose à la
+    /// fois, c'est justement ce qu'on apprend ici.
+    private func demarre(_ tache: PlanTask) {
+        for i in plan.taches.indices where plan.taches[i].demarreA != nil {
+            plan.taches[i].reel = ecoulees(plan.taches[i])
+            plan.taches[i].demarreA = nil
+        }
+        guard let i = plan.taches.firstIndex(where: { $0.id == tache.id }) else { return }
+        plan.taches[i].demarreA = Date()
+    }
+
+    private func arrete(_ tache: PlanTask) {
+        guard let i = plan.taches.firstIndex(where: { $0.id == tache.id }),
+              plan.taches[i].demarreA != nil else { return }
+        plan.taches[i].reel = ecoulees(plan.taches[i])
+        plan.taches[i].demarreA = nil
+    }
+
+    /// Cocher une tâche en cours arrête aussi son chrono et enregistre le temps mis.
     private func bascule(_ tache: PlanTask) {
         guard let i = plan.taches.firstIndex(where: { $0.id == tache.id }) else { return }
+        if !plan.taches[i].fait, plan.taches[i].demarreA != nil {
+            plan.taches[i].reel = ecoulees(plan.taches[i])
+            plan.taches[i].demarreA = nil
+        }
         plan.taches[i].fait.toggle()
         Haptics.success()
     }
