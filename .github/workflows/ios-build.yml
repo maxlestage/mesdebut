@@ -25,7 +25,9 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Compiler (simulateur, sans signature)
+      # Compile aussi, en dépendance, l'extension widget (activité en direct)
+      # et l'app watchOS embarquée.
+      - name: Compiler l'app iPhone (simulateur, sans signature)
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
@@ -34,17 +36,35 @@ jobs:
             -scheme ReNeuro \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
-            -resultBundlePath build/Build.xcresult \
+            -resultBundlePath build/App.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      # Build dédié de la montre : les erreurs propres à watchOS sont ainsi
+      # attribuées directement à la bonne cible.
+      - name: Compiler l'app Apple Watch (simulateur, sans signature)
+        working-directory: ios/ReNeuro
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ReNeuro.xcodeproj \
+            -scheme ReNeuroWatch \
+            -destination 'generic/platform=watchOS Simulator' \
+            -configuration Debug \
+            -resultBundlePath build/Watch.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             build
 
       # xcodebuild n'imprime pas toujours les diagnostics Swift : on les extrait
-      # du bundle de résultats pour que l'échec soit lisible directement ici.
+      # des bundles de résultats pour que l'échec soit lisible directement ici.
       - name: Diagnostics de compilation (en cas d'échec)
         if: failure()
         working-directory: ios/ReNeuro
         run: |
-          echo "===== erreurs de compilation ====="
-          xcrun xcresulttool get build-results --path build/Build.xcresult 2>/dev/null | head -300 \
-            || xcrun xcresulttool get --legacy --path build/Build.xcresult --format json 2>/dev/null | head -c 30000 \
-            || echo "(bundle de résultats indisponible)"
+          for bundle in build/App.xcresult build/Watch.xcresult; do
+            [ -e "$bundle" ] || continue
+            echo "===== erreurs de compilation : $bundle ====="
+            xcrun xcresulttool get build-results --path "$bundle" 2>/dev/null | head -300 \
+              || xcrun xcresulttool get --legacy --path "$bundle" --format json 2>/dev/null | head -c 30000 \
+              || echo "(bundle de résultats illisible)"
+          done

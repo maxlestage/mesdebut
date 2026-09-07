@@ -13,7 +13,11 @@ compilation. Le second nécessite les réglages ci-dessous.
 ## Préalables côté Apple (une seule fois)
 
 1. **Compte Apple Developer** actif (99 €/an).
-2. Dans **App Store Connect**, créer l'app avec le bundle id `com.reneuro.ReNeuro`
+2. Dans **App Store Connect**, créer l'app avec le bundle id `com.reneuro.ReNeuro`.
+   L'app embarque deux autres cibles, dont les identifiants doivent exister eux
+   aussi (la signature automatique les crée toute seule à la première archive) :
+   - `com.reneuro.ReNeuro.Widget` — extension widget (activité en direct)
+   - `com.reneuro.ReNeuro.watchkitapp` — application Apple Watch
    (ou change-le dans le projet Xcode : réglage `PRODUCT_BUNDLE_IDENTIFIER`).
 3. Créer une **clé API App Store Connect** (Utilisateurs et accès → Intégrations →
    Clés App Store Connect), rôle **App Manager**. Télécharger le fichier `.p8`
