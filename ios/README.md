@@ -27,14 +27,30 @@ Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 
 ## Structure
 
+Le projet contient **trois cibles** : l'app iPhone, l'extension widget qui dessine
+l'activité en direct, et l'app Apple Watch. Les dossiers `ReNeuroKit/` et
+`ReNeuroActivity/` sont partagés entre plusieurs cibles — le code du moteur n'existe
+qu'en un seul exemplaire.
+
 ```
-ReNeuro.xcodeproj        # projet Xcode (versionné)
-ReNeuro/
-  ReNeuroApp.swift       # point d'entrée @main
-  Models/
-    Models.swift              # types (Question, catégories, révision) + utilitaires (Color hex, cap)
-    QuestionEngine.swift      # port de questions.js : données + génération des questions
-    CategoryData.swift        # métadonnées des catégories + contenu des écrans de révision
+ReNeuro.xcodeproj        # projet Xcode (versionné, 3 cibles)
+
+ReNeuroKit/              # partagé : app iPhone + app Watch
+  Models.swift                # types (Question, catégories, révision) + utilitaires (Color hex, cap)
+  QuestionEngine.swift        # port de questions.js : données + génération des questions
+  CategoryData.swift          # métadonnées des catégories + contenu des écrans de révision
+  MemoryStore.swift           # mémoire de l'apprenant en SQLite (boîtes de Leitner)
+  MarblesView.swift           # billes à compter (Circle + dégradés)
+  GeometricShapeView.swift    # formes géométriques (Path/Shape)
+  ClockView.swift             # horloge analogique à aiguilles
+
+ReNeuroActivity/         # partagé : app iPhone + extension widget
+  QuizActivityAttributes.swift  # ce que l'écran verrouillé affiche du quiz en cours
+
+ReNeuro/                 # app iPhone
+  ReNeuroApp.swift            # point d'entrée @main
+  Services/
+    LiveActivity.swift        # démarre, met à jour et termine l'activité en direct
   Views/
     RootView.swift            # navigation entre les écrans
     MenuView.swift            # menu principal (grille de catégories)
@@ -43,13 +59,52 @@ ReNeuro/
     QuizView.swift            # déroulement du quiz + répétition espacée
     EndView.swift             # score et étoiles
     ProgressStatsView.swift   # écran « Mes progrès » (stats SQLite par catégorie)
-    MarblesView.swift         # billes à compter (Circle + dégradés)
-    GeometricShapeView.swift  # formes géométriques (Path/Shape)
-    ClockView.swift           # horloge analogique à aiguilles (Canvas)
     Haptics.swift             # retour tactile natif sur les réponses
     Theme.swift               # fonds, boutons, carte réutilisables
   Assets.xcassets/            # icône de l'app + couleur d'accent
+
+ReNeuroWidget/           # extension widget (activité en direct)
+  ReNeuroWidgetBundle.swift     # point d'entrée @main de l'extension
+  QuizLiveActivityWidget.swift  # écran verrouillé + Dynamic Island
+ReNeuroWidget-Info.plist        # déclare l'extension comme extension WidgetKit
+
+ReNeuroWatch/            # app Apple Watch
+  ReNeuroWatchApp.swift       # point d'entrée @main
+  WatchRootView.swift         # liste des catégories et des niveaux
+  WatchQuizView.swift         # quiz au poignet + écran de score
 ```
+
+## Activité en direct (écran verrouillé et Dynamic Island) 🔒
+
+Pendant un quiz, l'iPhone affiche une **activité en direct** : l'émoji et le nom
+de la catégorie, le score en étoiles, une barre de progression et la question en
+cours. À chaque réponse, l'activité indique brièvement si c'était juste ou faux,
+puis revient au compteur « Question 4 / 10 ». Elle se termine avec le quiz et
+laisse le score visible quelques secondes ; en cas d'abandon, elle disparaît
+tout de suite.
+
+Sur les iPhone à Dynamic Island, la même chose est déclinée en version compacte
+(émoji + score), minimale et déployée.
+
+Tout cela est facultatif : sur un iPhone antérieur à iOS 16.2, ou si les
+activités en direct sont désactivées dans les Réglages, l'appel est sans effet
+et le quiz se déroule exactement pareil.
+
+## Application Apple Watch ⌚
+
+Une **app watchOS autonome** (watchOS 10 minimum), avec les mêmes catégories, le
+même moteur de questions et la même répétition espacée que sur l'iPhone, dans une
+mise en page pensée pour un petit écran : liste des catégories, choix du niveau
+quand il y en a un, questions à faire défiler, réponses en gros boutons, et un
+écran de score avec les étoiles.
+
+Les horloges, les billes, les formes et les pastilles de couleur sont dessinées
+avec le même code que sur l'iPhone — apprendre à lire l'heure sur une montre est
+d'ailleurs le plus naturel des exercices. Les bonnes et mauvaises réponses sont
+confirmées par le **retour haptique** du poignet.
+
+La montre tient sa propre base SQLite : elle apprend ce que l'enfant y travaille,
+indépendamment de l'iPhone.
 
 ## Fonctionnalités
 
@@ -88,15 +143,17 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
 
 ## Intégration continue (CI)
 
-- **Build automatique** à chaque push/PR touchant `ios/**` (compile l'app sur
-  simulateur, sans signature — aucun secret requis).
+- **Build automatique** à chaque push/PR touchant `ios/**` : l'app iPhone (qui
+  entraîne l'extension widget et l'app Watch), puis l'app Watch seule pour que
+  les erreurs propres à watchOS soient bien attribuées. Sur simulateur, sans
+  signature — aucun secret requis.
 - **Envoi TestFlight** avec `xcodebuild` + `xcrun altool` (manuel ou tag `ios-v*`).
 
 Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 
 ## Réglages du projet
 
-- Cible de déploiement : iOS 16.0
+- Cible de déploiement : iOS 16.0 (extension widget iOS 16.2, montre watchOS 10.0)
 - Orientation : portrait
 - iPhone et iPad
 - Icône générée (🎓 sur dégradé violet), couleur d'accent `#667eea`

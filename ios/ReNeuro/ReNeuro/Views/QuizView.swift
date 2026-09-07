@@ -24,6 +24,7 @@ struct QuizView: View {
     }
 
     private var total: Int { max(questions.count, 1) }
+    private var cat: LearningCategory { QuestionEngine.category(category) }
     private var question: Question { questions[min(index, questions.count - 1)] }
 
     private let answerColumns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
@@ -89,8 +90,17 @@ struct QuizView: View {
                 .foregroundColor(feedbackGood == true ? Color(hex: "#2eb350") : Color(hex: "#e04545"))
                 .frame(minHeight: 34)
 
-            BackButton(title: "← Abandonner", action: onQuit)
+            BackButton(title: "← Abandonner", action: quit)
         }
+        .onAppear {
+            QuizLiveActivity.start(emoji: cat.emoji, title: cat.title, total: questions.count)
+        }
+    }
+
+    /// Abandon : l'activité de l'écran verrouillé disparaît avec le quiz.
+    private func quit() {
+        QuizLiveActivity.cancel()
+        onQuit()
     }
 
     // MARK: - État visuel d'une réponse
@@ -135,6 +145,8 @@ struct QuizView: View {
             Haptics.error()
             scheduleRetries(q, at: index)
         }
+        QuizLiveActivity.update(current: index + 1, total: questions.count,
+                                score: score, lastCorrect: good)
         DispatchQueue.main.asyncAfter(deadline: .now() + (good ? 0.9 : 1.8)) {
             advance()
         }
@@ -146,8 +158,11 @@ struct QuizView: View {
             selected = nil
             feedbackGood = nil
             feedbackText = ""
+            QuizLiveActivity.update(current: index + 1, total: questions.count,
+                                    score: score, lastCorrect: nil)
         } else {
             MemoryStore.shared.recordSession(category: category, score: score, total: questions.count)
+            QuizLiveActivity.end(score: score, total: questions.count)
             onFinish(score, questions.count)
         }
     }
