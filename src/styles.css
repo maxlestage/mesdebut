@@ -424,3 +424,26 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
 .plan-ecart { color: #e08a00; font-weight: 700; }
 .plan-mini.en-cours { background: #fff7e0; border-color: #ffd98a; color: #a97a10; font-weight: 700; }
 .plan-estimation { display: inline-block; margin-top: 6px; color: #6a5fbb; }
+
+/* ─── Tendance des estimations ───────────────────────────────────────────── */
+
+.tendance { margin: 20px 0 6px; text-align: left; }
+.tendance-titre { font-weight: 700; color: #4a3f8f; margin-bottom: 8px; text-align: center; }
+.tendance-liste { list-style: none; }
+.tendance-liste li { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.tendance-jour {
+  min-width: 74px; font-size: 0.8rem; color: #777; text-transform: capitalize;
+}
+.tendance-barre {
+  flex: 1; height: 10px; background: #f0edff; border-radius: 6px; overflow: hidden;
+}
+.tendance-fill { display: block; height: 100%; border-radius: 6px; }
+.tendance-fill.juste { background: #2eb350; }
+.tendance-fill.ecart { background: #e08a00; }
+.tendance-pct {
+  min-width: 48px; text-align: right; font-size: 0.8rem; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tendance-pct.juste { color: #2eb350; }
+.tendance-pct.ecart { color: #e08a00; }
+.tendance-message { margin-top: 8px; font-size: 0.85rem; color: #6a5fbb; text-align: center; }
