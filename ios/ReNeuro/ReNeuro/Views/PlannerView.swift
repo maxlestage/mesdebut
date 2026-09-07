@@ -16,6 +16,19 @@ struct PlanTask: Identifiable, Codable, Equatable {
     var reel: Int? = nil
 }
 
+/// Le prévu et le réel d'une journée révolue, pour suivre la tendance.
+struct JourEstime: Codable, Identifiable, Equatable {
+    var date: String
+    var nb: Int
+    var prevu: Int
+    var reel: Int
+    var id: String { date }
+
+    /// Écart en pourcentage entre le temps réel et le temps prévu.
+    var ecartPct: Int { prevu == 0 ? 0 : Int((Double(reel - prevu) / Double(prevu) * 100).rounded()) }
+    var juste: Bool { abs(ecartPct) <= 10 }
+}
+
 struct DayPlan: Codable, Equatable {
     var date: String
     var debutH: Int = 9
@@ -37,14 +50,51 @@ enum PlanStore {
         return f.string(from: Date())
     }
 
+    private static let cleHist = "reneuro-estimations"
+    private static let histMax = 60 // jours conservés
+
     /// On repart d'une journée vide quand la date a changé : planifier, c'est
-    /// planifier aujourd'hui.
+    /// planifier aujourd'hui. La journée révolue part d'abord à l'historique,
+    /// pour que la tendance des estimations survive au changement de jour.
     static func charge() -> DayPlan {
         guard let data = UserDefaults.standard.data(forKey: cle),
-              let plan = try? JSONDecoder().decode(DayPlan.self, from: data),
-              plan.date == aujourdhui()
+              let plan = try? JSONDecoder().decode(DayPlan.self, from: data)
         else { return DayPlan(date: aujourdhui()) }
+        if plan.date != aujourdhui() {
+            archive(plan)
+            return DayPlan(date: aujourdhui())
+        }
         return plan
+    }
+
+    /// Le prévu et le réel d'une journée, pour les tâches effectivement chronométrées.
+    static func bilan(_ plan: DayPlan) -> JourEstime {
+        let mesurees = plan.taches.filter { $0.reel != nil }
+        return JourEstime(date: plan.date, nb: mesurees.count,
+                          prevu: mesurees.reduce(0) { $0 + $1.duree },
+                          reel: mesurees.reduce(0) { $0 + ($1.reel ?? 0) })
+    }
+
+    static func chargeHistorique() -> [JourEstime] {
+        guard let data = UserDefaults.standard.data(forKey: cleHist),
+              let h = try? JSONDecoder().decode([JourEstime].self, from: data)
+        else { return [] }
+        return h
+    }
+
+    /// Range une journée révolue dans l'historique, si elle a été chronométrée.
+    /// On ne garde que `histMax` jours : c'est une tendance qu'on regarde, pas
+    /// une archive.
+    static func archive(_ plan: DayPlan) {
+        let jour = bilan(plan)
+        guard jour.nb > 0 else { return }
+        var h = chargeHistorique().filter { $0.date != plan.date }
+        h.append(jour)
+        h.sort { $0.date < $1.date }
+        if h.count > histMax { h = Array(h.suffix(histMax)) }
+        if let data = try? JSONEncoder().encode(h) {
+            UserDefaults.standard.set(data, forKey: cleHist)
+        }
     }
 
     static func enregistre(_ plan: DayPlan) {
@@ -101,6 +151,14 @@ struct PlannerView: View {
 
     private var mesurees: [PlanTask] { plan.taches.filter { $0.reel != nil } }
 
+    /// L'historique des jours passés, complété par aujourd'hui tel qu'il va —
+    /// la journée en cours n'est archivée qu'au changement de date.
+    private var historique: [JourEstime] {
+        let passe = PlanStore.chargeHistorique().filter { $0.date != plan.date }
+        let ceJour = PlanStore.bilan(plan)
+        return ceJour.nb > 0 ? passe + [ceJour] : passe
+    }
+
     private var bilanEstimation: String? {
         guard !mesurees.isEmpty else { return nil }
         let prevu = mesurees.reduce(0) { $0 + $1.duree }
@@ -150,6 +208,10 @@ struct PlannerView: View {
 
             ajout
             activitesConnues
+
+            if historique.count > 1 {
+                TendanceView(jours: historique, dateDuJour: plan.date)
+            }
 
             if !plan.taches.isEmpty {
                 BigButton(title: "🗑️ Vider la journée", secondary: true) {
@@ -411,5 +473,97 @@ struct FlowChips: View {
                 .buttonStyle(.plain)
             }
         }
+    }
+}
+
+/// La tendance des estimations sur les derniers jours. C'est le vrai signal :
+/// savoir si l'écart entre ce qu'on prévoit et ce qu'on met se resserre.
+struct TendanceView: View {
+    let jours: [JourEstime]
+    let dateDuJour: String
+
+    private var derniers: [JourEstime] { Array(jours.suffix(10)) }
+
+    /// Le plus grand écart affiché, pour mettre les barres à la même échelle.
+    private var pire: Int { max(60, derniers.map { abs($0.ecartPct) }.max() ?? 0) }
+
+    private func moyenne(_ liste: [JourEstime]) -> Int? {
+        guard !liste.isEmpty else { return nil }
+        let prevu = liste.reduce(0) { $0 + $1.prevu }
+        let reel = liste.reduce(0) { $0 + $1.reel }
+        guard prevu > 0 else { return nil }
+        return Int((Double(reel - prevu) / Double(prevu) * 100).rounded())
+    }
+
+    private func signe(_ n: Int) -> String { n > 0 ? "+\(n)" : "\(n)" }
+
+    private var message: String {
+        let recents = Array(jours.suffix(5))
+        let avant = Array(jours.dropLast(5).suffix(5))
+        guard let mRecents = moyenne(recents) else { return "" }
+        var texte = "Sur \(recents.count) jour\(recents.count > 1 ? "s" : "") : "
+            + "\(signe(mRecents)) % d'écart en moyenne"
+        if abs(mRecents) <= 10 {
+            texte += " — tes estimations sont fiables 🎯"
+        } else if let mAvant = moyenne(avant), abs(mRecents) < abs(mAvant) {
+            texte += " (contre \(signe(mAvant)) % avant) — tu progresses ! 🌱"
+        } else if mRecents > 0 {
+            texte += " — tu sous-estimes encore un peu"
+        }
+        return texte
+    }
+
+    /// « dim. 30 », ou « aujourd'hui » pour la journée en cours.
+    private func libelle(_ jour: JourEstime) -> String {
+        if jour.date == dateDuJour { return "aujourd'hui" }
+        let entree = DateFormatter()
+        entree.dateFormat = "yyyy-MM-dd"
+        guard let d = entree.date(from: jour.date) else { return jour.date }
+        let sortie = DateFormatter()
+        sortie.locale = Locale(identifier: "fr_FR")
+        sortie.dateFormat = "EEE d"
+        return sortie.string(from: d)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("📈 Mes estimations")
+                .font(.subheadline.bold())
+                .foregroundColor(Color(hex: "#4a3f8f"))
+                .frame(maxWidth: .infinity)
+
+            ForEach(derniers) { jour in
+                HStack(spacing: 8) {
+                    Text(libelle(jour))
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(width: 74, alignment: .leading)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Color(hex: "#f0edff"))
+                            Capsule()
+                                .fill(jour.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
+                                .frame(width: geo.size.width
+                                       * min(1, Double(abs(jour.ecartPct)) / Double(pire)))
+                        }
+                    }
+                    .frame(height: 10)
+
+                    Text(jour.ecartPct == 0 ? "✓" : "\(signe(jour.ecartPct)) %")
+                        .font(.caption2.bold().monospacedDigit())
+                        .foregroundColor(jour.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
+                        .frame(width: 48, alignment: .trailing)
+                }
+            }
+
+            Text(message)
+                .font(.caption)
+                .foregroundColor(Color(hex: "#6a5fbb"))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 4)
+        }
+        .padding(.top, 12)
     }
 }

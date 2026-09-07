@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { ROUTINES, formatHeure, ajouteMinutes } from '../questions.js'
 
 const CLE = 'reneuro-journee'
+const CLE_HIST = 'reneuro-estimations'
+const HIST_MAX = 60 // jours conservés
 const DUREES = [5, 10, 15, 20, 30, 45, 60]
 
 const aujourdhui = () => new Date().toISOString().slice(0, 10)
@@ -12,16 +14,57 @@ const dateLisible = () =>
 /** Journée vide, commencée à 9 h. */
 const journeeVide = () => ({ date: aujourdhui(), debut: { h: 9, m: 0 }, taches: [] })
 
+/** Le prévu et le réel d'une journée, pour les tâches effectivement chronométrées. */
+export function bilanJournee(journee) {
+  const mesurees = (journee?.taches || []).filter(t => t.reel != null)
+  return {
+    nb: mesurees.length,
+    prevu: mesurees.reduce((s, t) => s + t.duree, 0),
+    reel: mesurees.reduce((s, t) => s + t.reel, 0),
+  }
+}
+
+export function chargeHistorique() {
+  try {
+    const brut = localStorage.getItem(CLE_HIST)
+    const h = brut ? JSON.parse(brut) : []
+    return Array.isArray(h) ? h : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Range une journée révolue dans l'historique, si elle a été chronométrée.
+ * On ne garde que HIST_MAX jours : c'est une tendance qu'on regarde, pas une
+ * archive.
+ */
+function archive(journee) {
+  const { nb, prevu, reel } = bilanJournee(journee)
+  if (!nb || !journee?.date) return
+  try {
+    const h = chargeHistorique().filter(j => j.date !== journee.date)
+    h.push({ date: journee.date, nb, prevu, reel })
+    h.sort((a, b) => a.date.localeCompare(b.date))
+    localStorage.setItem(CLE_HIST, JSON.stringify(h.slice(-HIST_MAX)))
+  } catch { /* stockage indisponible */ }
+}
+
 /**
  * On repart d'une journée vide quand la date a changé : planifier, c'est
- * planifier aujourd'hui. Un stockage illisible ne doit jamais bloquer l'écran.
+ * planifier aujourd'hui. La journée révolue part d'abord à l'historique, pour
+ * que la tendance des estimations survive au changement de jour.
+ * Un stockage illisible ne doit jamais bloquer l'écran.
  */
 function chargeJournee() {
   try {
     const brut = localStorage.getItem(CLE)
     if (!brut) return journeeVide()
     const j = JSON.parse(brut)
-    if (j?.date !== aujourdhui() || !Array.isArray(j.taches)) return journeeVide()
+    if (j?.date !== aujourdhui() || !Array.isArray(j.taches)) {
+      archive(j)
+      return journeeVide()
+    }
     return { ...journeeVide(), ...j }
   } catch {
     return journeeVide()
@@ -63,6 +106,14 @@ export default function Planner({ onBack }) {
   }, [taches, debut])
 
   const total = taches.reduce((s, t) => s + t.duree, 0)
+
+  // L'historique des jours passés, complété par aujourd'hui tel qu'il va —
+  // la journée en cours n'est archivée qu'au changement de date.
+  const historique = useMemo(() => {
+    const passe = chargeHistorique().filter(j => j.date !== journee.date)
+    const ce_jour = bilanJournee(journee)
+    return ce_jour.nb ? [...passe, { date: journee.date, ...ce_jour }] : passe
+  }, [journee])
   // tâches dont on connaît le temps réellement passé
   const mesurees = taches.filter(t => t.reel != null)
   const prevuMesure = mesurees.reduce((s, t) => s + t.duree, 0)
@@ -272,10 +323,78 @@ export default function Planner({ onBack }) {
         ))}
       </div>
 
+      {historique.length > 1 && <Tendance jours={historique} aujourdhui={journee.date} />}
+
       {taches.length > 0 && (
         <button className="big-btn secondary" onClick={videJournee}>🗑️ Vider la journée</button>
       )}
       <button className="back-link" onClick={onBack}>← Retour au menu</button>
     </>
+  )
+}
+
+/** Écart en pourcentage entre le temps réel et le temps prévu. */
+const ecartPct = j => (j.prevu === 0 ? 0 : Math.round(((j.reel - j.prevu) / j.prevu) * 100))
+
+const jourCourt = iso => {
+  const [a, m, d] = iso.split('-').map(Number)
+  return new Date(a, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })
+}
+
+/**
+ * La tendance des estimations sur les derniers jours. C'est le vrai signal :
+ * savoir si l'écart entre ce qu'on prévoit et ce qu'on met se resserre.
+ */
+function Tendance({ jours, aujourdhui: dateDuJour }) {
+  const derniers = jours.slice(-10)
+  const pire = Math.max(60, ...derniers.map(j => Math.abs(ecartPct(j))))
+
+  const moyenne = liste => {
+    if (!liste.length) return null
+    const prevu = liste.reduce((s, j) => s + j.prevu, 0)
+    const reel = liste.reduce((s, j) => s + j.reel, 0)
+    return prevu === 0 ? null : Math.round(((reel - prevu) / prevu) * 100)
+  }
+
+  // On compare les jours récents aux précédents pour dire si ça progresse.
+  const recents = jours.slice(-5)
+  const avant = jours.slice(-10, -5)
+  const mRecents = moyenne(recents)
+  const mAvant = moyenne(avant)
+
+  const signe = n => (n > 0 ? `+${n}` : `${n}`)
+  let message = `Sur ${recents.length} jour${recents.length > 1 ? 's' : ''} : ${signe(mRecents)} % d'écart en moyenne`
+  if (Math.abs(mRecents) <= 10) message += ' — tes estimations sont fiables 🎯'
+  else if (mAvant != null && Math.abs(mRecents) < Math.abs(mAvant)) {
+    message += ` (contre ${signe(mAvant)} % avant) — tu progresses ! 🌱`
+  } else if (mRecents > 0) message += ' — tu sous-estimes encore un peu'
+
+  return (
+    <div className="tendance">
+      <p className="tendance-titre">📈 Mes estimations</p>
+      <ul className="tendance-liste">
+        {derniers.map(j => {
+          const pct = ecartPct(j)
+          const juste = Math.abs(pct) <= 10
+          return (
+            <li key={j.date}>
+              <span className="tendance-jour">
+                {j.date === dateDuJour ? "aujourd'hui" : jourCourt(j.date)}
+              </span>
+              <span className="tendance-barre">
+                <span
+                  className={juste ? 'tendance-fill juste' : 'tendance-fill ecart'}
+                  style={{ width: `${Math.min(100, (Math.abs(pct) / pire) * 100)}%` }}
+                />
+              </span>
+              <span className={juste ? 'tendance-pct juste' : 'tendance-pct ecart'}>
+                {pct === 0 ? '✓' : `${signe(pct)} %`}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="tendance-message">{message}</p>
+    </div>
   )
 }
