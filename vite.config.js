@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png'],
+      includeAssets: ['apple-touch-icon.png', 'favicon.svg'],
       manifest: {
         name: 'ReNeuro — Apprendre en s\'amusant',
         short_name: 'ReNeuro',
