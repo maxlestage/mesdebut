@@ -20,8 +20,10 @@
 
   <rect width="1024" height="1024" fill="url(#fond)"/>
 
-  <!-- Tout le dessin tient dans le cercle inscrit : watchOS masque l'icône en rond. -->
-  <g>
+  <!-- Le dessin est cadré pour le masque le plus sévère (le cercle de watchOS) :
+       à l'échelle 1 il tient dans le cercle inscrit. generate.mjs l'agrandit
+       pour les plateformes qui rognent moins (squircle iOS, icône web carrée). -->
+  <g id="toque">
     <!-- corps de la toque, derrière le plateau -->
     <path d="M 372 470 L 372 592 Q 372 686 512 686 Q 652 686 652 592 L 652 470 Z" fill="url(#corps)"/>
     <!-- liseré clair sous le plateau -->
