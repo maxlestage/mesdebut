@@ -36,6 +36,16 @@ export const CATEGORIES = {
       { id: 4, emoji: '🏆', label: 'Minute par minute' },
     ],
   },
+  planifier: {
+    emoji: '📋', label: 'Planifier', title: 'Apprendre à planifier',
+    hasLearn: true, hasLevels: true,
+    // du plus concret au plus abstrait : les étapes, puis leur ordre, puis le temps
+    levels: [
+      { id: 1, emoji: '🌱', label: 'Les étapes' },
+      { id: 2, emoji: '🌿', label: "L'ordre" },
+      { id: 3, emoji: '🌳', label: 'Le temps' },
+    ],
+  },
   couleurs: { emoji: '🎨', label: 'Les couleurs', title: 'Les couleurs', hasLearn: true },
   formes: { emoji: '📐', label: 'Les formes', title: 'Les formes géométriques', hasLearn: true },
   chiffres: { emoji: '🧮', label: 'Les chiffres', title: 'Les chiffres de 0 à 9', hasLearn: true },
@@ -151,6 +161,100 @@ function numberRangeItems(a, b) {
     .map(n => ({ num: n, label: cap(numberToWords(n)) }))
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Planifier — décomposer une activité en étapes, les ordonner, estimer le temps
+// qu'elles prennent. C'est une fonction exécutive, et elle se rééduque.
+//
+// Les activités sont celles de la vie quotidienne, et leurs étapes s'enchaînent
+// vraiment : chaque étape suppose la précédente, pour qu'il n'y ait qu'un seul
+// ordre correct. « duree » est une estimation en minutes, volontairement ronde.
+export const ROUTINES = [
+  { key: 'medicament', emoji: '💊', label: 'Prendre son médicament', duree: 2, etapes: [
+    "Regarder l'ordonnance",
+    'Sortir la bonne boîte',
+    'Prendre le comprimé avec un verre d\'eau',
+    'Cocher sur le carnet',
+  ] },
+  { key: 'dents', emoji: '🦷', label: 'Se brosser les dents', duree: 3, etapes: [
+    'Prendre la brosse à dents',
+    'Mettre le dentifrice dessus',
+    'Se brosser les dents',
+    'Se rincer la bouche',
+  ] },
+  { key: 'cafe', emoji: '☕', label: 'Se faire un café', duree: 5, etapes: [
+    "Faire chauffer l'eau",
+    'Mettre le café dans la tasse',
+    "Verser l'eau chaude dans la tasse",
+    'Remuer avec la cuillère',
+  ] },
+  { key: 'sandwich', emoji: '🥪', label: 'Préparer un sandwich', duree: 5, etapes: [
+    'Sortir le pain et le jambon',
+    'Couper le pain en deux',
+    'Étaler le beurre',
+    'Poser le jambon dessus',
+    'Refermer le sandwich',
+  ] },
+  { key: 'lessive', emoji: '🧺', label: 'Faire une lessive', duree: 10, etapes: [
+    'Trier le linge sale',
+    'Mettre le linge dans la machine',
+    'Ajouter la lessive',
+    'Lancer la machine',
+    'Étendre le linge',
+  ] },
+  { key: 'habiller', emoji: '👕', label: "S'habiller", duree: 10, etapes: [
+    'Choisir ses vêtements',
+    'Enlever son pyjama',
+    'Mettre son pantalon et son haut',
+    'Mettre ses chaussettes',
+    'Mettre ses chaussures',
+  ] },
+  { key: 'pates', emoji: '🍝', label: 'Préparer des pâtes', duree: 15, etapes: [
+    "Remplir la casserole d'eau",
+    "Faire bouillir l'eau",
+    'Verser les pâtes dans l\'eau',
+    'Attendre la cuisson',
+    'Égoutter les pâtes',
+  ] },
+  { key: 'douche', emoji: '🚿', label: 'Prendre une douche', duree: 15, etapes: [
+    'Préparer sa serviette',
+    "Régler la température de l'eau",
+    'Se laver',
+    'Se sécher avec la serviette',
+  ] },
+  { key: 'lettre', emoji: '✉️', label: 'Envoyer une lettre', duree: 15, etapes: [
+    'Écrire la lettre',
+    "Mettre la lettre dans l'enveloppe",
+    'Coller le timbre',
+    'Poster la lettre dans la boîte',
+  ] },
+  { key: 'bus', emoji: '🚌', label: 'Prendre le bus', duree: 20, etapes: [
+    "Regarder l'horaire du bus",
+    "Aller à l'arrêt",
+    'Monter dans le bus',
+    'Valider son ticket',
+    'Descendre au bon arrêt',
+  ] },
+  { key: 'courses', emoji: '🛒', label: 'Faire les courses', duree: 45, etapes: [
+    'Écrire la liste des courses',
+    'Aller au magasin',
+    'Remplir le panier',
+    'Passer à la caisse',
+    'Ranger les courses',
+  ] },
+]
+
+// « 9 h 00 », « 10 h 05 » — la notation d'un agenda, plus lisible ici que les
+// lettres, et cohérente avec la catégorie « Lire l'heure ».
+export function formatHeure(h, m) {
+  return `${h} h ${String(m).padStart(2, '0')}`
+}
+
+/** Ajoute des minutes à une heure, sur 24 h. */
+export function ajouteMinutes(h, m, minutes) {
+  const total = ((h * 60 + m + minutes) % 1440 + 1440) % 1440
+  return [Math.floor(total / 60), total % 60]
+}
+
 export const LEARN_DATA = {
   jours: { title: '📖 Les 7 jours de la semaine', items: JOURS.map(j => ({ label: cap(j) })) },
   mois: { title: "📖 Les 12 mois de l'année", items: MOIS.map(m => ({ label: cap(m) })) },
@@ -199,6 +303,14 @@ export const LEARN_DATA = {
       [4, 5], [9, 20], [11, 40], [12, 50],
     ].map(([h, m]) => clockLearnItem(h, m)),
   },
+  planifier: {
+    title: '📖 Les étapes des activités',
+    intro: "Appuie sur une activité pour dérouler ses étapes, dans l'ordre",
+    groups: ROUTINES.map(r => ({
+      label: `${r.emoji} ${r.label} — ${r.duree} min`,
+      items: r.etapes.map((e, i) => ({ label: e, num: i + 1 })),
+    })),
+  },
   nombres: {
     title: '📖 Les nombres en lettres',
     intro: 'Appuie sur une dizaine pour dérouler tous les nombres',
@@ -212,6 +324,7 @@ export const LEARN_DATA = {
     ],
   },
 }
+
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
 function pick(arr) { return arr[rand(0, arr.length - 1)] }
@@ -776,13 +889,187 @@ function makeQuestion(category, level) {
   if (category === 'cinquante') return makeCinquanteQuestion()
   if (category === 'heure') return makeHeureQuestion(level)
   if (category === 'nombres') return makeNombresQuestion(level)
+  if (category === 'planifier') return makePlanifierQuestion(level)
   return makeMathQuestion(category, level)
+}
+
+
+// ─── Planifier : génération des questions ────────────────────────────────────
+
+/** Autres étapes de la même activité, comme leurres plausibles. */
+function autresEtapes(routine, exclure, nb) {
+  const restantes = routine.etapes.filter(e => !exclure.includes(e))
+  return shuffle(restantes).slice(0, nb)
+}
+
+/** Étapes puisées dans d'autres activités (pour l'intrus et les compléments). */
+function etapesAilleurs(routine, nb) {
+  const ailleurs = ROUTINES.filter(r => r.key !== routine.key).flatMap(r => r.etapes)
+  return shuffle(ailleurs).slice(0, nb)
+}
+
+/** Complète une liste de leurres jusqu'à `nb`, sans doublon avec la réponse. */
+function completeChoix(choix, reponse, routine, nb) {
+  const vus = new Set([reponse, ...choix])
+  for (const e of etapesAilleurs(routine, 12)) {
+    if (choix.length >= nb) break
+    if (!vus.has(e)) { choix.push(e); vus.add(e) }
+  }
+  return choix.slice(0, nb)
+}
+
+// 🌱 Les étapes : repérer le début, la fin, et ce qui suit
+function planEtapes() {
+  const r = pick(ROUTINES)
+  const type = pick(['premiere', 'derniere', 'apres'])
+
+  if (type === 'premiere') {
+    const reponse = r.etapes[0]
+    return {
+      q: `« ${r.label} » : par quoi commence-t-on ?`,
+      key: `plan:premiere:${r.key}`,
+      routine: r,
+      answer: reponse,
+      choices: completeChoix(autresEtapes(r, [reponse], 3), reponse, r, 3),
+    }
+  }
+  if (type === 'derniere') {
+    const reponse = r.etapes[r.etapes.length - 1]
+    return {
+      q: `« ${r.label} » : quelle est la dernière étape ?`,
+      key: `plan:derniere:${r.key}`,
+      routine: r,
+      answer: reponse,
+      choices: completeChoix(autresEtapes(r, [reponse], 3), reponse, r, 3),
+    }
+  }
+  // « juste après » : on tire une étape qui en a une suivante
+  const i = rand(0, r.etapes.length - 2)
+  const reponse = r.etapes[i + 1]
+  return {
+    q: `« ${r.label} » : que fait-on juste après « ${r.etapes[i]} » ?`,
+    key: `plan:apres:${r.key}:${i}`,
+    routine: r,
+    answer: reponse,
+    choices: completeChoix(autresEtapes(r, [reponse, r.etapes[i]], 3), reponse, r, 3),
+  }
+}
+
+// 🌿 L'ordre : l'étape qui manque, l'intrus, ce qui vient avant
+function planOrdre() {
+  const r = pick(ROUTINES)
+  const type = pick(['manquante', 'intrus', 'avant'])
+
+  if (type === 'manquante') {
+    const i = rand(0, r.etapes.length - 1)
+    const reponse = r.etapes[i]
+    const restantes = r.etapes.filter((_, j) => j !== i)
+    return {
+      q: `« ${r.label} » : quelle étape manque ?`,
+      liste: restantes, // affichée dans l'ordre, avec un trou
+      trou: i,
+      key: `plan:manquante:${r.key}:${i}`,
+      routine: r,
+      answer: reponse,
+      choices: completeChoix([], reponse, r, 3),
+    }
+  }
+  if (type === 'intrus') {
+    const [intrus] = etapesAilleurs(r, 1)
+    const gardees = shuffle(r.etapes).slice(0, 3)
+    return {
+      q: `« ${r.label} » : quelle étape n'en fait pas partie ?`,
+      liste: shuffle([...gardees, intrus]),
+      key: `plan:intrus:${r.key}:${intrus}`,
+      routine: r,
+      answer: intrus,
+      choices: gardees,
+    }
+  }
+  const i = rand(1, r.etapes.length - 1)
+  const reponse = r.etapes[i - 1]
+  return {
+    q: `« ${r.label} » : que fait-on juste avant « ${r.etapes[i]} » ?`,
+    key: `plan:avant:${r.key}:${i}`,
+    routine: r,
+    answer: reponse,
+    choices: completeChoix(autresEtapes(r, [reponse, r.etapes[i]], 3), reponse, r, 3),
+  }
+}
+
+// 🌳 Le temps : estimer une durée, calculer une fin, tenir dans un créneau
+function planTemps() {
+  const r = pick(ROUTINES)
+  const type = pick(['duree', 'fin', 'tient', 'pluslongue'])
+
+  if (type === 'duree') {
+    const autres = shuffle([...new Set(ROUTINES.map(x => x.duree))].filter(d => d !== r.duree))
+    return {
+      q: `Combien de temps prend « ${r.label} » à peu près ?`,
+      key: `plan:duree:${r.key}`,
+      routine: r,
+      answer: `${r.duree} min`,
+      choices: autres.slice(0, 3).map(d => `${d} min`),
+    }
+  }
+  if (type === 'fin') {
+    const h = rand(8, 17)
+    const m = pick([0, 15, 30, 45])
+    const [fh, fm] = ajouteMinutes(h, m, r.duree)
+    const leurres = new Set()
+    for (const ecart of shuffle([-30, -15, -10, 10, 15, 30, 60])) {
+      if (leurres.size >= 3) break
+      const [lh, lm] = ajouteMinutes(fh, fm, ecart)
+      leurres.add(formatHeure(lh, lm))
+    }
+    return {
+      q: `Tu commences « ${r.label} » à ${formatHeure(h, m)}. `
+        + `Ça prend ${r.duree} min. À quelle heure as-tu fini ?`,
+      key: `plan:fin:${r.key}:${h}:${m}`,
+      routine: r,
+      answer: formatHeure(fh, fm),
+      choices: [...leurres].slice(0, 3),
+    }
+  }
+  if (type === 'tient') {
+    // une seule activité tient dans le créneau, les trois autres sont trop longues
+    const creneau = pick([5, 10, 15, 20])
+    const tiennent = ROUTINES.filter(x => x.duree <= creneau)
+    const trop = ROUTINES.filter(x => x.duree > creneau)
+    if (tiennent.length && trop.length >= 3) {
+      const bonne = pick(tiennent)
+      return {
+        q: `Tu as ${creneau} minutes devant toi. Qu'est-ce qui rentre ?`,
+        key: `plan:tient:${creneau}:${bonne.key}`,
+        routine: bonne,
+        answer: bonne.label,
+        choices: shuffle(trop).slice(0, 3).map(x => x.label),
+      }
+    }
+  }
+  // la plus longue de quatre activités
+  const quatre = shuffle(ROUTINES).slice(0, 4)
+  const plusLongue = quatre.reduce((a, b) => (b.duree > a.duree ? b : a))
+  if (quatre.filter(x => x.duree === plusLongue.duree).length > 1) return planTemps()
+  return {
+    q: 'Laquelle de ces activités prend le plus de temps ?',
+    key: `plan:pluslongue:${quatre.map(x => x.key).sort().join('-')}`,
+    routine: plusLongue,
+    answer: plusLongue.label,
+    choices: quatre.filter(x => x.key !== plusLongue.key).map(x => x.label),
+  }
+}
+
+function makePlanifierQuestion(level) {
+  if (level === 1) return planEtapes()
+  if (level === 2) return planOrdre()
+  return planTemps()
 }
 
 // thèmes puisés par le mode Mélange (toutes les catégories réelles, sauf le mélange lui-même)
 const MELANGE_SOURCES = ['chiffres', 'cinquante', 'nombres', 'addition', 'soustraction',
   'multiplication', 'division', 'jours', 'mois', 'saisons', 'alphabet', 'couleurs', 'formes',
-  'heure']
+  'heure', 'planifier']
 
 // Entrelacement : on parcourt les thèmes en rotation pour que deux questions
 // voisines viennent presque toujours de thèmes différents.

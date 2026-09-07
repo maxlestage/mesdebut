@@ -1,6 +1,6 @@
 import { CATEGORIES } from '../questions.js'
 
-export default function Category({ category, onLearn, onQuiz, onBack }) {
+export default function Category({ category, onLearn, onQuiz, onPlan, onBack }) {
   const cat = CATEGORIES[category]
   return (
     <>
@@ -8,6 +8,7 @@ export default function Category({ category, onLearn, onQuiz, onBack }) {
       <div className="choice-list">
         <button className="big-btn" onClick={onLearn}>📖 Réviser d'abord</button>
         <button className="big-btn" onClick={onQuiz}>🎯 Faire le quiz</button>
+        {onPlan && <button className="big-btn" onClick={onPlan}>🗓️ Ma journée</button>}
       </div>
       <button className="back-link" onClick={onBack}>← Retour au menu</button>
     </>

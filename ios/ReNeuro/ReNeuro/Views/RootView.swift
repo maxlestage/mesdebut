@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-    private enum Screen { case menu, category, learn, levels, quiz, end, progress }
+    private enum Screen { case menu, category, learn, levels, quiz, end, progress, planner }
 
     @State private var screen: Screen = .menu
     @State private var categoryKey: String = "melange"
@@ -27,6 +27,7 @@ struct RootView: View {
             CategoryView(category: cat,
                          onLearn: { screen = .learn },
                          onQuiz: goToQuiz,
+                         onPlan: categoryKey == "planifier" ? { screen = .planner } : nil,
                          onBack: goMenu)
         case .learn:
             LearnView(categoryKey: categoryKey, onQuiz: goToQuiz, onBack: goMenu)
@@ -40,6 +41,8 @@ struct RootView: View {
                     onReplay: { startQuiz(level) }, onMenu: goMenu)
         case .progress:
             ProgressStatsView(onBack: goMenu)
+        case .planner:
+            PlannerView(onBack: goMenu)
         }
     }
 
