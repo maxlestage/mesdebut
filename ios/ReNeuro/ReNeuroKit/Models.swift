@@ -40,6 +40,11 @@ struct Question: Identifiable {
     var shapeName: String? = nil
     var clockHours: Int? = nil
     var clockMinutes: Int = 0
+    /// Étapes montrées sous l'énoncé (planification) ; sans quoi « quelle étape
+    /// manque ? » et « quel est l'intrus ? » seraient insolubles.
+    var steps: [String]? = nil
+    /// Position du trou dans `steps` pour « quelle étape manque ? ».
+    var stepHole: Int? = nil
     var category: String? = nil
 }
 

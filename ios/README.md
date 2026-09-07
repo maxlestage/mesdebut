@@ -40,6 +40,9 @@ ReNeuroKit/              # partagé : app iPhone + app Watch
   QuestionEngine.swift        # port de questions.js : données + génération des questions
   CategoryData.swift          # métadonnées des catégories + contenu des écrans de révision
   MemoryStore.swift           # mémoire de l'apprenant en SQLite (boîtes de Leitner)
+  PlanningData.swift          # activités du quotidien décomposées en étapes
+  PlanningQuestions.swift     # questions de la catégorie « Planifier »
+  StepsView.swift             # étapes montrées sous l'énoncé (avec le trou)
   MarblesView.swift           # billes à compter (Circle + dégradés)
   GeometricShapeView.swift    # formes géométriques (Path/Shape)
   ClockView.swift             # horloge analogique à aiguilles
@@ -59,6 +62,7 @@ ReNeuro/                 # app iPhone
     QuizView.swift            # déroulement du quiz + répétition espacée
     EndView.swift             # score et étoiles
     ProgressStatsView.swift   # écran « Mes progrès » (stats SQLite par catégorie)
+    PlannerView.swift         # « 🗓️ Ma journée » : le planificateur
     Haptics.swift             # retour tactile natif sur les réponses
     Theme.swift               # fonds, boutons, carte réutilisables
   Assets.xcassets/            # icône de l'app + couleur d'accent
@@ -110,11 +114,36 @@ confirmées par le **retour haptique** du poignet.
 La montre tient sa propre base SQLite : elle apprend ce que l'enfant y travaille,
 indépendamment de l'iPhone.
 
+## Planifier 📋
+
+Planifier — décomposer une activité en étapes, les ordonner, estimer le temps
+qu'elles prennent — est une **fonction exécutive**, souvent touchée après un AVC,
+et qui se rééduque. La catégorie a donc deux volets.
+
+Les **exercices** portent sur 11 activités du quotidien (se faire un café, faire
+une lessive, prendre le bus…) décomposées en étapes qui s'enchaînent vraiment :
+chaque étape suppose la précédente, il n'y a donc qu'un ordre correct. Trois
+niveaux : 🌱 les étapes, 🌿 l'ordre (étape manquante, intrus), 🌳 le temps
+(durée, heure de fin, tenir dans un créneau).
+
+**« 🗓️ Ma journée »** est le planificateur : on écrit ses tâches ou on prend une
+activité connue avec sa durée, on les ordonne, on les coche. Chaque tâche démarre
+quand la précédente se termine, donc l'heure de chacune s'affiche et la journée
+se voit déborder. Une tâche venue d'une activité connue peut dérouler ses étapes,
+pour faire le lien entre l'exercice et la vraie vie.
+
+La journée est gardée dans les réglages utilisateur (un petit document JSON
+remplacé en bloc) et non dans la base SQLite, réservée à la mémoire de
+l'apprenant — des lignes qu'on requête. Elle repart à zéro le lendemain.
+
+L'app Watch reprend automatiquement les **exercices** de planification, puisque le
+moteur est partagé ; le planificateur, lui, reste sur l'iPhone.
+
 ## Fonctionnalités
 
-Parité complète avec la version web : les 15 catégories (mélange, jours, mois,
-saisons, alphabet, heure, couleurs, formes, chiffres, jusqu'à 50, nombres, et les
-4 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
+Parité complète avec la version web : les 16 catégories (mélange, jours, mois,
+saisons, alphabet, heure, planifier, couleurs, formes, chiffres, jusqu'à 50,
+nombres, et les 4 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
 répétition espacée en cas d'erreur, et le mode Mélange entrelacé.
 
 Touches natives : **retour tactile** (haptique) sur les bonnes/mauvaises réponses,

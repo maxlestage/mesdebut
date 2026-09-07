@@ -5,6 +5,7 @@ import Learn from './components/Learn.jsx'
 import Levels from './components/Levels.jsx'
 import Quiz from './components/Quiz.jsx'
 import End from './components/End.jsx'
+import Planner from './components/Planner.jsx'
 import { CATEGORIES } from './questions.js'
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
             category={category}
             onLearn={() => setScreen('learn')}
             onQuiz={goToQuiz}
+            onPlan={category === 'planifier' ? () => setScreen('planner') : null}
             onBack={goMenu}
           />
         )}
@@ -70,6 +72,7 @@ export default function App() {
             onQuit={goMenu}
           />
         )}
+        {screen === 'planner' && <Planner onBack={goMenu} />}
         {screen === 'end' && (
           <End result={result} onReplay={() => startQuiz()} onMenu={goMenu} />
         )}
