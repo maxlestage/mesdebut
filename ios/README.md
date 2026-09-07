@@ -139,9 +139,15 @@ l'estimation tombait juste à 20 % près. Un bilan totalise la journée. C'est
 précisément cet écart entre l'estimation et le réel qu'on travaille, et la
 formulation ne reproche jamais un dépassement : le voir suffit à progresser.
 
-La journée est gardée dans les réglages utilisateur (un petit document JSON
-remplacé en bloc) et non dans la base SQLite, réservée à la mémoire de
-l'apprenant — des lignes qu'on requête. Elle repart à zéro le lendemain.
+Une journée mesurée ne se perd pas : au changement de date, elle part dans un
+**historique des estimations** (60 jours au plus). L'écran affiche alors les dix
+derniers jours en barres, et compare les cinq récents aux cinq précédents — c'est
+là que se voit la progression, bien plus que sur une journée isolée.
+
+La journée et l'historique sont gardés dans les réglages utilisateur (de petits
+documents JSON remplacés en bloc) et non dans la base SQLite, réservée à la
+mémoire de l'apprenant — des lignes qu'on requête. La journée repart à zéro le
+lendemain.
 
 L'app Watch reprend automatiquement les **exercices** de planification, puisque le
 moteur est partagé ; le planificateur, lui, reste sur l'iPhone.
