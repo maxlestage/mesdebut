@@ -4,6 +4,8 @@ struct CategoryView: View {
     let category: LearningCategory
     var onLearn: () -> Void
     var onQuiz: () -> Void
+    /// Troisième choix, propre à « Planifier » : le planificateur de journée.
+    var onPlan: (() -> Void)? = nil
     var onBack: () -> Void
 
     var body: some View {
@@ -11,6 +13,9 @@ struct CategoryView: View {
             ScreenTitle(text: "\(category.emoji) \(category.title)")
             BigButton(title: "📖 Réviser d'abord", action: onLearn)
             BigButton(title: "🎯 Faire le quiz", action: onQuiz)
+            if let onPlan {
+                BigButton(title: "🗓️ Ma journée", action: onPlan)
+            }
             BackButton(title: "← Retour au menu", action: onBack)
         }
     }

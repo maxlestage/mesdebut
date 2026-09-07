@@ -24,6 +24,16 @@ extension QuestionEngine {
                              Level(id: 3, emoji: "🌳", label: "De 5 en 5"),
                              Level(id: 4, emoji: "🏆", label: "Minute par minute"),
                          ]),
+        LearningCategory(key: "planifier", emoji: "📋", label: "Planifier",
+                         title: "Apprendre à planifier",
+                         hasLearn: true, hasLevels: true,
+                         gradient: [Color(hex: "#26c6da"), Color(hex: "#00838f")],
+                         // du plus concret au plus abstrait : les étapes, leur ordre, le temps
+                         levels: [
+                             Level(id: 1, emoji: "🌱", label: "Les étapes"),
+                             Level(id: 2, emoji: "🌿", label: "L'ordre"),
+                             Level(id: 3, emoji: "🌳", label: "Le temps"),
+                         ]),
         LearningCategory(key: "couleurs", emoji: "🎨", label: "Les couleurs", title: "Les couleurs",
                          hasLearn: true, gradient: [Color(hex: "#ff8a65"), Color(hex: "#d84315")]),
         LearningCategory(key: "formes", emoji: "📐", label: "Les formes", title: "Les formes géométriques",
@@ -101,6 +111,17 @@ extension QuestionEngine {
                                        sub: "\($0 / 10) dizaine\($0 > 10 ? "s" : "")",
                                        num: $0, marbles: $0, perRow: 10, colorByRow: true)
                          })
+        case "planifier":
+            return .accordion(
+                title: "📖 Les étapes des activités",
+                intro: "Appuie sur une activité pour dérouler ses étapes, dans l'ordre",
+                groups: ROUTINES.map { r in
+                    LearnGroup(label: "\(r.emoji) \(r.label) — \(r.duree) min",
+                               items: r.etapes.enumerated().map { i, etape in
+                                   LearnItem(label: etape, num: i + 1)
+                               })
+                })
+
         case "nombres":
             var groups: [LearnGroup] = (0..<10).map { d in
                 LearnGroup(label: "De \(d * 10) à \(d * 10 + 9)",

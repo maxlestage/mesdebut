@@ -94,17 +94,20 @@ enum QuestionEngine {
 
     // MARK: - Fabrique de Question
 
-    private static func makeQ(_ prompt: String, answer: String, choices: [String],
-                              key: String? = nil, marbles: Int? = nil, perRow: Int = 5,
-                              colorByRow: Bool = false, swatchHex: String? = nil,
-                              shapeName: String? = nil,
-                              clockHours: Int? = nil, clockMinutes: Int = 0) -> Question {
+    // interne (et non privée) : PlanningQuestions.swift l'appelle depuis un autre fichier
+    static func makeQ(_ prompt: String, answer: String, choices: [String],
+                      key: String? = nil, marbles: Int? = nil, perRow: Int = 5,
+                      colorByRow: Bool = false, swatchHex: String? = nil,
+                      shapeName: String? = nil,
+                      clockHours: Int? = nil, clockMinutes: Int = 0,
+                      steps: [String]? = nil, stepHole: Int? = nil) -> Question {
         Question(prompt: prompt, answer: answer, choices: choices,
                  options: ([answer] + choices).shuffled(),
                  dedupKey: key ?? prompt,
                  marbles: marbles, marblesPerRow: perRow, marblesColorByRow: colorByRow,
                  swatchHex: swatchHex, shapeName: shapeName,
-                 clockHours: clockHours, clockMinutes: clockMinutes)
+                 clockHours: clockHours, clockMinutes: clockMinutes,
+                 steps: steps, stepHole: stepHole)
     }
 
     // MARK: - Distracteurs
@@ -535,6 +538,7 @@ enum QuestionEngine {
         case "cinquante": return makeCinquante()
         case "heure": return makeHeure(level)
         case "nombres": return makeNombres(level)
+        case "planifier": return makePlanifier(level)
         default: return makeMath(category, level)
         }
     }
@@ -543,7 +547,7 @@ enum QuestionEngine {
 
     static let melangeSources = ["chiffres", "cinquante", "nombres", "addition", "soustraction",
                                  "multiplication", "division", "jours", "mois", "saisons",
-                                 "alphabet", "couleurs", "formes", "heure"]
+                                 "alphabet", "couleurs", "formes", "heure", "planifier"]
 
     private static func buildInterleaved() -> [Question] {
         let sources = melangeSources.shuffled()

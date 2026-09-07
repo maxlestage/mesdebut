@@ -106,6 +106,23 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
               <Clock hours={question.clock.hours} minutes={question.clock.minutes} size={170} />
             </span>
           )}
+          {question.liste && (question.trou != null ? (
+            <ol className="quiz-etapes">
+              {[
+                ...question.liste.slice(0, question.trou),
+                null,
+                ...question.liste.slice(question.trou),
+              ].map((etape, i) => (
+                <li key={i} className={etape === null ? 'trou' : undefined}>
+                  {etape ?? '❓ à trouver'}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <ul className="quiz-etapes sans-ordre">
+              {question.liste.map(etape => <li key={etape}>{etape}</li>)}
+            </ul>
+          ))}
           {question.marbles != null && (
             <span className="shape-figure">
               <Marbles
