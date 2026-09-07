@@ -33,10 +33,20 @@ export default function Planner({ onBack }) {
   const [texte, setTexte] = useState('')
   const [duree, setDuree] = useState(15)
   const [ouverte, setOuverte] = useState(null) // tâche dont on déroule les étapes
+  const [, setTic] = useState(0) // force le réaffichage du chrono en cours
 
   useEffect(() => {
     try { localStorage.setItem(CLE, JSON.stringify(journee)) } catch { /* stockage indisponible */ }
   }, [journee])
+
+  // Le chrono d'une tâche en cours doit avancer sous les yeux : on ne fait
+  // tourner l'horloge que s'il y a effectivement quelque chose à afficher.
+  const enCours = journee.taches.find(t => t.demarreA)
+  useEffect(() => {
+    if (!enCours) return
+    const id = setInterval(() => setTic(n => n + 1), 1000)
+    return () => clearInterval(id)
+  }, [!!enCours])
 
   const { taches, debut } = journee
   const majTaches = fn => setJournee(j => ({ ...j, taches: fn(j.taches) }))
@@ -53,6 +63,21 @@ export default function Planner({ onBack }) {
   }, [taches, debut])
 
   const total = taches.reduce((s, t) => s + t.duree, 0)
+  // tâches dont on connaît le temps réellement passé
+  const mesurees = taches.filter(t => t.reel != null)
+  const prevuMesure = mesurees.reduce((s, t) => s + t.duree, 0)
+  const reelMesure = mesurees.reduce((s, t) => s + t.reel, 0)
+  const bilanEstimation = (() => {
+    if (!mesurees.length) return ''
+    const debut = `Sur ${mesurees.length} tâche${mesurees.length > 1 ? 's' : ''} chronométrée${mesurees.length > 1 ? 's' : ''} : `
+      + `${prevuMesure} min prévues, ${reelMesure} min réelles`
+    const ecart = reelMesure - prevuMesure
+    if (Math.abs(ecart) <= Math.max(3, prevuMesure * 0.15)) {
+      return `${debut} — tes estimations sont justes ! 🎯`
+    }
+    if (ecart > 0) return `${debut} — tu as tendance à sous-estimer, c'est très courant. 🌱`
+    return `${debut} — tu prends moins de temps que prévu.`
+  })()
   const faites = taches.filter(t => t.fait).length
   const [fh, fm] = ajouteMinutes(debut.h, debut.m, total)
 
@@ -62,12 +87,34 @@ export default function Planner({ onBack }) {
     majTaches(ts => [...ts, {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       label: propre, duree: dureeTache, fait: false, routine,
+      demarreA: null, reel: null,
     }])
   }
 
   const ajouteEcrite = () => { ajoute(texte, duree); setTexte('') }
 
-  const bascule = id => majTaches(ts => ts.map(t => (t.id === id ? { ...t, fait: !t.fait } : t)))
+  /** Minutes écoulées depuis le démarrage, arrondies à la minute la plus proche. */
+  const ecoulees = t => Math.max(0, Math.round((Date.now() - t.demarreA) / 60000))
+
+  /**
+   * Démarre une tâche — et arrête celle qui tournait : on fait une chose à la
+   * fois, c'est justement ce qu'on apprend ici.
+   */
+  const demarre = id => majTaches(ts => ts.map(t => {
+    if (t.id === id) return { ...t, demarreA: Date.now() }
+    return t.demarreA ? { ...t, demarreA: null, reel: ecoulees(t) } : t
+  }))
+
+  const arrete = id => majTaches(ts => ts.map(t => (
+    t.id === id && t.demarreA ? { ...t, demarreA: null, reel: ecoulees(t) } : t
+  )))
+
+  // Cocher une tâche en cours arrête aussi son chrono et enregistre le temps mis.
+  const bascule = id => majTaches(ts => ts.map(t => {
+    if (t.id !== id) return t
+    if (!t.fait && t.demarreA) return { ...t, fait: true, demarreA: null, reel: ecoulees(t) }
+    return { ...t, fait: !t.fait }
+  }))
   const supprime = id => majTaches(ts => ts.filter(t => t.id !== id))
 
   const deplace = (i, sens) => majTaches(ts => {
@@ -77,6 +124,16 @@ export default function Planner({ onBack }) {
     ;[copie[i], copie[j]] = [copie[j], copie[i]]
     return copie
   })
+
+  /**
+   * Vert quand l'estimation était juste (à 20 % près), orange sinon. On ne
+   * reproche jamais un dépassement : mal estimer est précisément ce qu'on
+   * travaille, et le voir suffit à progresser.
+   */
+  const ecartClasse = t => {
+    const marge = Math.max(2, t.duree * 0.2)
+    return Math.abs(t.reel - t.duree) <= marge ? 'plan-juste' : 'plan-ecart'
+  }
 
   const changeDebut = e => {
     const [h, m] = e.target.value.split(':').map(Number)
@@ -123,9 +180,21 @@ export default function Planner({ onBack }) {
                     {t.fait ? '☑' : '☐'}
                   </button>
                   <span className="plan-label">{t.label}</span>
-                  <span className="plan-duree">{t.duree} min</span>
+                  <span className="plan-duree">
+                    {t.demarreA ? (
+                      <span className="plan-chrono">⏱ {ecoulees(t)} min</span>
+                    ) : t.reel != null ? (
+                      <span className={ecartClasse(t)}>{t.duree} → {t.reel} min</span>
+                    ) : (
+                      `${t.duree} min`
+                    )}
+                  </span>
                 </div>
                 <div className="plan-actions">
+                  {!t.fait && (t.demarreA
+                    ? <button className="plan-mini en-cours" onClick={() => arrete(t.id)}>■ arrêter</button>
+                    : <button className="plan-mini" onClick={() => demarre(t.id)}>▶ démarrer</button>
+                  )}
                   {routine && (
                     <button
                       className="plan-mini"
@@ -161,6 +230,12 @@ export default function Planner({ onBack }) {
             {faites} faite{faites > 1 ? 's' : ''} sur {taches.length}
             {faites === taches.length && ' — journée terminée ! 🎉'}
           </span>
+          {mesurees.length > 0 && (
+            <>
+              <br />
+              <span className="plan-estimation">{bilanEstimation}</span>
+            </>
+          )}
         </p>
       )}
 

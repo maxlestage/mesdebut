@@ -418,3 +418,9 @@ h1 { font-size: clamp(1.3rem, 5vw, 1.7rem); color: #4a3f8f; margin-bottom: 6px; 
   background: #fff7e0; border-color: #ffd98a; border-style: dashed;
   color: #a97a10; font-weight: 700;
 }
+
+.plan-chrono { color: #e08a00; font-weight: 700; }
+.plan-juste { color: #2eb350; font-weight: 700; }
+.plan-ecart { color: #e08a00; font-weight: 700; }
+.plan-mini.en-cours { background: #fff7e0; border-color: #ffd98a; color: #a97a10; font-weight: 700; }
+.plan-estimation { display: inline-block; margin-top: 6px; color: #6a5fbb; }

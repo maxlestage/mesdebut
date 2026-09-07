@@ -132,6 +132,13 @@ quand la précédente se termine, donc l'heure de chacune s'affiche et la journ�
 se voit déborder. Une tâche venue d'une activité connue peut dérouler ses étapes,
 pour faire le lien entre l'exercice et la vraie vie.
 
+Chaque tâche a un **chronomètre**. On la démarre — ce qui arrête celle qui
+tournait, puisqu'on fait une chose à la fois — et à l'arrêt l'app affiche
+« 15 → 25 min » : le temps prévu contre le temps réellement passé, en vert si
+l'estimation tombait juste à 20 % près. Un bilan totalise la journée. C'est
+précisément cet écart entre l'estimation et le réel qu'on travaille, et la
+formulation ne reproche jamais un dépassement : le voir suffit à progresser.
+
 La journée est gardée dans les réglages utilisateur (un petit document JSON
 remplacé en bloc) et non dans la base SQLite, réservée à la mémoire de
 l'apprenant — des lignes qu'on requête. Elle repart à zéro le lendemain.
