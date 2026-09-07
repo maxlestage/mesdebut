@@ -72,7 +72,11 @@ ReNeuroWatch/            # app Apple Watch
   ReNeuroWatchApp.swift       # point d'entrée @main
   WatchRootView.swift         # liste des catégories et des niveaux
   WatchQuizView.swift         # quiz au poignet + écran de score
+  Assets.xcassets/            # icône de la montre + couleur d'accent
 ```
+
+Les sources vectorielles des icônes et le script qui les rasterise sont dans
+[`../icons/`](../icons/).
 
 ## Activité en direct (écran verrouillé et Dynamic Island) 🔒
 
@@ -156,7 +160,10 @@ Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
 - Cible de déploiement : iOS 16.0 (extension widget iOS 16.2, montre watchOS 10.0)
 - Orientation : portrait
 - iPhone et iPad
-- Icône générée (🎓 sur dégradé violet), couleur d'accent `#667eea`
+- Icônes : 🎓 sur dégradé violet, couleur d'accent `#667eea`. Celle de la montre
+  est **dessinée en SVG** (`icons/watch-icon.svg`) plutôt qu'agrandie depuis un
+  émoji : watchOS masque les icônes en cercle, donc tout le dessin tient dans le
+  cercle inscrit, et le vectoriel reste net jusqu'aux petites tailles du cadran.
 
 ## Crédits
 
