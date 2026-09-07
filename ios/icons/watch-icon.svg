@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#667eea"/>
+      <stop offset="1" stop-color="#764ba2"/>
+    </linearGradient>
+    <linearGradient id="dessus" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#54545c"/>
+      <stop offset="1" stop-color="#35353c"/>
+    </linearGradient>
+    <linearGradient id="corps" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33333a"/>
+      <stop offset="1" stop-color="#212127"/>
+    </linearGradient>
+    <linearGradient id="or" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc93c"/>
+      <stop offset="1" stop-color="#e09b18"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#fond)"/>
+
+  <!-- Tout le dessin tient dans le cercle inscrit : watchOS masque l'icône en rond. -->
+  <g>
+    <!-- corps de la toque, derrière le plateau -->
+    <path d="M 372 470 L 372 592 Q 372 686 512 686 Q 652 686 652 592 L 652 470 Z" fill="url(#corps)"/>
+    <!-- liseré clair sous le plateau -->
+    <path d="M 372 470 L 372 500 Q 512 556 652 500 L 652 470 Z" fill="#6e6e78" opacity="0.55"/>
+
+    <!-- plateau vu en perspective -->
+    <path d="M 512 296 L 836 436 L 512 576 L 188 436 Z" fill="url(#dessus)"/>
+    <!-- tranche du plateau -->
+    <path d="M 188 436 L 512 576 L 836 436 L 836 452 L 512 592 L 188 452 Z" fill="#22222a"/>
+
+    <!-- bouton central et cordon vers le bord droit -->
+    <ellipse cx="512" cy="436" rx="26" ry="14" fill="#6e6e78"/>
+    <path d="M 512 436 Q 690 424 792 470" stroke="url(#or)" stroke-width="20"
+          fill="none" stroke-linecap="round"/>
+
+    <!-- gland : nœud puis franges -->
+    <ellipse cx="792" cy="502" rx="26" ry="32" fill="url(#or)"/>
+    <path d="M 770 524 L 762 626 M 785 528 L 782 636 M 800 528 L 806 634 M 814 522 L 826 620"
+          stroke="url(#or)" stroke-width="17" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
