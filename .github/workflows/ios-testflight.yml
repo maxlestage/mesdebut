@@ -27,6 +27,27 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      # Sans ce contrôle, des secrets absents produisent une erreur obscure de
+      # xcodebuild (« -authenticationKeyID is required ») trois étapes plus loin.
+      - name: Vérifier les secrets App Store Connect
+        run: |
+          manquants=()
+          [ -n "$ASC_KEY_ID" ]      || manquants+=("APP_STORE_CONNECT_API_KEY_ID")
+          [ -n "$ASC_ISSUER_ID" ]   || manquants+=("APP_STORE_CONNECT_API_ISSUER_ID")
+          [ -n "$ASC_KEY_CONTENT" ] || manquants+=("APP_STORE_CONNECT_API_KEY_BASE64")
+          [ -n "$APPLE_TEAM_ID" ]   || manquants+=("APPLE_TEAM_ID")
+          if [ ${#manquants[@]} -gt 0 ]; then
+            echo "::error::Secrets manquants : ${manquants[*]}"
+            echo ""
+            echo "L'envoi sur TestFlight a besoin d'une clé API App Store Connect."
+            echo "À définir dans Settings → Secrets and variables → Actions :"
+            for m in "${manquants[@]}"; do echo "  - $m"; done
+            echo ""
+            echo "Marche à suivre détaillée : ios/CI.md"
+            exit 1
+          fi
+          echo "Les quatre secrets sont présents."
+
       - name: Installer la clé API App Store Connect
         run: |
           mkdir -p "$HOME/private_keys"
