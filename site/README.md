@@ -47,6 +47,24 @@ ordre, émojis, libellés, titres, niveaux) et échoue si elles divergent :
 npm run check
 ```
 
+## L'offre
+
+Le site présente une offre **payante** : 4,99 € par mois, et **rien de gratuit**
+— ni essai, ni accès libre. Concrètement, le site ne contient **aucun lien vers
+l'application** : son seul lien mène à l'ancre des thèmes, plus bas dans la page.
+
+Tant que l'application n'est pas publiée, l'en-tête annonce « Bientôt sur
+l'App Store » sous forme de **mention, pas de bouton** : il n'y a rien à ouvrir,
+et un bouton inerte ne ferait qu'induire en erreur. Le seul geste possible étant
+de parcourir les thèmes, c'est lui qui garde le bouton plein.
+
+Le prix et ce qu'il comprend sont dans `OFFRE`, dans `src/donnees.ts`.
+
+> ⚠️ L'application reste servie sous `/app` et **joignable par son adresse
+> directe** : seul le site cesse d'y mener. Réserver l'accès aux personnes
+> abonnées demanderait une authentification et un paiement, qui n'existent pas
+> encore.
+
 ## Structure
 
 ```
@@ -62,6 +80,7 @@ src/
     Planification.tsx   # mise en avant de « Planifier » et « Ma journée »
     Supports.tsx        # web, iPhone, Apple Watch
     Principes.tsx       # les six principes d'apprentissage
+    Tarif.tsx           # l'offre : prix, ce qui est compris, disponibilité
     Pied.tsx            # crédits et mention
 public/icon.svg         # logo (copie de icons/icon.svg)
 scripts/

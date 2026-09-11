@@ -108,3 +108,23 @@ export const PRINCIPES: readonly Principe[] = [
     texte: 'Des étoiles, des félicitations, et jamais de reproche sur une erreur.',
   },
 ]
+
+export type Offre = {
+  readonly prix: string
+  readonly periode: string
+  readonly inclus: readonly string[]
+  readonly disponibilite: string
+}
+
+export const OFFRE: Offre = {
+  prix: '4,99 €',
+  periode: 'par mois',
+  inclus: [
+    'Les seize thèmes, sans exception',
+    'Le web, l\'iPhone et l\'Apple Watch',
+    'La progression retenue d\'une séance à l\'autre',
+    'Le planificateur de journée et son suivi',
+    'Les mises à jour et les thèmes à venir',
+  ],
+  disponibilite: "Bientôt sur l'App Store",
+}
