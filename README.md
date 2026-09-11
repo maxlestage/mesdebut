@@ -32,15 +32,29 @@ Ou avec la CLI Heroku :
 heroku login
 heroku create reneuro
 heroku buildpacks:add heroku/nodejs
-heroku buildpacks:add heroku-community/nginx
+heroku buildpacks:add heroku-community/nginx   # doit être le dernier
 git push heroku master
 heroku open
 ```
 
+> ⚠️ **Sur une application Heroku déjà existante**, les buildpacks déclarés dans
+> `app.json` ne s'appliquent pas : ce fichier ne sert qu'au bouton « Deploy to
+> Heroku » et aux applications de revue. Il faut les ajouter explicitement :
+>
+> ```bash
+> heroku buildpacks            # voir ceux en place
+> heroku buildpacks:add heroku-community/nginx
+> ```
+>
+> Sans le buildpack nginx, `bin/start-nginx-static` n'existe pas sur le dyno : la
+> mise en service échoue et Heroku **continue de servir la version précédente**,
+> donc l'ancienne application — sans que l'URL change.
+
 Le buildpack Node lance `heroku-postbuild`, qui construit le site
 (`npm --prefix site ci && npm --prefix site run build`) ; nginx sert ensuite
-`site/dist/`. Le `Procfile` se contente de `web: bin/start-nginx-solo` : aucun
-processus applicatif.
+`site/dist/`. Le `Procfile` se contente de `web: bin/start-nginx-static` : aucun
+processus applicatif. (`start-nginx-solo` existe aussi mais attend un socket
+amont : c'est le mode proxy, pas le mode statique.)
 
 > Le buildpack statique historique d'Heroku (`heroku/heroku-buildpack-static`)
 > est **archivé depuis novembre 2023** ; sa documentation renvoie elle-même vers
