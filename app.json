@@ -1,10 +1,16 @@
 {
   "name": "ReNeuro",
-  "description": "Site de présentation de ReNeuro — statique, servi par nginx",
-  "keywords": ["react", "typescript", "site", "éducation"],
+  "description": "Site de présentation de ReNeuro — statique, servi par le buildpack Node",
+  "keywords": [
+    "react",
+    "typescript",
+    "site",
+    "éducation"
+  ],
   "buildpacks": [
-    { "url": "heroku/nodejs" },
-    { "url": "heroku-community/nginx" }
+    {
+      "url": "heroku/nodejs"
+    }
   ],
   "stack": "heroku-24"
 }

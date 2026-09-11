@@ -27,40 +27,39 @@ npm run check     # vérifier les types
 
 `npm run build` produit un dossier **entièrement statique**, à chemins relatifs :
 il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un domaine
-comme dans un sous-dossier.
+comme dans un sous-dossier. Le dépôt contient aussi de quoi le publier sur Heroku
+(voir plus bas).
 
 Voir [`site/README.md`](site/README.md) pour le détail.
 
 ## Déployer sur Heroku
 
-Aucun serveur n'est écrit ici : le buildpack Node construit le site, et le
-buildpack nginx le sert. Le `Procfile` se contente de `web: bin/start-nginx-static`.
+Un seul buildpack, `heroku/nodejs`, celui installé par défaut : rien à configurer
+côté Heroku.
 
 ```bash
-heroku buildpacks:clear
-heroku buildpacks:add heroku/nodejs
-heroku buildpacks:add heroku-community/nginx   # doit être le dernier
 git push heroku master
 ```
 
-> ⚠️ **Les deux buildpacks sont nécessaires**, et `app.json` ne les installe pas
-> sur une application déjà existante — ce fichier ne sert qu'au bouton « Deploy
-> to Heroku » et aux applications de revue. Vérifier avec `heroku buildpacks` :
->
-> - sans **`heroku/nodejs`**, la construction échoue (« unable to detect a
->   Node.js codebase ») ;
-> - sans **`heroku-community/nginx`**, `bin/start-nginx-static` n'existe pas sur
->   le dyno, la mise en service échoue, et Heroku continue de servir la version
->   précédente sans que l'URL change.
+Le buildpack construit le site (`heroku-postbuild`), puis `npm start` le sert avec
+[`serve`](https://www.npmjs.com/package/serve), un serveur de fichiers statiques
+du registre npm — aucun serveur n'est écrit ici. Le `Procfile` se contente de
+`web: npm start`.
 
-Le `package.json` de la racine ne sert qu'à ça : il n'a aucune dépendance, et son
-seul rôle est de faire construire `site/` par le buildpack Node.
+`serve.json` définit le comportement : les anciennes adresses de l'application
+web (`/app`, `/presentation`) redirigent vers la racine, les fichiers d'assets
+sont gardés un an (leur nom porte une empreinte), et l'index comme le service
+worker sont toujours revalidés.
 
-> Le script de construction fait `npm --prefix site ci **--include=dev**`. Heroku
-> pose `NODE_ENV=production`, ce qui fait sauter les `devDependencies` — or
-> `tsc` et `vite` y vivent, et la construction échouerait sur « tsc: not found ».
-> Le drapeau les réinstalle sans dépendre d'une variable d'environnement à régler
-> sur Heroku.
+Deux choses à savoir :
+
+- Le script de construction fait `npm --prefix site ci **--include=dev**`. Heroku
+  pose `NODE_ENV=production`, ce qui fait sauter les `devDependencies` — or `tsc`
+  et `vite` y vivent, et la construction échouerait sur « tsc: not found ».
+- `serve` est une **dépendance de production** : sans cela, Heroku l'élaguerait
+  après la construction et le démarrage échouerait.
+
+Le `package.json` de la racine ne sert qu'à ça : construire `site/` et le servir.
 
 ## L'application
 
