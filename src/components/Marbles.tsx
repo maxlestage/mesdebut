@@ -3,11 +3,13 @@
 const MARBLE_COLORS = ['#e53935', '#1e88e5', '#fdd835', '#43a047', '#fb8c00',
   '#8e24aa', '#f06292', '#26c6da', '#795548', '#5c6bc0']
 
-export default function Marbles({ count, size = 28, perRow = 5, colorByRow = false }) {
+type Props = { count: number; size?: number; perRow?: number; colorByRow?: boolean }
+
+export default function Marbles({ count, size = 28, perRow = 5, colorByRow = false }: Props) {
   if (count === 0) {
     return <span className="marbles-empty">(aucune bille)</span>
   }
-  const rows = []
+  const rows: number[][] = []
   for (let start = 0; start < count; start += perRow) {
     rows.push(Array.from({ length: Math.min(perRow, count - start) }, (_, i) => start + i))
   }

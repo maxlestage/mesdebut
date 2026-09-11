@@ -1,12 +1,15 @@
 // Horloge analogique à aiguilles, dessinée en SVG (repère 100×100).
 // La petite aiguille (foncée, courte) indique les heures,
 // la grande (violette, longue) indique les minutes.
-export default function Clock({ hours, minutes, size = 150 }) {
-  const toRad = (deg) => (deg * Math.PI) / 180
+type Props = { hours: number; minutes: number; size?: number }
+
+export default function Clock({ hours, minutes, size = 150 }: Props) {
+  const toRad = (deg: number) => (deg * Math.PI) / 180
   // l'aiguille des heures avance aussi avec les minutes (3h30 → entre 3 et 4)
   const hourAngle = toRad((hours % 12) * 30 + minutes * 0.5)
   const minuteAngle = toRad(minutes * 6)
-  const tip = (angle, len) => [50 + len * Math.sin(angle), 50 - len * Math.cos(angle)]
+  const tip = (angle: number, len: number): [number, number] =>
+    [50 + len * Math.sin(angle), 50 - len * Math.cos(angle)]
 
   const [hx, hy] = tip(hourAngle, 25)
   const [mx, my] = tip(minuteAngle, 37)

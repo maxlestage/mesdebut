@@ -2,7 +2,7 @@
 // Ce contrôle la compare à la source de vérité, src/questions.js de l'app, pour
 // qu'un thème ajouté ou renommé ne passe pas inaperçu ici.
 import { CATEGORIES as SITE } from '../src/donnees.ts'
-import { CATEGORIES as APP, levelsFor } from '../../src/questions.js'
+import { CATEGORIES as APP, levelsFor } from '../../src/questions.ts'
 
 const erreurs = []
 const clesApp = Object.keys(APP)

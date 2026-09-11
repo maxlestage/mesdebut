@@ -1,7 +1,14 @@
-import { CATEGORIES, levelsFor } from '../questions.js'
+import { CATEGORIES, levelsFor } from '../questions.ts'
+import type { Category, CategoryKey } from '../questions.ts'
 
-export default function Levels({ category, onSelect, onBack }) {
-  const cat = CATEGORIES[category]
+type Props = {
+  category: CategoryKey
+  onSelect: (level: number) => void
+  onBack: () => void
+}
+
+export default function Levels({ category, onSelect, onBack }: Props) {
+  const cat: Category = CATEGORIES[category]
   return (
     <>
       <h1>{cat.emoji} {cat.title}</h1>

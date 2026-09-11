@@ -1,22 +1,49 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ROUTINES, formatHeure, ajouteMinutes } from '../questions.js'
+import type { ChangeEvent } from 'react'
+import { ROUTINES, formatHeure, ajouteMinutes } from '../questions.ts'
 
 const CLE = 'reneuro-journee'
 const CLE_HIST = 'reneuro-estimations'
 const HIST_MAX = 60 // jours conservés
 const DUREES = [5, 10, 15, 20, 30, 45, 60]
 
-const aujourdhui = () => new Date().toISOString().slice(0, 10)
+
+/** Une tâche de la journée : ce qu'on prévoit, et ce qu'on a réellement mis. */
+export type Tache = {
+  id: string
+  label: string
+  /** Durée estimée, en minutes. */
+  duree: number
+  fait: boolean
+  /** Clé de l'activité connue d'où vient la tâche, pour dérouler ses étapes. */
+  routine: string | null
+  /** Instant de démarrage tant que le chrono tourne, null sinon. */
+  demarreA: number | null
+  /** Minutes réellement passées, une fois le chrono arrêté. */
+  reel: number | null
+}
+
+export type Journee = {
+  /** Date ISO : la journée repart à zéro le lendemain. */
+  date: string
+  debut: { h: number; m: number }
+  taches: Tache[]
+}
+
+/** Le prévu et le réel d'une journée révolue, pour suivre la tendance. */
+export type JourEstime = { date: string; nb: number; prevu: number; reel: number }
+
+const aujourdhui = (): string => new Date().toISOString().slice(0, 10)
 
 const dateLisible = () =>
   new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
 /** Journée vide, commencée à 9 h. */
-const journeeVide = () => ({ date: aujourdhui(), debut: { h: 9, m: 0 }, taches: [] })
+const journeeVide = (): Journee => ({ date: aujourdhui(), debut: { h: 9, m: 0 }, taches: [] })
 
 /** Le prévu et le réel d'une journée, pour les tâches effectivement chronométrées. */
-export function bilanJournee(journee) {
-  const mesurees = (journee?.taches || []).filter(t => t.reel != null)
+export function bilanJournee(journee: Journee | null | undefined): Omit<JourEstime, 'date'> {
+  const mesurees = (journee?.taches || []).filter((t): t is Tache & { reel: number } => t.reel != null)
   return {
     nb: mesurees.length,
     prevu: mesurees.reduce((s, t) => s + t.duree, 0),
@@ -24,7 +51,7 @@ export function bilanJournee(journee) {
   }
 }
 
-export function chargeHistorique() {
+export function chargeHistorique(): JourEstime[] {
   try {
     const brut = localStorage.getItem(CLE_HIST)
     const h = brut ? JSON.parse(brut) : []
@@ -39,7 +66,7 @@ export function chargeHistorique() {
  * On ne garde que HIST_MAX jours : c'est une tendance qu'on regarde, pas une
  * archive.
  */
-function archive(journee) {
+function archive(journee: Journee | null | undefined): void {
   const { nb, prevu, reel } = bilanJournee(journee)
   if (!nb || !journee?.date) return
   try {
@@ -56,7 +83,7 @@ function archive(journee) {
  * que la tendance des estimations survive au changement de jour.
  * Un stockage illisible ne doit jamais bloquer l'écran.
  */
-function chargeJournee() {
+function chargeJournee(): Journee {
   try {
     const brut = localStorage.getItem(CLE)
     if (!brut) return journeeVide()
@@ -71,11 +98,13 @@ function chargeJournee() {
   }
 }
 
-export default function Planner({ onBack }) {
+type Props = { onBack: () => void }
+
+export default function Planner({ onBack }: Props) {
   const [journee, setJournee] = useState(chargeJournee)
   const [texte, setTexte] = useState('')
   const [duree, setDuree] = useState(15)
-  const [ouverte, setOuverte] = useState(null) // tâche dont on déroule les étapes
+  const [ouverte, setOuverte] = useState<string | null>(null) // tâche dont on déroule les étapes
   const [, setTic] = useState(0) // force le réaffichage du chrono en cours
 
   useEffect(() => {
@@ -92,7 +121,8 @@ export default function Planner({ onBack }) {
   }, [!!enCours])
 
   const { taches, debut } = journee
-  const majTaches = fn => setJournee(j => ({ ...j, taches: fn(j.taches) }))
+  const majTaches = (fn: (taches: Tache[]) => Tache[]) =>
+    setJournee(j => ({ ...j, taches: fn(j.taches) }))
 
   // Chaque tâche démarre quand la précédente se termine : c'est ce calcul qui
   // rend le plan concret, et qui montre tout de suite si la journée déborde.
@@ -115,7 +145,7 @@ export default function Planner({ onBack }) {
     return ce_jour.nb ? [...passe, { date: journee.date, ...ce_jour }] : passe
   }, [journee])
   // tâches dont on connaît le temps réellement passé
-  const mesurees = taches.filter(t => t.reel != null)
+  const mesurees = taches.filter((t): t is Tache & { reel: number } => t.reel != null)
   const prevuMesure = mesurees.reduce((s, t) => s + t.duree, 0)
   const reelMesure = mesurees.reduce((s, t) => s + t.reel, 0)
   const bilanEstimation = (() => {
@@ -132,7 +162,7 @@ export default function Planner({ onBack }) {
   const faites = taches.filter(t => t.fait).length
   const [fh, fm] = ajouteMinutes(debut.h, debut.m, total)
 
-  const ajoute = (label, dureeTache, routine = null) => {
+  const ajoute = (label: string, dureeTache: number, routine: string | null = null) => {
     const propre = label.trim()
     if (!propre) return
     majTaches(ts => [...ts, {
@@ -145,34 +175,34 @@ export default function Planner({ onBack }) {
   const ajouteEcrite = () => { ajoute(texte, duree); setTexte('') }
 
   /** Minutes écoulées depuis le démarrage, arrondies à la minute la plus proche. */
-  const ecoulees = t => Math.max(0, Math.round((Date.now() - t.demarreA) / 60000))
+  const ecoulees = (t: Tache) => Math.max(0, Math.round((Date.now() - (t.demarreA ?? Date.now())) / 60000))
 
   /**
    * Démarre une tâche — et arrête celle qui tournait : on fait une chose à la
    * fois, c'est justement ce qu'on apprend ici.
    */
-  const demarre = id => majTaches(ts => ts.map(t => {
+  const demarre = (id: string) => majTaches(ts => ts.map(t => {
     if (t.id === id) return { ...t, demarreA: Date.now() }
     return t.demarreA ? { ...t, demarreA: null, reel: ecoulees(t) } : t
   }))
 
-  const arrete = id => majTaches(ts => ts.map(t => (
+  const arrete = (id: string) => majTaches(ts => ts.map(t => (
     t.id === id && t.demarreA ? { ...t, demarreA: null, reel: ecoulees(t) } : t
   )))
 
   // Cocher une tâche en cours arrête aussi son chrono et enregistre le temps mis.
-  const bascule = id => majTaches(ts => ts.map(t => {
+  const bascule = (id: string) => majTaches(ts => ts.map(t => {
     if (t.id !== id) return t
     if (!t.fait && t.demarreA) return { ...t, fait: true, demarreA: null, reel: ecoulees(t) }
     return { ...t, fait: !t.fait }
   }))
-  const supprime = id => majTaches(ts => ts.filter(t => t.id !== id))
+  const supprime = (id: string) => majTaches(ts => ts.filter(t => t.id !== id))
 
-  const deplace = (i, sens) => majTaches(ts => {
+  const deplace = (i: number, sens: number) => majTaches(ts => {
     const j = i + sens
     if (j < 0 || j >= ts.length) return ts
     const copie = ts.slice()
-    ;[copie[i], copie[j]] = [copie[j], copie[i]]
+    ;[copie[i], copie[j]] = [copie[j] as Tache, copie[i] as Tache]
     return copie
   })
 
@@ -181,13 +211,13 @@ export default function Planner({ onBack }) {
    * reproche jamais un dépassement : mal estimer est précisément ce qu'on
    * travaille, et le voir suffit à progresser.
    */
-  const ecartClasse = t => {
+  const ecartClasse = (t: Tache) => {
     const marge = Math.max(2, t.duree * 0.2)
-    return Math.abs(t.reel - t.duree) <= marge ? 'plan-juste' : 'plan-ecart'
+    return Math.abs((t.reel ?? 0) - t.duree) <= marge ? 'plan-juste' : 'plan-ecart'
   }
 
-  const changeDebut = e => {
-    const [h, m] = e.target.value.split(':').map(Number)
+  const changeDebut = (e: ChangeEvent<HTMLInputElement>) => {
+    const [h = 9, m = 0] = e.target.value.split(':').map(Number)
     setJournee(j => ({ ...j, debut: { h, m } }))
   }
 
@@ -334,10 +364,10 @@ export default function Planner({ onBack }) {
 }
 
 /** Écart en pourcentage entre le temps réel et le temps prévu. */
-const ecartPct = j => (j.prevu === 0 ? 0 : Math.round(((j.reel - j.prevu) / j.prevu) * 100))
+const ecartPct = (j: JourEstime) => (j.prevu === 0 ? 0 : Math.round(((j.reel - j.prevu) / j.prevu) * 100))
 
-const jourCourt = iso => {
-  const [a, m, d] = iso.split('-').map(Number)
+const jourCourt = (iso: string) => {
+  const [a = 2000, m = 1, d = 1] = iso.split('-').map(Number)
   return new Date(a, m - 1, d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })
 }
 
@@ -345,11 +375,11 @@ const jourCourt = iso => {
  * La tendance des estimations sur les derniers jours. C'est le vrai signal :
  * savoir si l'écart entre ce qu'on prévoit et ce qu'on met se resserre.
  */
-function Tendance({ jours, aujourdhui: dateDuJour }) {
+function Tendance({ jours, aujourdhui: dateDuJour }: { jours: JourEstime[]; aujourdhui: string }) {
   const derniers = jours.slice(-10)
   const pire = Math.max(60, ...derniers.map(j => Math.abs(ecartPct(j))))
 
-  const moyenne = liste => {
+  const moyenne = (liste: JourEstime[]): number | null => {
     if (!liste.length) return null
     const prevu = liste.reduce((s, j) => s + j.prevu, 0)
     const reel = liste.reduce((s, j) => s + j.reel, 0)
@@ -362,12 +392,16 @@ function Tendance({ jours, aujourdhui: dateDuJour }) {
   const mRecents = moyenne(recents)
   const mAvant = moyenne(avant)
 
-  const signe = n => (n > 0 ? `+${n}` : `${n}`)
-  let message = `Sur ${recents.length} jour${recents.length > 1 ? 's' : ''} : ${signe(mRecents)} % d'écart en moyenne`
-  if (Math.abs(mRecents) <= 10) message += ' — tes estimations sont fiables 🎯'
-  else if (mAvant != null && Math.abs(mRecents) < Math.abs(mAvant)) {
-    message += ` (contre ${signe(mAvant)} % avant) — tu progresses ! 🌱`
-  } else if (mRecents > 0) message += ' — tu sous-estimes encore un peu'
+  const signe = (n: number) => (n > 0 ? `+${n}` : `${n}`)
+  let message = ''
+  if (mRecents !== null) {
+    message = `Sur ${recents.length} jour${recents.length > 1 ? 's' : ''} : `
+      + `${signe(mRecents)} % d'écart en moyenne`
+    if (Math.abs(mRecents) <= 10) message += ' — tes estimations sont fiables 🎯'
+    else if (mAvant !== null && Math.abs(mRecents) < Math.abs(mAvant)) {
+      message += ` (contre ${signe(mAvant)} % avant) — tu progresses ! 🌱`
+    } else if (mRecents > 0) message += ' — tu sous-estimes encore un peu'
+  }
 
   return (
     <div className="tendance">
@@ -394,7 +428,7 @@ function Tendance({ jours, aujourdhui: dateDuJour }) {
           )
         })}
       </ul>
-      <p className="tendance-message">{message}</p>
+      {message && <p className="tendance-message">{message}</p>}
     </div>
   )
 }

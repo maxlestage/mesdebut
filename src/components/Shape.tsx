@@ -1,5 +1,7 @@
+import type { ReactElement } from 'react'
+
 // figures géométriques dessinées en SVG (viewBox 100×100)
-const SHAPE_SVGS = {
+const SHAPE_SVGS: Record<string, ReactElement> = {
   cercle: <circle cx="50" cy="50" r="42" />,
   'carré': <rect x="14" y="14" width="72" height="72" rx="4" />,
   triangle: <polygon points="50,10 90,86 10,86" />,
@@ -12,7 +14,9 @@ const SHAPE_SVGS = {
   octogone: <polygon points="31,8 69,8 92,31 92,69 69,92 31,92 8,69 8,31" />,
 }
 
-export default function Shape({ name, size = 72, color = '#667eea' }) {
+type Props = { name: string; size?: number; color?: string }
+
+export default function Shape({ name, size = 72, color = '#667eea' }: Props) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill={color} aria-label={name} role="img">
       {SHAPE_SVGS[name]}
