@@ -1,32 +1,46 @@
 import { useEffect, useRef, useState } from 'react'
-import { buildQuestions, pickPraise, shuffle } from '../questions.js'
-import Shape from './Shape.jsx'
-import Marbles from './Marbles.jsx'
-import Clock from './Clock.jsx'
+import { buildQuestions, pickPraise, shuffle } from '../questions.ts'
+import type { CategoryKey, Question } from '../questions.ts'
+import Shape from './Shape.tsx'
+import Marbles from './Marbles.tsx'
+import Clock from './Clock.tsx'
 
 // identifiant stable d'une question (même clé que la déduplication)
-const qid = (q) => q.key || q.q
+const qid = (q: Question) => q.key || q.q
 
-export default function Quiz({ category, level, onFinish, onQuit }) {
+type Props = {
+  category: CategoryKey
+  level: number
+  onFinish: (score: number, total: number) => void
+  onQuit: () => void
+}
+
+/** Ce qu'on affiche après une réponse. */
+type Feedback = { good: boolean; text: string }
+
+export default function Quiz({ category, level, onFinish, onQuit }: Props) {
   // la file de questions est dynamique : une question ratée y est ré-insérée
   const [questions, setQuestions] = useState(() => buildQuestions(category, level))
   const [index, setIndex] = useState(0)
   const [score, setScore] = useState(0)
-  const [selected, setSelected] = useState(null) // option choisie, null = pas encore répondu
-  const [feedback, setFeedback] = useState(null)
-  const timerRef = useRef(null)
+  const [selected, setSelected] = useState<string | null>(null) // null = pas encore répondu
+  const [feedback, setFeedback] = useState<Feedback | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   // longueur à jour, lisible depuis le setTimeout (évite une valeur périmée)
   const questionsRef = useRef(questions)
   useEffect(() => { questionsRef.current = questions }, [questions])
   // questions ayant déjà programmé leurs reprises (une seule fois chacune)
-  const scheduledRef = useRef(new Set())
+  const scheduledRef = useRef(new Set<string>())
 
   useEffect(() => () => clearTimeout(timerRef.current), [])
 
   const question = questions[index]
+  // la file ne devrait jamais être vide à cet indice ; on ne rend rien plutôt
+  // que de planter si c'était le cas. Aucun hook après ce point.
+  if (!question) return null
 
   // en cas d'erreur : la question revient 3 questions plus loin, puis encore 5 après
-  const scheduleRetries = (q, atIndex) => {
+  const scheduleRetries = (q: Question, atIndex: number) => {
     const id = qid(q)
     if (scheduledRef.current.has(id)) return // déjà reprogrammée : on évite l'empilement
     scheduledRef.current.add(id)
@@ -43,7 +57,7 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
     })
   }
 
-  const selectAnswer = (option) => {
+  const selectAnswer = (option: string) => {
     if (selected !== null) return
     setSelected(option)
 
@@ -69,7 +83,7 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
     }, good ? 900 : 1800)
   }
 
-  const answerClass = (option) => {
+  const answerClass = (option: string) => {
     if (selected === null) return 'answer-btn'
     if (option === question.answer) return 'answer-btn correct'
     if (option === selected) return 'answer-btn wrong'
@@ -136,7 +150,7 @@ export default function Quiz({ category, level, onFinish, onQuit }) {
         </span>
       </div>
       <div className="answers">
-        {question.options.map(option => (
+        {(question.options ?? []).map(option => (
           <button
             key={option}
             className={answerClass(option)}

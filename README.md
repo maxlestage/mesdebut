@@ -1,6 +1,6 @@
 # ReNeuro 🎓
 
-Une petite application de quiz **React** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
+Une petite application de quiz **React + TypeScript** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
 
 C'est aussi une **PWA** : une fois le site ouvert dans le navigateur du téléphone, on peut l'ajouter à l'écran d'accueil (« Ajouter à l'écran d'accueil » sur iOS, « Installer l'application » sur Android). Elle se lance alors en plein écran comme une vraie application et **fonctionne même sans connexion**.
 
@@ -81,6 +81,24 @@ Chaque quiz comporte 10 questions à choix multiples, avec un score, des étoile
 
 **Répétition espacée** : quand une réponse est fausse, la même question revient plus loin dans le quiz — une première fois 3 questions plus tard, puis encore 5 questions après — pour retravailler ce qui n'est pas encore acquis. Chaque question ne programme ses reprises qu'une seule fois, pour éviter une file qui s'allonge sans fin.
 
+## Tout est en TypeScript
+
+L'application, le site et les scripts de construction sont en **TypeScript strict**,
+avec `noUncheckedIndexedAccess` : un accès de tableau rend `T | undefined` tant
+qu'on ne l'a pas justifié. Le moteur indexe beaucoup de tableaux ; plutôt que de
+parsemer le code d'assertions `!`, il passe par un accesseur `at()` qui échoue
+bruyamment si l'index sort des bornes — une hypothèse fausse se voit tout de
+suite au lieu de propager un `undefined` silencieux.
+
+Le typage n'est pas décoratif : `MELANGE_SOURCES` est typé `CategoryKey[]`, donc
+une catégorie mal orthographiée devient une erreur de compilation au lieu d'un
+thème silencieusement absent du mode Mélange.
+
+```bash
+npm run check          # vérifie les types de l'application
+npm --prefix site run check   # types du site + cohérence avec l'application
+```
+
 ## Fondé sur la science de l'apprentissage 🧠
 
 L'appli s'appuie sur des principes établis des sciences cognitives :
@@ -100,19 +118,19 @@ L'appli s'appuie sur des principes établis des sciences cognitives :
 
 ```
 src/
-  questions.js          # données (jours, mois) et génération des questions
-  App.jsx               # navigation entre les écrans
+  questions.ts          # types, données et génération des questions
+  App.tsx               # navigation entre les écrans
   components/
-    Menu.jsx            # menu principal
+    Menu.tsx            # menu principal
     Category.jsx        # choix réviser / quiz (jours et mois)
-    Learn.jsx           # écran de révision
+    Learn.tsx           # écran de révision
     Levels.jsx          # choix du niveau (calcul)
-    Quiz.jsx            # déroulement du quiz
-    End.jsx             # écran de score
+    Quiz.tsx            # déroulement du quiz
+    End.tsx             # écran de score
   styles.css            # styles mobile first
 public/                 # icônes PWA et favicon (générés depuis icons/icon.svg)
 icons/                  # source vectorielle des icônes + script de génération
-vite.config.js          # config Vite + manifest PWA (vite-plugin-pwa)
+vite.config.ts          # config Vite + manifest PWA (vite-plugin-pwa)
 config/nginx.conf.erb   # configuration nginx du déploiement statique
 Procfile                # démarre nginx (aucun serveur applicatif)
 app.json                # métadonnées pour le bouton « Deploy to Heroku »

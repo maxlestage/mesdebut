@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "check": "tsc --noEmit && node --experimental-strip-types scripts/verifie-donnees.mjs"
+    "check": "tsc --noEmit && node --experimental-strip-types scripts/verifie-donnees.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
