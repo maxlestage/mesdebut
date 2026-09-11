@@ -34,7 +34,8 @@ heroku open
 Le buildpack Node.js de Heroku installe les dépendances, lance `heroku-postbuild`
 — qui construit **l'application** (`vite build`) puis **le site de présentation**
 (`npm --prefix site ci && npm --prefix site run build`) —, puis démarre
-`npm start` (le petit serveur Express `server.js`).
+`npm start` — `server.js`, un petit serveur écrit avec les seuls modules de
+Node, **sans aucune dépendance**.
 
 Un seul déploiement sert les deux :
 
@@ -125,7 +126,7 @@ src/
 public/                 # icônes PWA et favicon (générés depuis icons/icon.svg)
 icons/                  # source vectorielle des icônes + script de génération
 vite.config.js          # config Vite + manifest PWA (vite-plugin-pwa)
-server.js               # serveur Express de production (Heroku)
+server.js               # serveur de production, sans dépendance (Heroku)
 Procfile                # commande de démarrage Heroku
 app.json                # métadonnées pour le bouton « Deploy to Heroku »
 ```
