@@ -4,6 +4,7 @@ import Pied from './components/Pied.tsx'
 import Planification from './components/Planification.tsx'
 import Principes from './components/Principes.tsx'
 import Supports from './components/Supports.tsx'
+import Tarif from './components/Tarif.tsx'
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Planification />
         <Supports />
         <Principes />
+        <Tarif />
       </main>
       <Pied />
     </>
