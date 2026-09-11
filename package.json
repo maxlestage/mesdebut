@@ -9,6 +9,10 @@
   },
   "scripts": {
     "build": "npm --prefix site ci --include=dev && npm --prefix site run build",
-    "heroku-postbuild": "npm run build"
+    "heroku-postbuild": "npm run build",
+    "start": "serve site/dist --config ../../serve.json --single --no-clipboard --listen tcp://0.0.0.0:${PORT:-3000}"
+  },
+  "dependencies": {
+    "serve": "^14.2.6"
   }
 }
