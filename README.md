@@ -4,6 +4,8 @@ Une petite application de quiz **React** (Vite), pensée **mobile first**, pour 
 
 C'est aussi une **PWA** : une fois le site ouvert dans le navigateur du téléphone, on peut l'ajouter à l'écran d'accueil (« Ajouter à l'écran d'accueil » sur iOS, « Installer l'application » sur Android). Elle se lance alors en plein écran comme une vraie application et **fonctionne même sans connexion**.
 
+> 🌐 **Site de présentation** : une vitrine en **React + TypeScript**, mobile first, se trouve dans [`site/`](site/). Voir [`site/README.md`](site/README.md).
+>
 > 📱 **Version iOS native** : une application **Swift / SwiftUI** avec les mêmes fonctionnalités se trouve dans [`ios/`](ios/). Elle va plus loin que le web sur trois points : une **activité en direct** qui suit le quiz sur l'écran verrouillé et dans la Dynamic Island, une **application Apple Watch** autonome, et une mémoire de l'apprenant persistée en SQLite. Voir [`ios/README.md`](ios/README.md) pour l'ouvrir dans Xcode.
 
 ## Démarrer
