@@ -21,9 +21,20 @@ npm run check    # types + cohérence des données avec l'application
 ## Déployer
 
 `npm run build` produit un dossier `site/dist/` entièrement statique (aucun
-serveur nécessaire). Il se dépose tel quel sur n'importe quel hébergeur de
-fichiers. Les chemins sont relatifs (`base: './'` dans `vite.config.ts`), donc il
-fonctionne aussi bien à la racine d'un domaine que dans un sous-dossier.
+serveur nécessaire). Les chemins sont relatifs (`base: './'` dans
+`vite.config.ts`), donc il fonctionne aussi bien à la racine d'un domaine que
+dans un sous-dossier.
+
+**En production**, il est servi par le même déploiement que l'application, sous
+`/presentation` : `server.js` monte `site/dist/` sous ce chemin, et
+`heroku-postbuild` construit les deux. Deux points à connaître :
+
+- Le service worker de la PWA **exclut** `/presentation` de son renvoi de
+  navigation. Sans cette exclusion, il répondrait l'application pour cette URL à
+  toute personne ayant déjà ouvert l'appli — le site ne s'afficherait jamais.
+- `/presentation` est redirigé vers `/presentation/` (barre finale). Elle est
+  nécessaire : les chemins du site étant relatifs, ils pointeraient sinon vers la
+  racine, donc vers les fichiers de l'application.
 
 ## Les données restent alignées sur l'application
 

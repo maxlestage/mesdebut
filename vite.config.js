@@ -27,6 +27,11 @@ export default defineConfig({
       workbox: {
         // tout le build est mis en cache : l'appli fonctionne hors ligne
         globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+        // Sans cette exclusion, le service worker répondrait l'application pour
+        // toute navigation, /presentation compris : le site vitrine, servi par
+        // Express sous ce chemin, ne s'afficherait jamais chez quelqu'un ayant
+        // déjà ouvert l'appli.
+        navigateFallbackDenylist: [/^\/presentation(?:\/|$)/],
       },
     }),
   ],
