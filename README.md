@@ -27,10 +27,34 @@ npm run check     # vérifier les types
 
 `npm run build` produit un dossier **entièrement statique**, à chemins relatifs :
 il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un domaine
-comme dans un sous-dossier. Le dépôt ne contient plus aucune configuration de
-déploiement ni aucun serveur.
+comme dans un sous-dossier.
 
 Voir [`site/README.md`](site/README.md) pour le détail.
+
+## Déployer sur Heroku
+
+Aucun serveur n'est écrit ici : le buildpack Node construit le site, et le
+buildpack nginx le sert. Le `Procfile` se contente de `web: bin/start-nginx-static`.
+
+```bash
+heroku buildpacks:clear
+heroku buildpacks:add heroku/nodejs
+heroku buildpacks:add heroku-community/nginx   # doit être le dernier
+git push heroku master
+```
+
+> ⚠️ **Les deux buildpacks sont nécessaires**, et `app.json` ne les installe pas
+> sur une application déjà existante — ce fichier ne sert qu'au bouton « Deploy
+> to Heroku » et aux applications de revue. Vérifier avec `heroku buildpacks` :
+>
+> - sans **`heroku/nodejs`**, la construction échoue (« unable to detect a
+>   Node.js codebase ») ;
+> - sans **`heroku-community/nginx`**, `bin/start-nginx-static` n'existe pas sur
+>   le dyno, la mise en service échoue, et Heroku continue de servir la version
+>   précédente sans que l'URL change.
+
+Le `package.json` de la racine ne sert qu'à ça : il n'a aucune dépendance, et son
+seul rôle est de faire construire `site/` par le buildpack Node.
 
 ## L'application
 
