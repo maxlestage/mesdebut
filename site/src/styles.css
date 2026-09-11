@@ -49,7 +49,7 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 }
 .bouton {
   display: inline-block;
-  margin-top: 26px;
+  margin-top: 18px;
   padding: 14px 28px;
   min-height: 48px;
   background: #fff;
@@ -61,18 +61,6 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 }
 .bouton:active { transform: scale(0.97); }
 
-.boutons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-.bouton-clair {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.55);
-  box-shadow: none;
-}
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
 
@@ -209,7 +197,6 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 
 @media (min-width: 600px) {
   .entete { padding: 72px 24px 76px; }
-  .boutons { flex-direction: row; justify-content: center; gap: 14px; }
   .entete h1 { font-size: 3rem; }
   .accroche { font-size: 1.3rem; }
   .section { padding: 60px 24px; }
@@ -223,4 +210,58 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .bouton:active { transform: none; }
+}
+
+/* ─── Offre ──────────────────────────────────────────────────────────────── */
+
+/* Annonce, pas bouton : rien à ouvrir tant que l'application n'est pas publiée,
+   et le site n'offre pas d'accès gratuit. Le seul geste possible reste de
+   parcourir les thèmes, qui garde donc le bouton plein. */
+.pastille-store {
+  display: inline-block;
+  margin-top: 22px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.92rem;
+}
+.pastille-store strong { white-space: nowrap; }
+
+.carte-tarif {
+  margin: 22px auto 0;
+  max-width: 26rem;
+  padding: 26px 22px;
+  background: var(--fond-doux);
+  border: 2px solid var(--bord);
+  border-radius: 20px;
+  text-align: center;
+}
+.tarif-prix { display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.tarif-prix strong { font-size: 2.4rem; color: var(--encre); letter-spacing: -0.02em; }
+.tarif-periode { color: var(--doux); font-weight: 600; }
+
+.tarif-inclus { list-style: none; margin: 20px 0 22px; text-align: left; }
+.tarif-inclus li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 9px;
+  font-size: 0.94rem;
+}
+.tarif-inclus li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #2eb350;
+  font-weight: 700;
+}
+
+.tarif-dispo {
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--violet), var(--violet-fonce));
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
 }

@@ -1,3 +1,5 @@
+import { OFFRE } from '../donnees.ts'
+
 export default function Entete() {
   return (
     <header className="entete">
@@ -8,11 +10,12 @@ export default function Entete() {
         Les jours, l'heure, le calcul, les couleurs, organiser sa journée&nbsp;: seize thèmes,
         en questions courtes. Sur le web, l'iPhone et l'Apple&nbsp;Watch.
       </p>
-      <div className="boutons">
-        {/* Le site occupe la racine ; l'application est servie sous /app. */}
-        <a className="bouton" href="/app/">Ouvrir l'application</a>
-        <a className="bouton bouton-clair" href="#themes">Voir les thèmes</a>
-      </div>
+      {/* Pas d'accès direct à l'application depuis le site : l'offre est payante.
+          Le seul geste possible est de parcourir les thèmes, d'où le bouton plein. */}
+      <p className="pastille-store">
+        {OFFRE.disponibilite} · <strong>{OFFRE.prix} {OFFRE.periode}</strong>
+      </p>
+      <a className="bouton" href="#themes">Voir les thèmes</a>
     </header>
   )
 }
