@@ -1,0 +1,13 @@
+{
+  "name": "reneuro-icons",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Génération des icônes de ReNeuro à partir d'un seul SVG",
+  "scripts": {
+    "generate": "node --experimental-strip-types generate.ts"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.49.1"
+  }
+}
