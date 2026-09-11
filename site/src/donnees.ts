@@ -63,11 +63,6 @@ export type Support = {
 
 export const SUPPORTS: readonly Support[] = [
   {
-    emoji: '🌐', nom: 'Web',
-    detail: "Rien à installer : ça s'ouvre dans le navigateur.",
-    note: "Installable à l'écran d'accueil, et ça marche sans connexion.",
-  },
-  {
     emoji: '📱', nom: 'iPhone',
     detail: 'Application native, écrite en Swift.',
     note: "Le quiz en cours s'affiche sur l'écran verrouillé et la Dynamic Island.",
@@ -123,7 +118,7 @@ export const OFFRE: Offre = {
   periode: 'par mois',
   inclus: [
     'Les seize thèmes, sans exception',
-    'Le web, l\'iPhone et l\'Apple Watch',
+    "L'iPhone et l'Apple Watch",
     'La progression retenue d\'une séance à l\'autre',
     'Le planificateur de journée et son suivi',
     'Les mises à jour et les thèmes à venir',

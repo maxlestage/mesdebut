@@ -3,8 +3,8 @@ import { SUPPORTS } from '../donnees.ts'
 export default function Supports() {
   return (
     <section className="section">
-      <h2>Sur trois écrans</h2>
-      <p className="intro">Le même contenu, la même progression, partout.</p>
+      <h2>Sur deux écrans</h2>
+      <p className="intro">Le même contenu, la même progression, de la poche au poignet.</p>
       <ul className="supports">
         {SUPPORTS.map(s => (
           <li key={s.nom}>

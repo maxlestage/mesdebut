@@ -53,7 +53,7 @@ src/
     Entete.tsx          # bandeau d'accueil
     Categories.tsx      # grille des seize thèmes
     Planification.tsx   # mise en avant de « Planifier » et « Ma journée »
-    Supports.tsx        # web, iPhone, Apple Watch
+    Supports.tsx        # iPhone, Apple Watch
     Principes.tsx       # les six principes d'apprentissage
     Tarif.tsx           # l'offre : prix, ce qui est compris, disponibilité
     Pied.tsx            # crédits et mention

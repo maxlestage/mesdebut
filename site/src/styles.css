@@ -202,7 +202,7 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
   .section { padding: 60px 24px; }
   .section h2 { font-size: 1.9rem; }
   .grille { grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .supports { grid-template-columns: repeat(3, 1fr); }
+  .supports { grid-template-columns: repeat(2, 1fr); }
   .supports li { flex-direction: column; }
   .principes { grid-template-columns: repeat(2, 1fr); gap: 22px 28px; }
 }
