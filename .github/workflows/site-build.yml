@@ -1,0 +1,79 @@
+name: Site
+
+# Rejoue exactement ce que fait Heroku : mêmes commandes, même NODE_ENV.
+# Sans cela, une erreur de construction ne se découvre qu'au déploiement.
+on:
+  push:
+    branches: [ master ]
+    paths: [ 'site/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
+  pull_request:
+    paths: [ 'site/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
+  workflow_dispatch:
+
+jobs:
+  construire:
+    runs-on: ubuntu-latest
+    env:
+      # Heroku pose cette variable, et c'est elle qui fait sauter les
+      # devDependencies : la reproduire est tout l'intérêt de ce contrôle.
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Installer les dépendances de la racine
+        run: npm ci
+
+      - name: Construire le site (comme heroku-postbuild)
+        run: npm run heroku-postbuild
+
+      - name: Élaguer les dépendances de développement (comme Heroku)
+        run: npm prune --omit=dev
+
+      - name: Démarrer le serveur
+        run: |
+          PORT=3000 npm start &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://localhost:3000/ && break
+            sleep 1
+          done
+
+      - name: Vérifier ce qui est servi
+        run: |
+          set -e
+          echecs=0
+          verifie() { # url, code attendu, motif attendu dans les en-têtes ou le corps
+            reponse=$(curl -s -o /tmp/corps -w '%{http_code}' "http://localhost:3000$1")
+            if [ "$reponse" != "$2" ]; then
+              echo "::error::$1 → $reponse au lieu de $2"; echecs=$((echecs+1))
+            else
+              echo "  ✅ $1 → $reponse"
+            fi
+          }
+          verifie /            200
+          verifie /sw.js       200
+          verifie /icon.svg    200
+          # les anciennes adresses de l'application web, en un seul saut
+          verifie /app          301
+          verifie /presentation 301
+          verifie /index.html   301
+
+          echo "— en-têtes de cache —"
+          avant=$echecs
+          racine=$(curl -s -D- -o /dev/null http://localhost:3000/ | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
+          [ "$racine" = "no-cache" ] || { echo "::error::la page doit être revalidée, reçu « $racine »"; echecs=$((echecs+1)); }
+          sw=$(curl -s -D- -o /dev/null http://localhost:3000/sw.js | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
+          [ "$sw" = "no-cache" ] || { echo "::error::le service worker doit être revalidé, reçu « $sw »"; echecs=$((echecs+1)); }
+          [ "$echecs" -ne "$avant" ] || echo "  ✅ page et service worker revalidés"
+
+          echo "— contenu —"
+          if curl -s http://localhost:3000/ | grep -q 'ReNeuro'; then
+            echo "  ✅ la page est bien rendue"
+          else
+            echo "::error::la page ne contient pas le nom du site"; echecs=$((echecs+1))
+          fi
+
+          [ "$echecs" -eq 0 ] || exit 1
