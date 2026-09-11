@@ -1,26 +1,33 @@
 import { useState } from 'react'
-import Menu from './components/Menu.jsx'
-import Category from './components/Category.jsx'
-import Learn from './components/Learn.jsx'
-import Levels from './components/Levels.jsx'
-import Quiz from './components/Quiz.jsx'
-import End from './components/End.jsx'
-import Planner from './components/Planner.jsx'
-import { CATEGORIES } from './questions.js'
+import Menu from './components/Menu.tsx'
+import Category from './components/Category.tsx'
+import Learn from './components/Learn.tsx'
+import Levels from './components/Levels.tsx'
+import Quiz from './components/Quiz.tsx'
+import End from './components/End.tsx'
+import Planner from './components/Planner.tsx'
+import { CATEGORIES } from './questions.ts'
+// le composant Category porte déjà ce nom : on renomme le type à l'import
+import type { Category as MetaCategorie, CategoryKey } from './questions.ts'
+
+/** Les écrans de l'application, dans l'ordre d'un parcours type. */
+type Screen = 'menu' | 'category' | 'learn' | 'levels' | 'quiz' | 'planner' | 'end'
+
+type Resultat = { score: number; total: number }
 
 export default function App() {
-  const [screen, setScreen] = useState('menu')
-  const [category, setCategory] = useState(null)
+  const [screen, setScreen] = useState<Screen>('menu')
+  const [category, setCategory] = useState<CategoryKey>('melange')
   const [level, setLevel] = useState(1)
-  const [result, setResult] = useState(null)
+  const [result, setResult] = useState<Resultat>({ score: 0, total: 0 })
   // change de clé à chaque partie pour remonter un Quiz tout neuf
   const [quizKey, setQuizKey] = useState(0)
 
   const goMenu = () => setScreen('menu')
 
-  const openCategory = (cat) => {
+  const openCategory = (cat: CategoryKey) => {
     setCategory(cat)
-    const c = CATEGORIES[cat]
+    const c: MetaCategorie = CATEGORIES[cat]
     if (c.hasLearn) setScreen('category')
     else if (c.hasLevels) setScreen('levels')
     else startQuiz() // ni révision ni niveau (ex. Mélange) → quiz direct
@@ -29,7 +36,8 @@ export default function App() {
   // depuis la révision ou l'écran de catégorie : passer par les niveaux si la
   // catégorie en a, sinon lancer directement le quiz
   const goToQuiz = () => {
-    if (CATEGORIES[category].hasLevels) setScreen('levels')
+    const courante: MetaCategorie = CATEGORIES[category]
+    if (courante.hasLevels) setScreen('levels')
     else startQuiz()
   }
 
@@ -39,7 +47,7 @@ export default function App() {
     setScreen('quiz')
   }
 
-  const finishQuiz = (score, total) => {
+  const finishQuiz = (score: number, total: number) => {
     setResult({ score, total })
     setScreen('end')
   }

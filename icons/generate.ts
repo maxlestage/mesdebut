@@ -13,7 +13,15 @@ import { copyFileSync, readFileSync } from 'node:fs'
 const SVG = new URL('./icon.svg', import.meta.url)
 
 // L'échelle dépend de la sévérité du masque de chaque plateforme.
-const CIBLES = [
+type Cible = {
+  readonly fichier: string
+  readonly taille: number
+  /** Agrandissement du dessin, selon la sévérité du masque de la plateforme. */
+  readonly echelle: number
+  readonly note: string
+}
+
+const CIBLES: readonly Cible[] = [
   { fichier: 'ios/ReNeuro/ReNeuro/Assets.xcassets/AppIcon.appiconset/icon-1024.png',
     taille: 1024, echelle: 1.16, note: 'iPhone — masque en squircle' },
   { fichier: 'ios/ReNeuro/ReNeuroWatch/Assets.xcassets/AppIcon.appiconset/icon-1024.png',

@@ -1,6 +1,12 @@
-import { endSummary } from '../questions.js'
+import { endSummary } from '../questions.ts'
 
-export default function End({ result, onReplay, onMenu }) {
+type Props = {
+  result: { score: number; total: number }
+  onReplay: () => void
+  onMenu: () => void
+}
+
+export default function End({ result, onReplay, onMenu }: Props) {
   const { stars, msg } = endSummary(result.score, result.total)
   return (
     <>
