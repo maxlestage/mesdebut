@@ -51,6 +51,11 @@ web (`/app`, `/presentation`) redirigent vers la racine, les fichiers d'assets
 sont gardés un an (leur nom porte une empreinte), et l'index comme le service
 worker sont toujours revalidés.
 
+`cleanUrls` y est **désactivé** volontairement. Activé — c'est le défaut de
+`serve` —, il retire le `.html` avant même de regarder les redirections, ce qui
+enchaînait `/index.html` → `/index` → `/`. Désactivé, nos propres redirections
+s'appliquent et ramènent à l'adresse canonique en un seul saut.
+
 Deux choses à savoir :
 
 - Le script de construction fait `npm --prefix site ci **--include=dev**`. Heroku
