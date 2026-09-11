@@ -8,7 +8,7 @@ export default function Entete() {
       <p className="accroche">Réapprendre les bases, en s'amusant.</p>
       <p className="sous-accroche">
         Les jours, l'heure, le calcul, les couleurs, organiser sa journée&nbsp;: seize thèmes,
-        en questions courtes. Sur le web, l'iPhone et l'Apple&nbsp;Watch.
+        en questions courtes. Sur l'iPhone et l'Apple&nbsp;Watch.
       </p>
       {/* Pas d'accès direct à l'application depuis le site : l'offre est payante.
           Le seul geste possible est de parcourir les thèmes, d'où le bouton plein. */}
