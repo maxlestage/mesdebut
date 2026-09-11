@@ -4,7 +4,21 @@ import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.join(__dirname, 'dist')
+const site = path.join(__dirname, 'site', 'dist')
 const app = express()
+
+// Le site de présentation, build séparé, servi sous /presentation. Monté avant
+// l'application pour que l'attrape-tout de fin ne le recouvre pas.
+app.use('/presentation', express.static(site, {
+  maxAge: '1y',
+  setHeaders: (res, filePath) => {
+    if (/\.html$/.test(filePath)) res.set('Cache-Control', 'no-cache')
+  },
+}))
+app.get(['/presentation', '/presentation/*'], (req, res) => {
+  res.set('Cache-Control', 'no-cache')
+  res.sendFile(path.join(site, 'index.html'))
+})
 
 app.use(express.static(dist, {
   maxAge: '1y',

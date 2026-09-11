@@ -8,7 +8,11 @@ export default function Entete() {
         Les jours, l'heure, le calcul, les couleurs, organiser sa journée&nbsp;: seize thèmes,
         en questions courtes. Sur le web, l'iPhone et l'Apple&nbsp;Watch.
       </p>
-      <a className="bouton" href="#themes">Voir les thèmes</a>
+      <div className="boutons">
+        {/* Le site est servi sous /presentation ; l'application est à la racine. */}
+        <a className="bouton" href="/">Ouvrir l'application</a>
+        <a className="bouton bouton-clair" href="#themes">Voir les thèmes</a>
+      </div>
     </header>
   )
 }

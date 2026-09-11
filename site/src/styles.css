@@ -61,6 +61,19 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 }
 .bouton:active { transform: scale(0.97); }
 
+.boutons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.bouton-clair {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow: none;
+}
+
 /* ─── Sections ───────────────────────────────────────────────────────────── */
 
 .section { padding: 44px 20px; max-width: 60rem; margin: 0 auto; }
@@ -196,6 +209,7 @@ h1, h2, h3 { color: var(--encre); line-height: 1.25; }
 
 @media (min-width: 600px) {
   .entete { padding: 72px 24px 76px; }
+  .boutons { flex-direction: row; justify-content: center; gap: 14px; }
   .entete h1 { font-size: 3rem; }
   .accroche { font-size: 1.3rem; }
   .section { padding: 60px 24px; }
