@@ -25,8 +25,9 @@ serveur nécessaire). Les chemins sont relatifs (`base: './'` dans
 `vite.config.ts`), donc il fonctionne aussi bien à la racine d'un domaine que
 dans un sous-dossier.
 
-Le dépôt ne contient **aucune configuration de déploiement** : à toi de déposer
-`site/dist/` où tu veux.
+`site/dist/` se dépose où tu veux. Le dépôt contient aussi de quoi le publier sur
+Heroku (buildpack Node pour construire, buildpack nginx pour servir) — voir le
+[README principal](../README.md).
 
 `site/public/sw.js` n'est pas le service worker du site — le site n'en a pas.
 C'est un **service worker d'extinction**, servi à `/sw.js`, qui retire celui que

@@ -1,0 +1,14 @@
+{
+  "name": "reneuro",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Site de présentation de ReNeuro",
+  "author": "Maxime Nathan Lestage",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "build": "npm --prefix site ci && npm --prefix site run build",
+    "heroku-postbuild": "npm run build"
+  }
+}
