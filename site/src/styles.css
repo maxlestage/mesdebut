@@ -1,0 +1,212 @@
+/* Mobile first : tout est écrit pour un téléphone, les écrans larges viennent
+   après, dans les seules media queries du fichier. */
+
+:root {
+  --violet: #667eea;
+  --violet-fonce: #764ba2;
+  --encre: #2c2a3a;
+  --texte: #4a4759;
+  --doux: #8a86a0;
+  --fond: #ffffff;
+  --fond-doux: #f7f5ff;
+  --bord: #e6e1ff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--texte);
+  background: var(--fond);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { color: var(--encre); line-height: 1.25; }
+
+/* ─── En-tête ────────────────────────────────────────────────────────────── */
+
+.entete {
+  background: linear-gradient(160deg, var(--violet), var(--violet-fonce));
+  color: #fff;
+  padding: 48px 20px 52px;
+  text-align: center;
+}
+.logo { border-radius: 22px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22); }
+.entete h1 {
+  color: #fff;
+  font-size: 2.4rem;
+  letter-spacing: -0.02em;
+  margin: 18px 0 6px;
+}
+.accroche { font-size: 1.15rem; font-weight: 600; }
+.sous-accroche {
+  margin: 14px auto 0;
+  max-width: 34rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+.bouton {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 14px 28px;
+  min-height: 48px;
+  background: #fff;
+  color: var(--violet-fonce);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+.bouton:active { transform: scale(0.97); }
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+
+.section { padding: 44px 20px; max-width: 60rem; margin: 0 auto; }
+.section h2 { font-size: 1.55rem; text-align: center; }
+.intro { text-align: center; color: var(--doux); margin-top: 8px; }
+.note { margin-top: 18px; color: var(--doux); font-size: 0.92rem; text-align: center; }
+
+.section-mise-en-avant {
+  background: var(--fond-doux);
+  max-width: none;
+  border-block: 1px solid var(--bord);
+}
+.section-mise-en-avant > * { max-width: 60rem; margin-inline: auto; }
+.section-mise-en-avant h2 { text-align: left; margin-bottom: 14px; }
+.section-mise-en-avant p + p { margin-top: 12px; }
+
+.badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #26c6da, #00838f);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.section-sombre { background: var(--encre); max-width: none; }
+.section-sombre h2, .section-sombre h3 { color: #fff; }
+.section-sombre .intro { color: rgba(255, 255, 255, 0.68); }
+
+/* ─── Grille des thèmes ──────────────────────────────────────────────────── */
+
+.grille {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+.carte-theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 92px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+.carte-theme .emoji { font-size: 1.7rem; line-height: 1; }
+.carte-theme .nom { font-weight: 700; font-size: 0.92rem; }
+
+/* ─── Exemple de journée ─────────────────────────────────────────────────── */
+
+.exemple {
+  margin: 20px 0;
+  padding: 14px;
+  background: #fff;
+  border: 2px solid var(--bord);
+  border-radius: 16px;
+}
+.exemple-ligne {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--fond-doux);
+}
+.exemple-ligne:last-of-type { border-bottom: none; }
+.exemple-heure {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #6a5fbb;
+  font-size: 0.85rem;
+  min-width: 52px;
+}
+.exemple-tache { flex: 1; font-weight: 600; color: var(--encre); font-size: 0.92rem; }
+.exemple-tache.fait { text-decoration: line-through; color: #7a9a83; }
+.exemple-duree { font-size: 0.8rem; font-weight: 700; color: var(--doux); white-space: nowrap; }
+.exemple-duree.juste { color: #2eb350; }
+.exemple-duree.ecart { color: #e08a00; }
+.exemple-bilan {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fond-doux);
+  font-size: 0.85rem;
+  color: #6a5fbb;
+  text-align: center;
+}
+
+/* ─── Supports ───────────────────────────────────────────────────────────── */
+
+.supports { list-style: none; margin-top: 22px; display: grid; gap: 14px; }
+.supports li {
+  display: flex;
+  gap: 14px;
+  padding: 18px;
+  background: var(--fond-doux);
+  border: 1px solid var(--bord);
+  border-radius: 16px;
+}
+.support-emoji { font-size: 1.9rem; line-height: 1.2; }
+.supports h3 { font-size: 1.05rem; }
+.supports p { font-size: 0.92rem; }
+.support-note { color: var(--doux); margin-top: 4px; }
+
+/* ─── Principes ──────────────────────────────────────────────────────────── */
+
+.principes { list-style: none; margin-top: 22px; display: grid; gap: 18px; }
+.principes li {
+  padding-left: 14px;
+  border-left: 3px solid var(--violet);
+}
+.principes h3 { font-size: 1rem; }
+.principes p { color: rgba(255, 255, 255, 0.72); font-size: 0.92rem; margin-top: 4px; }
+
+/* ─── Pied ───────────────────────────────────────────────────────────────── */
+
+.pied { padding: 32px 20px 40px; text-align: center; }
+.credits { font-weight: 600; color: var(--encre); }
+.mention {
+  margin: 10px auto 0;
+  max-width: 34rem;
+  font-size: 0.82rem;
+  color: var(--doux);
+}
+
+/* ─── Écrans plus larges ─────────────────────────────────────────────────── */
+
+@media (min-width: 600px) {
+  .entete { padding: 72px 24px 76px; }
+  .entete h1 { font-size: 3rem; }
+  .accroche { font-size: 1.3rem; }
+  .section { padding: 60px 24px; }
+  .section h2 { font-size: 1.9rem; }
+  .grille { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .supports { grid-template-columns: repeat(3, 1fr); }
+  .supports li { flex-direction: column; }
+  .principes { grid-template-columns: repeat(2, 1fr); gap: 22px 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .bouton:active { transform: none; }
+}
