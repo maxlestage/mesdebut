@@ -9,8 +9,8 @@ export default function Entete() {
         en questions courtes. Sur le web, l'iPhone et l'Apple&nbsp;Watch.
       </p>
       <div className="boutons">
-        {/* Le site est servi sous /presentation ; l'application est à la racine. */}
-        <a className="bouton" href="/">Ouvrir l'application</a>
+        {/* Le site occupe la racine ; l'application est servie sous /app. */}
+        <a className="bouton" href="/app/">Ouvrir l'application</a>
         <a className="bouton bouton-clair" href="#themes">Voir les thèmes</a>
       </div>
     </header>
