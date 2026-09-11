@@ -8,8 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node server.js",
-    "heroku-postbuild": "npm run build && npm run build:site",
+    "heroku-postbuild": "npm run build:site",
     "build:site": "npm --prefix site ci && npm --prefix site run build"
   },
   "engines": {
