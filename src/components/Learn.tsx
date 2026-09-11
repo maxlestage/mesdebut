@@ -1,18 +1,28 @@
 import { useState } from 'react'
-import { LEARN_DATA } from '../questions.js'
-import Shape from './Shape.jsx'
-import Marbles from './Marbles.jsx'
-import Clock from './Clock.jsx'
+import { LEARN_DATA } from '../questions.ts'
+import type { CategoryKey } from '../questions.ts'
+import Shape from './Shape.tsx'
+import Marbles from './Marbles.tsx'
+import Clock from './Clock.tsx'
 
-export default function Learn({ category, onQuiz, onBack }) {
+type Props = {
+  category: CategoryKey
+  onQuiz: () => void
+  onBack: () => void
+}
+
+export default function Learn({ category, onQuiz, onBack }: Props) {
   const data = LEARN_DATA[category]
   // pour les accordéons : la première section est ouverte au départ
-  const [open, setOpen] = useState(() => new Set(data.groups ? [0] : []))
-  const toggle = (i) => setOpen(prev => {
+  const [open, setOpen] = useState<Set<number>>(() => new Set(data?.groups ? [0] : []))
+  const toggle = (i: number) => setOpen(prev => {
     const next = new Set(prev)
     next.has(i) ? next.delete(i) : next.add(i)
     return next
   })
+
+  // une catégorie sans écran de révision ne devrait pas arriver ici
+  if (!data) return null
 
   return (
     <>
@@ -53,7 +63,7 @@ export default function Learn({ category, onQuiz, onBack }) {
         </div>
       ) : (
         <ul className="learn-list">
-          {data.items.map((item, i) => (
+          {(data.items ?? []).map((item, i) => (
             <li key={item.label}>
               {item.color ? (
                 <span

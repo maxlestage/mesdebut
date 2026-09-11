@@ -1,3 +1,97 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Types du moteur
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Clé d'une catégorie : « jours », « heure », « addition »… */
+export type CategoryKey = keyof typeof CATEGORIES
+
+export type Level = { id: number; emoji: string; label: string }
+
+export type Category = {
+  emoji: string
+  label: string
+  title: string
+  /** Propose un écran de révision. */
+  hasLearn?: boolean
+  /** Propose un choix de niveau. */
+  hasLevels?: boolean
+  /** Niveaux propres à la catégorie ; absent = niveaux communs. */
+  levels?: Level[]
+}
+
+/** Une question posée : l'énoncé, la bonne réponse, les leurres, et de quoi
+ *  l'illustrer (pastille de couleur, forme, horloge, billes, étapes). */
+export type Question = {
+  q: string
+  answer: string
+  choices: string[]
+  /** Les quatre propositions mélangées ; ajoutées par buildQuestions. */
+  options?: string[]
+  /** Identifiant servant à éviter les doublons dans un même quiz. */
+  key?: string
+  /** Thème d'origine, en mode Mélange. */
+  category?: CategoryKey
+  swatch?: string
+  shape?: string
+  clock?: { hours: number; minutes: number }
+  marbles?: number
+  perRow?: number
+  colorByRow?: boolean
+  /** Étapes montrées sous l'énoncé (planification). */
+  liste?: string[]
+  /** Position du trou dans `liste`, pour « quelle étape manque ? ». */
+  trou?: number
+  /** Activité d'origine, pour les questions de planification. */
+  routine?: Routine
+}
+
+/** Une ligne d'un écran de révision. */
+export type LearnItem = {
+  label: string
+  sub?: string
+  num?: number
+  color?: string
+  shape?: string
+  marbles?: number
+  perRow?: number
+  colorByRow?: boolean
+  clock?: { hours: number; minutes: number }
+}
+
+export type LearnGroup = { label: string; items: LearnItem[] }
+
+/** Un écran de révision : liste simple, grille de lettres, ou accordéon. */
+export type LearnContent = {
+  title: string
+  intro?: string
+  items?: LearnItem[]
+  grid?: string[]
+  groups?: LearnGroup[]
+}
+
+export type Routine = {
+  key: string
+  emoji: string
+  label: string
+  /** Durée estimée, en minutes. */
+  duree: number
+  etapes: string[]
+}
+
+export type EndSummary = { stars: string; msg: string }
+
+/** Réglages d'une question de séquence (jours, mois, saisons, alphabet). */
+export type SeqLabels = {
+  unit: string
+  unitPlural: string
+  feminine?: boolean
+  cyclic?: boolean
+  container: string
+  container2: string
+  display?: (x: string) => string
+  types?: string[]
+}
+
 export const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
 export const MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre']
@@ -6,10 +100,10 @@ export const SAISONS = ['printemps', 'été', 'automne', 'hiver']
 export const NB_QUESTIONS = 10
 
 // article devant chaque saison ("après l'été", "après le printemps")
-const SAISON_ARTICLE = { printemps: 'le printemps', 'été': "l'été", automne: "l'automne", hiver: "l'hiver" }
+const SAISON_ARTICLE: Record<string, string> = { printemps: 'le printemps', 'été': "l'été", automne: "l'automne", hiver: "l'hiver" }
 
 // mois clairement dans une seule saison (on évite les mois de changement de saison)
-const MOIS_SAISON = {
+const MOIS_SAISON: Record<string, string> = {
   janvier: 'hiver', février: 'hiver',
   avril: 'printemps', mai: 'printemps',
   juillet: 'été', août: 'été',
@@ -58,8 +152,8 @@ export const CATEGORIES = {
 }
 
 // Niveaux d'une catégorie : les siens s'ils sont définis, sinon les niveaux communs.
-export function levelsFor(category) {
-  return CATEGORIES[category]?.levels || LEVELS
+export function levelsFor(category: string): Level[] {
+  return (CATEGORIES as Record<string, Category>)[category]?.levels || LEVELS
 }
 
 export const LEVELS = [
@@ -113,7 +207,7 @@ const OBJETS_COULEUR = [
 // nombres en toutes lettres (les 10 premiers servent aussi aux chiffres)
 const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf',
   'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize', 'dix-sept', 'dix-huit', 'dix-neuf']
-const DIZAINES = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' }
+const DIZAINES: Record<number, string> = { 20: 'vingt', 30: 'trente', 40: 'quarante', 50: 'cinquante', 60: 'soixante', 80: 'quatre-vingt' }
 
 // formes géométriques : nom + petite description pour la révision
 export const FORMES = [
@@ -130,9 +224,9 @@ export const FORMES = [
 ]
 
 // nombre de côtés (formes où la question a un sens)
-const FORME_COTES = { triangle: 3, carré: 4, rectangle: 4, losange: 4, hexagone: 6, octogone: 8 }
+const FORME_COTES: Record<string, number> = { triangle: 3, carré: 4, rectangle: 4, losange: 4, hexagone: 6, octogone: 8 }
 // nombres de côtés qui désignent une seule forme (pour la question inverse)
-const COTES_UNIQUES = { 3: 'triangle', 6: 'hexagone', 8: 'octogone' }
+const COTES_UNIQUES: Record<number, string> = { 3: 'triangle', 6: 'hexagone', 8: 'octogone' }
 
 // objets du quotidien à la forme non ambiguë (complément prêt à insérer)
 const OBJETS_FORME = [
@@ -147,7 +241,7 @@ const OBJETS_FORME = [
 
 // item de révision pour une horloge : le libellé et le repère de la grande
 // aiguille sont déduits de l'horaire, donc toujours cohérents entre eux
-function clockLearnItem(h, m) {
+function clockLearnItem(h: number, m: number): LearnItem {
   return {
     label: cap(timeToWords(h, m)),
     sub: `la grande aiguille est sur le ${m === 0 ? 12 : m / 5}`,
@@ -156,7 +250,7 @@ function clockLearnItem(h, m) {
 }
 
 // items { num, label } pour tous les nombres de a à b (cap et numberToWords sont hissés)
-function numberRangeItems(a, b) {
+function numberRangeItems(a: number, b: number): LearnItem[] {
   return Array.from({ length: b - a + 1 }, (_, i) => a + i)
     .map(n => ({ num: n, label: cap(numberToWords(n)) }))
 }
@@ -245,17 +339,17 @@ export const ROUTINES = [
 
 // « 9 h 00 », « 10 h 05 » — la notation d'un agenda, plus lisible ici que les
 // lettres, et cohérente avec la catégorie « Lire l'heure ».
-export function formatHeure(h, m) {
+export function formatHeure(h: number, m: number): string {
   return `${h} h ${String(m).padStart(2, '0')}`
 }
 
 /** Ajoute des minutes à une heure, sur 24 h. */
-export function ajouteMinutes(h, m, minutes) {
+export function ajouteMinutes(h: number, m: number, minutes: number): [number, number] {
   const total = ((h * 60 + m + minutes) % 1440 + 1440) % 1440
   return [Math.floor(total / 60), total % 60]
 }
 
-export const LEARN_DATA = {
+export const LEARN_DATA: Record<string, LearnContent> = {
   jours: { title: '📖 Les 7 jours de la semaine', items: JOURS.map(j => ({ label: cap(j) })) },
   mois: { title: "📖 Les 12 mois de l'année", items: MOIS.map(m => ({ label: cap(m) })) },
   saisons: {
@@ -278,7 +372,7 @@ export const LEARN_DATA = {
   },
   chiffres: {
     title: '📖 Les chiffres de 0 à 9',
-    items: Array.from({ length: 10 }, (_, i) => ({ label: cap(UNITES[i]), num: i, marbles: i })),
+    items: Array.from({ length: 10 }, (_, i) => ({ label: cap(at(UNITES, i)), num: i, marbles: i })),
   },
   cinquante: {
     title: '📖 Les dizaines jusqu\'à 50',
@@ -301,7 +395,7 @@ export const LEARN_DATA = {
       [1, 0], [6, 0], [10, 0],
       [2, 15], [5, 30], [8, 45],
       [4, 5], [9, 20], [11, 40], [12, 50],
-    ].map(([h, m]) => clockLearnItem(h, m)),
+    ].map(([h, m]) => clockLearnItem(h as number, m as number)),
   },
   planifier: {
     title: '📖 Les étapes des activités',
@@ -326,23 +420,34 @@ export const LEARN_DATA = {
 }
 
 
-function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min }
-function pick(arr) { return arr[rand(0, arr.length - 1)] }
+/**
+ * Élément d'un tableau dont on sait l'index valide. Préféré à « ! » : si
+ * l'hypothèse est fausse un jour, on le sait tout de suite au lieu de propager
+ * un undefined silencieux.
+ */
+function at<T>(arr: readonly T[], i: number): T {
+  const v = arr[i]
+  if (v === undefined) throw new RangeError(`index ${i} hors du tableau de ${arr.length}`)
+  return v
+}
 
-export function shuffle(arr) {
+function rand(min: number, max: number): number { return Math.floor(Math.random() * (max - min + 1)) + min }
+function pick<T>(arr: readonly T[]): T { return at(arr, rand(0, arr.length - 1)) }
+
+export function shuffle<T>(arr: readonly T[]): T[] {
   const a = arr.slice()
   for (let i = a.length - 1; i > 0; i--) {
     const j = rand(0, i)
-    ;[a[i], a[j]] = [a[j], a[i]]
+    ;[a[i], a[j]] = [at(a, j), at(a, i)]
   }
   return a
 }
 
-export function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1) }
-function ordinal(n, feminine) { return n === 1 ? (feminine ? '1re' : '1er') : n + 'e' }
+export function cap(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1) }
+function ordinal(n: number, feminine?: boolean): string { return n === 1 ? (feminine ? '1re' : '1er') : n + 'e' }
 
 // renvoie `count` éléments de la liste différents de l'index donné
-function distinctFrom(list, excludeIndex, count) {
+function distinctFrom(list: readonly string[], excludeIndex: number, count: number): string[] {
   const others = list.filter((_, i) => i !== excludeIndex)
   return shuffle(others).slice(0, count)
 }
@@ -357,9 +462,9 @@ function distinctFrom(list, excludeIndex, count) {
  *   cyclic             : true si le dernier est suivi du premier
  *   display            : fonction d'affichage d'un élément dans la question
  */
-function makeSequenceQuestion(list, labels) {
+function makeSequenceQuestion(list: readonly string[], labels: SeqLabels): Question {
   const type = pick(labels.types || ['apres', 'avant', 'position', 'compte', 'premier', 'dernier'])
-  const wrap = i => ((i % list.length) + list.length) % list.length
+  const wrap = (i: number) => ((i % list.length) + list.length) % list.length
   const quel = labels.feminine ? 'Quelle' : 'Quel'
   const show = labels.display || (x => x)
   const fmt = cap
@@ -368,16 +473,16 @@ function makeSequenceQuestion(list, labels) {
     // sans cycle (alphabet), on ne pose pas la question sur le dernier élément
     const i = labels.cyclic ? rand(0, list.length - 1) : rand(0, list.length - 2)
     return {
-      q: `${quel} ${labels.unit} vient juste après ${show(list[i])} ?`,
-      answer: fmt(list[wrap(i + 1)]),
+      q: `${quel} ${labels.unit} vient juste après ${show(at(list, i))} ?`,
+      answer: fmt(at(list, wrap(i + 1))),
       choices: distinctFrom(list, wrap(i + 1), 3).map(fmt),
     }
   }
   if (type === 'avant') {
     const i = labels.cyclic ? rand(0, list.length - 1) : rand(1, list.length - 1)
     return {
-      q: `${quel} ${labels.unit} vient juste avant ${show(list[i])} ?`,
-      answer: fmt(list[wrap(i - 1)]),
+      q: `${quel} ${labels.unit} vient juste avant ${show(at(list, i))} ?`,
+      answer: fmt(at(list, wrap(i - 1))),
       choices: distinctFrom(list, wrap(i - 1), 3).map(fmt),
     }
   }
@@ -386,7 +491,7 @@ function makeSequenceQuestion(list, labels) {
     const article = labels.feminine ? 'la' : 'le'
     return {
       q: `${quel} est ${article} ${ordinal(i + 1, labels.feminine)} ${labels.unit} de ${labels.container} ?`,
-      answer: fmt(list[i]),
+      answer: fmt(at(list, i)),
       choices: distinctFrom(list, i, 3).map(fmt),
     }
   }
@@ -402,22 +507,22 @@ function makeSequenceQuestion(list, labels) {
     const first = labels.feminine ? 'la première' : 'le premier'
     return {
       q: `${quel} est ${first} ${labels.unit} de ${labels.container} ?`,
-      answer: fmt(list[0]),
+      answer: fmt(at(list, 0)),
       choices: distinctFrom(list, 0, 3).map(fmt),
     }
   }
   const last = labels.feminine ? 'la dernière' : 'le dernier'
   return {
     q: `${quel} est ${last} ${labels.unit} de ${labels.container} ?`,
-    answer: fmt(list[list.length - 1]),
+    answer: fmt(at(list, list.length - 1)),
     choices: distinctFrom(list, list.length - 1, 3).map(fmt),
   }
 }
 
 // question d'association mois → saison
-function makeMoisSaisonQuestion() {
+function makeMoisSaisonQuestion(): Question {
   const mois = pick(Object.keys(MOIS_SAISON))
-  const saison = MOIS_SAISON[mois]
+  const saison = MOIS_SAISON[mois] ?? ''
   return {
     q: `En quelle saison est le mois de ${mois} ?`,
     answer: cap(saison),
@@ -426,11 +531,11 @@ function makeMoisSaisonQuestion() {
 }
 
 // ---------- couleurs ----------
-function otherColorNames(exclude, count) {
+function otherColorNames(exclude: readonly string[], count: number): string[] {
   return shuffle(COULEURS.filter(c => !exclude.includes(c.name))).slice(0, count).map(c => cap(c.name))
 }
 
-function makeCouleursQuestion() {
+function makeCouleursQuestion(): Question {
   const type = pick(['pastille', 'pastille', 'melange', 'objet']) // la reconnaissance visuelle revient plus souvent
   if (type === 'pastille') {
     const c = pick(COULEURS)
@@ -459,11 +564,11 @@ function makeCouleursQuestion() {
 }
 
 // ---------- formes géométriques ----------
-function otherShapeNames(exclude, count) {
+function otherShapeNames(exclude: readonly string[], count: number): string[] {
   return shuffle(FORMES.filter(f => !exclude.includes(f.name))).slice(0, count).map(f => cap(f.name))
 }
 
-function makeFormesQuestion() {
+function makeFormesQuestion(): Question {
   const type = pick(['visuelle', 'visuelle', 'cotes', 'inverse', 'objet']) // la reconnaissance visuelle revient plus souvent
   if (type === 'visuelle') {
     const f = pick(FORMES)
@@ -486,7 +591,7 @@ function makeFormesQuestion() {
     }
     const name = pick(Object.keys(FORME_COTES))
     const n = FORME_COTES[name]
-    const distractors = new Set()
+    const distractors = new Set<string>()
     let d = 3
     while (distractors.size < 3) { if (d !== n) distractors.add(String(d)); d++ }
     return {
@@ -498,7 +603,7 @@ function makeFormesQuestion() {
   }
   if (type === 'inverse') {
     const n = pick(Object.keys(COTES_UNIQUES))
-    const name = COTES_UNIQUES[n]
+    const name = COTES_UNIQUES[Number(n)] ?? ''
     return {
       q: `Quelle forme a ${n} côtés ?`,
       answer: cap(name),
@@ -514,20 +619,20 @@ function makeFormesQuestion() {
 }
 
 // ---------- chiffres de 0 à 9, avec des billes à compter ----------
-function digitDistractors(answer, min, max) {
+function digitDistractors(answer: number, min: number, max: number): string[] {
   const others = []
   for (let i = min; i <= max; i++) if (i !== answer) others.push(String(i))
   return shuffle(others).slice(0, 3)
 }
 
 // 3 noms de chiffres (en lettres) différents de n, parmi 0 à 9
-function digitWordDistractors(n) {
+function digitWordDistractors(n: number): string[] {
   const others = []
-  for (let i = 0; i <= 9; i++) if (i !== n) others.push(cap(UNITES[i]))
+  for (let i = 0; i <= 9; i++) if (i !== n) others.push(cap(at(UNITES, i)))
   return shuffle(others).slice(0, 3)
 }
 
-function makeChiffresQuestion() {
+function makeChiffresQuestion(): Question {
   // compter des billes revient plus souvent ; le chiffre et son écriture se répondent dans les deux sens
   const type = pick(['compter', 'compter', 'ecrire', 'lire', 'apres', 'avant'])
   if (type === 'compter') {
@@ -544,7 +649,7 @@ function makeChiffresQuestion() {
     const n = rand(0, 9)
     return {
       q: `Comment s'écrit le chiffre ${n} ?`,
-      answer: cap(UNITES[n]),
+      answer: cap(at(UNITES, n)),
       choices: digitWordDistractors(n),
     }
   }
@@ -574,7 +679,7 @@ function makeChiffresQuestion() {
 
 // ---------- nombres jusqu'à 50, dizaines et unités ----------
 // 3 nombres proches et distincts dans [min, max] (dont les pièges ±10 et ±1)
-function nearbyNumbers(n, min, max) {
+function nearbyNumbers(n: number, min: number, max: number): string[] {
   const candidates = shuffle([n - 10, n + 10, n - 1, n + 1, n - 2, n + 2, n - 11, n + 11])
     .filter(c => c >= min && c <= max && c !== n)
   const set = new Set(candidates.slice(0, 3).map(String))
@@ -583,7 +688,7 @@ function nearbyNumbers(n, min, max) {
   return [...set]
 }
 
-function makeCinquanteQuestion() {
+function makeCinquanteQuestion(): Question {
   const type = pick(['compter', 'compter', 'dizaines', 'unites', 'composer', 'suite'])
 
   if (type === 'compter') {
@@ -650,23 +755,23 @@ function makeCinquanteQuestion() {
 }
 
 // ---------- nombres en lettres ----------
-export function numberToWords(n) {
-  if (n < 20) return UNITES[n]
+export function numberToWords(n: number): string {
+  if (n < 20) return at(UNITES, n)
   if (n === 100) return 'cent'
   let dizaine = Math.floor(n / 10) * 10
   let unite = n - dizaine
   // 70–79 et 90–99 se disent "soixante-dix…" et "quatre-vingt-dix…"
   if (dizaine === 70 || dizaine === 90) { dizaine -= 10; unite += 10 }
-  if (unite === 0) return dizaine === 80 ? 'quatre-vingts' : DIZAINES[dizaine]
+  if (unite === 0) return dizaine === 80 ? 'quatre-vingts' : (DIZAINES[dizaine] ?? '')
   if ((unite === 1 || unite === 11) && dizaine !== 80) return `${DIZAINES[dizaine]} et ${UNITES[unite]}`
   return `${DIZAINES[dizaine]}-${UNITES[unite]}`
 }
 
-function makeNombresQuestion(level) {
-  const [min, max] = [[0, 16], [17, 69], [60, 100]][level - 1]
+function makeNombresQuestion(level: number): Question {
+  const [min, max] = at([[0, 16], [17, 69], [60, 100]] as const, level - 1)
   const n = rand(min, max)
   // 3 nombres proches mais différents, dans la plage du niveau
-  const distractors = new Set()
+  const distractors = new Set<number>()
   let guard = 0
   while (distractors.size < 3 && guard < 100) {
     guard++
@@ -681,7 +786,7 @@ function makeNombresQuestion(level) {
     return {
       q: `Comment s'écrit le nombre ${n} ?`,
       answer: numberToWords(n),
-      choices: nums.map(numberToWords),
+      choices: nums.map(x => numberToWords(x)),
     }
   }
   return {
@@ -703,14 +808,14 @@ const HEURE_MINUTES = [
 
 // « une heure », « trois heures et quart », « quatre heures moins le quart »…
 // Les minutes du niveau demandé, bornées : un niveau inattendu retombe sur le plus fin.
-function heureMinutes(level) {
-  return HEURE_MINUTES[Math.min(Math.max(level, 1), HEURE_MINUTES.length) - 1]
+function heureMinutes(level: number): number[] {
+  return at(HEURE_MINUTES, Math.min(Math.max(level, 1), HEURE_MINUTES.length) - 1)
 }
 
-export function timeToWords(h, m) {
-  const nom = n => (n === 1 ? 'une heure' : `${numberToWords(n)} heures`)
+export function timeToWords(h: number, m: number): string {
+  const nom = (n: number) => (n === 1 ? 'une heure' : `${numberToWords(n)} heures`)
   // la minute est féminine : « onze heures une », « deux heures trente et une »
-  const min = n => numberToWords(n).replace(/\bun$/, 'une')
+  const min = (n: number) => numberToWords(n).replace(/\bun$/, 'une')
   const suivante = h === 12 ? 1 : h + 1
   if (m === 0) return nom(h)
   if (m === 15) return `${nom(h)} et quart`
@@ -723,10 +828,10 @@ export function timeToWords(h, m) {
 }
 
 // 3 autres horaires du même niveau, formulés en toutes lettres
-function otherTimes(h, m, level, count) {
+function otherTimes(h: number, m: number, level: number, count: number): string[] {
   const minutes = heureMinutes(level)
   const answer = timeToWords(h, m)
-  const set = new Set()
+  const set = new Set<string>()
   let guard = 0
   while (set.size < count && guard < 200) {
     guard++
@@ -738,7 +843,7 @@ function otherTimes(h, m, level, count) {
   }
   let extra = 1
   while (set.size < count) {
-    const t = timeToWords(extra, minutes[0])
+    const t = timeToWords(extra, at(minutes, 0))
     if (t !== answer) set.add(t)
     extra++
   }
@@ -771,7 +876,7 @@ const HEURE_NOTIONS = [
     choices: ['3', '6', '12'] },
 ]
 
-function makeHeureQuestion(level) {
+function makeHeureQuestion(level: number): Question {
   // lire l'horloge revient le plus souvent ; on ajoute les notions et une projection
   const type = pick(['lire', 'lire', 'lire', 'notion', 'plus_tard'])
 
@@ -806,8 +911,8 @@ function makeHeureQuestion(level) {
 
 // ---------- calcul ----------
 // 3 mauvaises réponses proches du résultat, uniques et positives
-function numberDistractors(answer, count) {
-  const set = new Set()
+function numberDistractors(answer: number, count: number): string[] {
+  const set = new Set<number>()
   let guard = 0
   while (set.size < count && guard < 200) {
     guard++
@@ -818,27 +923,27 @@ function numberDistractors(answer, count) {
   // filet de sécurité si le hasard n'a pas suffi
   let extra = answer + count + 1
   while (set.size < count) set.add(extra++)
-  return [...set]
+  return [...set].map(String)
 }
 
-function makeMathQuestion(op, level) {
+function makeMathQuestion(op: string, level: number): Question {
   let a, b, result, symbol
 
   if (op === 'addition') {
-    const max = [10, 20, 100][level - 1]
+    const max = at([10, 20, 100] as const, level - 1)
     a = rand(1, max); b = rand(1, max)
     result = a + b; symbol = '+'
   } else if (op === 'soustraction') {
-    const max = [10, 20, 100][level - 1]
+    const max = at([10, 20, 100] as const, level - 1)
     a = rand(1, max); b = rand(1, max)
     if (b > a) [a, b] = [b, a] // jamais de résultat négatif
     result = a - b; symbol = '−'
   } else if (op === 'multiplication') {
-    const max = [5, 10, 12][level - 1]
+    const max = at([5, 10, 12] as const, level - 1)
     a = rand(1, max); b = rand(1, 10)
     result = a * b; symbol = '×'
   } else { // division exacte
-    const max = [5, 10, 12][level - 1]
+    const max = at([5, 10, 12] as const, level - 1)
     b = rand(2, max)
     result = rand(1, max)
     a = b * result; symbol = '÷'
@@ -852,7 +957,7 @@ function makeMathQuestion(op, level) {
 }
 
 // ---------- construction d'un quiz ----------
-function makeQuestion(category, level) {
+function makeQuestion(category: string, level: number): Question {
   if (category === 'jours') {
     return makeSequenceQuestion(JOURS, {
       unit: 'jour', unitPlural: 'jours', feminine: false, cyclic: true,
@@ -872,7 +977,7 @@ function makeQuestion(category, level) {
     return makeSequenceQuestion(SAISONS, {
       unit: 'saison', unitPlural: 'saisons', feminine: true, cyclic: true,
       container: "l'année", container2: 'une année',
-      display: s => SAISON_ARTICLE[s],
+      display: (s: string) => SAISON_ARTICLE[s] ?? s,
       types: ['apres', 'avant', 'compte'],
     })
   }
@@ -897,19 +1002,19 @@ function makeQuestion(category, level) {
 // ─── Planifier : génération des questions ────────────────────────────────────
 
 /** Autres étapes de la même activité, comme leurres plausibles. */
-function autresEtapes(routine, exclure, nb) {
+function autresEtapes(routine: Routine, exclure: readonly string[], nb: number): string[] {
   const restantes = routine.etapes.filter(e => !exclure.includes(e))
   return shuffle(restantes).slice(0, nb)
 }
 
 /** Étapes puisées dans d'autres activités (pour l'intrus et les compléments). */
-function etapesAilleurs(routine, nb) {
+function etapesAilleurs(routine: Routine, nb: number): string[] {
   const ailleurs = ROUTINES.filter(r => r.key !== routine.key).flatMap(r => r.etapes)
   return shuffle(ailleurs).slice(0, nb)
 }
 
 /** Complète une liste de leurres jusqu'à `nb`, sans doublon avec la réponse. */
-function completeChoix(choix, reponse, routine, nb) {
+function completeChoix(choix: string[], reponse: string, routine: Routine, nb: number): string[] {
   const vus = new Set([reponse, ...choix])
   for (const e of etapesAilleurs(routine, 12)) {
     if (choix.length >= nb) break
@@ -919,12 +1024,12 @@ function completeChoix(choix, reponse, routine, nb) {
 }
 
 // 🌱 Les étapes : repérer le début, la fin, et ce qui suit
-function planEtapes() {
+function planEtapes(): Question {
   const r = pick(ROUTINES)
   const type = pick(['premiere', 'derniere', 'apres'])
 
   if (type === 'premiere') {
-    const reponse = r.etapes[0]
+    const reponse = at(r.etapes, 0)
     return {
       q: `« ${r.label} » : par quoi commence-t-on ?`,
       key: `plan:premiere:${r.key}`,
@@ -934,7 +1039,7 @@ function planEtapes() {
     }
   }
   if (type === 'derniere') {
-    const reponse = r.etapes[r.etapes.length - 1]
+    const reponse = at(r.etapes, r.etapes.length - 1)
     return {
       q: `« ${r.label} » : quelle est la dernière étape ?`,
       key: `plan:derniere:${r.key}`,
@@ -945,24 +1050,24 @@ function planEtapes() {
   }
   // « juste après » : on tire une étape qui en a une suivante
   const i = rand(0, r.etapes.length - 2)
-  const reponse = r.etapes[i + 1]
+  const reponse = at(r.etapes, i + 1)
   return {
-    q: `« ${r.label} » : que fait-on juste après « ${r.etapes[i]} » ?`,
+    q: `« ${r.label} » : que fait-on juste après « ${at(r.etapes, i)} » ?`,
     key: `plan:apres:${r.key}:${i}`,
     routine: r,
     answer: reponse,
-    choices: completeChoix(autresEtapes(r, [reponse, r.etapes[i]], 3), reponse, r, 3),
+    choices: completeChoix(autresEtapes(r, [reponse, at(r.etapes, i)], 3), reponse, r, 3),
   }
 }
 
 // 🌿 L'ordre : l'étape qui manque, l'intrus, ce qui vient avant
-function planOrdre() {
+function planOrdre(): Question {
   const r = pick(ROUTINES)
   const type = pick(['manquante', 'intrus', 'avant'])
 
   if (type === 'manquante') {
     const i = rand(0, r.etapes.length - 1)
-    const reponse = r.etapes[i]
+    const reponse = at(r.etapes, i)
     const restantes = r.etapes.filter((_, j) => j !== i)
     return {
       q: `« ${r.label} » : quelle étape manque ?`,
@@ -975,11 +1080,11 @@ function planOrdre() {
     }
   }
   if (type === 'intrus') {
-    const [intrus] = etapesAilleurs(r, 1)
+    const intrus = at(etapesAilleurs(r, 1), 0)
     const gardees = shuffle(r.etapes).slice(0, 3)
     return {
       q: `« ${r.label} » : quelle étape n'en fait pas partie ?`,
-      liste: shuffle([...gardees, intrus]),
+      liste: shuffle<string>([...gardees, intrus]),
       key: `plan:intrus:${r.key}:${intrus}`,
       routine: r,
       answer: intrus,
@@ -987,18 +1092,18 @@ function planOrdre() {
     }
   }
   const i = rand(1, r.etapes.length - 1)
-  const reponse = r.etapes[i - 1]
+  const reponse = at(r.etapes, i - 1)
   return {
-    q: `« ${r.label} » : que fait-on juste avant « ${r.etapes[i]} » ?`,
+    q: `« ${r.label} » : que fait-on juste avant « ${at(r.etapes, i)} » ?`,
     key: `plan:avant:${r.key}:${i}`,
     routine: r,
     answer: reponse,
-    choices: completeChoix(autresEtapes(r, [reponse, r.etapes[i]], 3), reponse, r, 3),
+    choices: completeChoix(autresEtapes(r, [reponse, at(r.etapes, i)], 3), reponse, r, 3),
   }
 }
 
 // 🌳 Le temps : estimer une durée, calculer une fin, tenir dans un créneau
-function planTemps() {
+function planTemps(): Question {
   const r = pick(ROUTINES)
   const type = pick(['duree', 'fin', 'tient', 'pluslongue'])
 
@@ -1028,7 +1133,7 @@ function planTemps() {
       key: `plan:fin:${r.key}:${h}:${m}`,
       routine: r,
       answer: formatHeure(fh, fm),
-      choices: [...leurres].slice(0, 3),
+      choices: [...leurres].slice(0, 3) as string[],
     }
   }
   if (type === 'tient') {
@@ -1060,27 +1165,27 @@ function planTemps() {
   }
 }
 
-function makePlanifierQuestion(level) {
+function makePlanifierQuestion(level: number): Question {
   if (level === 1) return planEtapes()
   if (level === 2) return planOrdre()
   return planTemps()
 }
 
 // thèmes puisés par le mode Mélange (toutes les catégories réelles, sauf le mélange lui-même)
-const MELANGE_SOURCES = ['chiffres', 'cinquante', 'nombres', 'addition', 'soustraction',
+const MELANGE_SOURCES: CategoryKey[] = ['chiffres', 'cinquante', 'nombres', 'addition', 'soustraction',
   'multiplication', 'division', 'jours', 'mois', 'saisons', 'alphabet', 'couleurs', 'formes',
   'heure', 'planifier']
 
 // Entrelacement : on parcourt les thèmes en rotation pour que deux questions
 // voisines viennent presque toujours de thèmes différents.
-function buildInterleaved() {
+function buildInterleaved(): Question[] {
   const sources = shuffle(MELANGE_SOURCES)
   const qs = []
   const seen = new Set()
   let i = 0, guard = 0
   while (qs.length < NB_QUESTIONS && guard < 400) {
     guard++
-    const cat = sources[i % sources.length]
+    const cat = at(sources, i % sources.length)
     i++
     const level = rand(1, 2) // difficulté douce et variée pour les thèmes à niveaux
     const q = makeQuestion(cat, level)
@@ -1092,7 +1197,7 @@ function buildInterleaved() {
   return qs
 }
 
-export function buildQuestions(category, level) {
+export function buildQuestions(category: string, level: number): Question[] {
   if (category === 'melange') return buildInterleaved()
   const qs = []
   const seen = new Set()
@@ -1108,11 +1213,11 @@ export function buildQuestions(category, level) {
   return qs
 }
 
-export function pickPraise() {
+export function pickPraise(): string {
   return pick(['✅ Bravo !', '✅ Super !', '✅ Exact !', '✅ Génial !'])
 }
 
-export function endSummary(score, total) {
+export function endSummary(score: number, total: number): EndSummary {
   const ratio = score / total
   if (ratio === 1) return { stars: '⭐⭐⭐⭐⭐', msg: 'Score parfait, tu es un champion ! 🏆' }
   if (ratio >= 0.8) return { stars: '⭐⭐⭐⭐', msg: 'Excellent travail, continue comme ça ! 🎉' }
