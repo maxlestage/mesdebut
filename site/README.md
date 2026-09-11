@@ -26,7 +26,7 @@ serveur nécessaire). Les chemins sont relatifs (`base: './'` dans
 dans un sous-dossier.
 
 `site/dist/` se dépose où tu veux. Le dépôt contient aussi de quoi le publier sur
-Heroku (buildpack Node pour construire, buildpack nginx pour servir) — voir le
+Heroku avec le seul buildpack Node — voir le
 [README principal](../README.md).
 
 `site/public/sw.js` n'est pas le service worker du site — le site n'en a pas.
