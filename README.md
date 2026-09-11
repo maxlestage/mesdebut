@@ -56,6 +56,12 @@ git push heroku master
 Le `package.json` de la racine ne sert qu'à ça : il n'a aucune dépendance, et son
 seul rôle est de faire construire `site/` par le buildpack Node.
 
+> Le script de construction fait `npm --prefix site ci **--include=dev**`. Heroku
+> pose `NODE_ENV=production`, ce qui fait sauter les `devDependencies` — or
+> `tsc` et `vite` y vivent, et la construction échouerait sur « tsc: not found ».
+> Le drapeau les réinstalle sans dépendre d'une variable d'environnement à régler
+> sur Heroku.
+
 ## L'application
 
 Native, en Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite,
