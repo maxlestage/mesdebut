@@ -66,6 +66,26 @@ Deux choses à savoir :
 
 Le `package.json` de la racine ne sert qu'à ça : construire `site/` et le servir.
 
+### Sans terminal
+
+Rien de ce qui précède n'exige la ligne de commande. Dans le tableau de bord
+Heroku, onglet **Deploy** : connecter le dépôt GitHub, puis activer
+**Automatic deploys** sur `master`. Chaque fusion se déploie alors toute seule.
+Le bouton **Deploy Branch** juste en dessous permet un déploiement ponctuel.
+
+Aucun buildpack à ajouter : `heroku/nodejs`, celui par défaut, suffit.
+
+### Découvrir les erreurs avant le déploiement
+
+Le workflow [`site-build.yml`](.github/workflows/site-build.yml) rejoue à chaque
+PR **exactement** ce que fait Heroku — mêmes commandes, `NODE_ENV=production`,
+élagage des dépendances de développement — puis démarre le serveur et vérifie ce
+qu'il sert : les codes de réponse, les redirections en un saut, les en-têtes de
+cache et le contenu de la page.
+
+C'est ce contrôle qui aurait attrapé le « tsc: not found » avant qu'il n'échoue
+sur Heroku. Son résultat se lit depuis GitHub, sans rien installer.
+
 ## L'application
 
 Native, en Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite,
