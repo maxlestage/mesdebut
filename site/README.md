@@ -25,16 +25,14 @@ serveur nécessaire). Les chemins sont relatifs (`base: './'` dans
 `vite.config.ts`), donc il fonctionne aussi bien à la racine d'un domaine que
 dans un sous-dossier.
 
-**En production**, il est servi par le même déploiement que l'application, sous
-`/presentation` : `server.js` monte `site/dist/` sous ce chemin, et
-`heroku-postbuild` construit les deux. Deux points à connaître :
+**En production**, il occupe **la racine** du déploiement, l'application étant
+servie sous `/app` : `server.js` monte `site/dist/` à la racine, et
+`heroku-postbuild` construit les deux.
 
-- Le service worker de la PWA **exclut** `/presentation` de son renvoi de
-  navigation. Sans cette exclusion, il répondrait l'application pour cette URL à
-  toute personne ayant déjà ouvert l'appli — le site ne s'afficherait jamais.
-- `/presentation` est redirigé vers `/presentation/` (barre finale). Elle est
-  nécessaire : les chemins du site étant relatifs, ils pointeraient sinon vers la
-  racine, donc vers les fichiers de l'application.
+`site/public/sw.js` n'est pas le service worker du site — le site n'en a pas.
+C'est un **service worker d'extinction**, servi à `/sw.js`, qui retire celui que
+l'application avait laissé à la racine avant son déménagement. Voir le
+[README principal](../README.md#le-déménagement-de-lapplication).
 
 ## Les données restent alignées sur l'application
 

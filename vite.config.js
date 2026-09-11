@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // L'application vit sous /app/ : la racine est occupée par le site de
+  // présentation. La base conditionne les chemins des ressources, du manifeste
+  // et du service worker.
+  base: '/app/',
   plugins: [
     react(),
     VitePWA({
@@ -13,7 +17,8 @@ export default defineConfig({
         short_name: 'ReNeuro',
         description: 'Quiz pour apprendre les jours, les mois, et le calcul : addition, soustraction, multiplication et division.',
         lang: 'fr',
-        start_url: '/',
+        start_url: '/app/',
+        scope: '/app/',
         display: 'standalone',
         orientation: 'portrait',
         theme_color: '#667eea',
@@ -27,11 +32,11 @@ export default defineConfig({
       workbox: {
         // tout le build est mis en cache : l'appli fonctionne hors ligne
         globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
-        // Sans cette exclusion, le service worker répondrait l'application pour
-        // toute navigation, /presentation compris : le site vitrine, servi par
-        // Express sous ce chemin, ne s'afficherait jamais chez quelqu'un ayant
-        // déjà ouvert l'appli.
-        navigateFallbackDenylist: [/^\/presentation(?:\/|$)/],
+        // Le service worker ne sert l'application que sous /app/ ; la racine,
+        // occupée par le site de présentation, doit toujours passer par le
+        // réseau.
+        navigateFallback: '/app/index.html',
+        navigateFallbackAllowlist: [/^\/app(?:\/|$)/],
       },
     }),
   ],

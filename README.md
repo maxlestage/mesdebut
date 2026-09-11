@@ -4,7 +4,7 @@ Une petite application de quiz **React** (Vite), pensée **mobile first**, pour 
 
 C'est aussi une **PWA** : une fois le site ouvert dans le navigateur du téléphone, on peut l'ajouter à l'écran d'accueil (« Ajouter à l'écran d'accueil » sur iOS, « Installer l'application » sur Android). Elle se lance alors en plein écran comme une vraie application et **fonctionne même sans connexion**.
 
-> 🌐 **Site de présentation** : une vitrine en **React + TypeScript**, mobile first, se trouve dans [`site/`](site/). Elle est servie par le même déploiement, sous **`/presentation`**. Voir [`site/README.md`](site/README.md).
+> 🌐 **Site de présentation** : une vitrine en **React + TypeScript**, mobile first, se trouve dans [`site/`](site/). Elle occupe **la racine** du déploiement ; l'application est servie sous **`/app`**. Voir [`site/README.md`](site/README.md).
 >
 > 📱 **Version iOS native** : une application **Swift / SwiftUI** avec les mêmes fonctionnalités se trouve dans [`ios/`](ios/). Elle va plus loin que le web sur trois points : une **activité en direct** qui suit le quiz sur l'écran verrouillé et dans la Dynamic Island, une **application Apple Watch** autonome, et une mémoire de l'apprenant persistée en SQLite. Voir [`ios/README.md`](ios/README.md) pour l'ouvrir dans Xcode.
 
@@ -40,12 +40,31 @@ Un seul déploiement sert les deux :
 
 | URL | |
 | --- | --- |
-| `/` | l'application (PWA, installable, hors ligne) |
-| `/presentation` | le site de présentation |
+| `/` | le site de présentation |
+| `/app` | l'application (PWA, installable, hors ligne) |
 
-Le service worker de la PWA exclut explicitement `/presentation` de son renvoi de
-navigation (`navigateFallbackDenylist`) : sans cela, il répondrait l'application
-pour cette URL chez toute personne ayant déjà ouvert l'appli.
+### Le déménagement de l'application
+
+L'application vivait à la racine. Son service worker y était enregistré sous
+`/sw.js`, **avec la racine pour portée** — il répondait l'application pour toute
+navigation, y compris `/`. Chez les personnes l'ayant déjà ouverte, il aurait
+donc continué à masquer le site, quoi que le serveur place à cette adresse.
+
+Deux mesures règlent ça :
+
+- `site/public/sw.js` est un **service worker d'extinction**, servi à l'ancienne
+  adresse `/sw.js`. Les navigateurs revérifient le script là où il était : celui-ci
+  prend la place de l'ancien, vide les caches, se désinscrit et recharge les
+  onglets, qui reçoivent alors le site. Aucune page ne l'enregistre — seuls les
+  navigateurs d'avant la migration le reçoivent. **À conserver** tant que des
+  installations anciennes peuvent subsister.
+- L'application est reconstruite avec `base: '/app/'`, son manifeste déclare
+  `start_url` et `scope` à `/app/`, et son service worker ne prend la main que
+  sous `/app/` (`navigateFallbackAllowlist`).
+
+Conséquence pour qui avait ajouté l'application à son écran d'accueil **avant**
+le déménagement : le raccourci pointe encore la racine et ouvrira désormais le
+site. Il faut le retirer et le rajouter depuis `/app`.
 
 On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
 (Deploy → GitHub → Enable Automatic Deploys) pour déployer à chaque push.
