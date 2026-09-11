@@ -18,7 +18,11 @@ npm run preview   # prévisualiser le build
 npm start         # serveur de production (sert dist/, utilisé par Heroku)
 ```
 
-## Déployer sur Heroku
+## Déployer
+
+Le déploiement ne sert **que le site de présentation**, en statique. Il n'y a
+plus de serveur dans ce dépôt : `heroku-community/nginx` sert les fichiers, avec
+la configuration de [`config/nginx.conf.erb`](config/nginx.conf.erb).
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/maxlestage/mesdebut)
 
@@ -26,49 +30,32 @@ Ou avec la CLI Heroku :
 
 ```bash
 heroku login
-heroku create mesdebut        # ou le nom que tu veux
-git push heroku master        # Heroku build et démarre tout seul
+heroku create reneuro
+heroku buildpacks:add heroku/nodejs
+heroku buildpacks:add heroku-community/nginx
+git push heroku master
 heroku open
 ```
 
-Le buildpack Node.js de Heroku installe les dépendances, lance `heroku-postbuild`
-— qui construit **l'application** (`vite build`) puis **le site de présentation**
-(`npm --prefix site ci && npm --prefix site run build`) —, puis démarre
-`npm start` — `server.js`, un petit serveur écrit avec les seuls modules de
-Node, **sans aucune dépendance**.
+Le buildpack Node lance `heroku-postbuild`, qui construit le site
+(`npm --prefix site ci && npm --prefix site run build`) ; nginx sert ensuite
+`site/dist/`. Le `Procfile` se contente de `web: bin/start-nginx-solo` : aucun
+processus applicatif.
 
-Un seul déploiement sert les deux :
+> Le buildpack statique historique d'Heroku (`heroku/heroku-buildpack-static`)
+> est **archivé depuis novembre 2023** ; sa documentation renvoie elle-même vers
+> `heroku-community/nginx`, utilisé ici.
 
-| URL | |
-| --- | --- |
-| `/` | le site de présentation |
-| `/app` | l'application (PWA, installable, hors ligne) |
+### L'application n'est plus servie ici
 
-### Le déménagement de l'application
+Elle vit à côté : la version iOS dans [`ios/`](ios/), et la version web qui reste
+dans ce dépôt (`npm run dev`, `npm run build`) sans être déployée. Les anciennes
+adresses `/app` et `/presentation` redirigent vers la racine.
 
-L'application vivait à la racine. Son service worker y était enregistré sous
-`/sw.js`, **avec la racine pour portée** — il répondait l'application pour toute
-navigation, y compris `/`. Chez les personnes l'ayant déjà ouverte, il aurait
-donc continué à masquer le site, quoi que le serveur place à cette adresse.
-
-Deux mesures règlent ça :
-
-- `site/public/sw.js` est un **service worker d'extinction**, servi à l'ancienne
-  adresse `/sw.js`. Les navigateurs revérifient le script là où il était : celui-ci
-  prend la place de l'ancien, vide les caches, se désinscrit et recharge les
-  onglets, qui reçoivent alors le site. Aucune page ne l'enregistre — seuls les
-  navigateurs d'avant la migration le reçoivent. **À conserver** tant que des
-  installations anciennes peuvent subsister.
-- L'application est reconstruite avec `base: '/app/'`, son manifeste déclare
-  `start_url` et `scope` à `/app/`, et son service worker ne prend la main que
-  sous `/app/` (`navigateFallbackAllowlist`).
-
-Conséquence pour qui avait ajouté l'application à son écran d'accueil **avant**
-le déménagement : le raccourci pointe encore la racine et ouvrira désormais le
-site. Il faut le retirer et le rajouter depuis `/app`.
-
-On peut aussi connecter le dépôt GitHub dans le dashboard Heroku
-(Deploy → GitHub → Enable Automatic Deploys) pour déployer à chaque push.
+`site/public/sw.js` reste en place et **doit y rester** : c'est le service worker
+d'extinction qui retire celui que l'application avait laissé à la racine. Sans
+lui, un navigateur ayant déjà ouvert l'application continuerait de l'afficher
+depuis son cache, indéfiniment.
 
 ## Ce qu'on peut apprendre
 
@@ -126,8 +113,8 @@ src/
 public/                 # icônes PWA et favicon (générés depuis icons/icon.svg)
 icons/                  # source vectorielle des icônes + script de génération
 vite.config.js          # config Vite + manifest PWA (vite-plugin-pwa)
-server.js               # serveur de production, sans dépendance (Heroku)
-Procfile                # commande de démarrage Heroku
+config/nginx.conf.erb   # configuration nginx du déploiement statique
+Procfile                # démarre nginx (aucun serveur applicatif)
 app.json                # métadonnées pour le bouton « Deploy to Heroku »
 ```
 
