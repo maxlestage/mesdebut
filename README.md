@@ -1,154 +1,63 @@
 # ReNeuro 🎓
 
-Une petite application de quiz **React + TypeScript** (Vite), pensée **mobile first**, pour apprendre en s'amusant.
+Réapprendre les bases — les jours, l'heure, le calcul, organiser sa journée — en
+questions courtes.
 
-C'est aussi une **PWA** : une fois le site ouvert dans le navigateur du téléphone, on peut l'ajouter à l'écran d'accueil (« Ajouter à l'écran d'accueil » sur iOS, « Installer l'application » sur Android). Elle se lance alors en plein écran comme une vraie application et **fonctionne même sans connexion**.
+Ce dépôt contient deux choses :
 
-> 🌐 **Site de présentation** : une vitrine en **React + TypeScript**, mobile first, se trouve dans [`site/`](site/). Elle occupe **la racine** du déploiement ; l'application est servie sous **`/app`**. Le site présente une offre payante (4,99 €/mois) et ne donne aucun accès gratuit. Voir [`site/README.md`](site/README.md).
->
-> 📱 **Version iOS native** : une application **Swift / SwiftUI** avec les mêmes fonctionnalités se trouve dans [`ios/`](ios/). Elle va plus loin que le web sur trois points : une **activité en direct** qui suit le quiz sur l'écran verrouillé et dans la Dynamic Island, une **application Apple Watch** autonome, et une mémoire de l'apprenant persistée en SQLite. Voir [`ios/README.md`](ios/README.md) pour l'ouvrir dans Xcode.
+| | |
+| --- | --- |
+| [`site/`](site/) | le **site de présentation**, en React + TypeScript, mobile first |
+| [`ios/`](ios/) | l'**application**, native, en Swift / SwiftUI (iPhone et Apple Watch) |
 
-## Démarrer
+## Le site
+
+Une page, en React + TypeScript strict, pensée pour un téléphone d'abord. Elle
+présente les seize thèmes, la planification, les trois écrans et les principes
+d'apprentissage, puis l'offre : 4,99 € par mois, sans rien de gratuit.
 
 ```bash
+cd site
 npm install
 npm run dev       # serveur de développement
-npm run build     # build de production dans dist/
+npm run build     # site statique dans site/dist/
 npm run preview   # prévisualiser le build
-npm start         # serveur de production (sert dist/, utilisé par Heroku)
+npm run check     # vérifier les types
 ```
 
-## Déployer
+`npm run build` produit un dossier **entièrement statique**, à chemins relatifs :
+il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un domaine
+comme dans un sous-dossier. Le dépôt ne contient plus aucune configuration de
+déploiement ni aucun serveur.
 
-Le déploiement ne sert **que le site de présentation**, en statique. Il n'y a
-plus de serveur dans ce dépôt : `heroku-community/nginx` sert les fichiers, avec
-la configuration de [`config/nginx.conf.erb`](config/nginx.conf.erb).
+Voir [`site/README.md`](site/README.md) pour le détail.
 
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/maxlestage/mesdebut)
+## L'application
 
-Ou avec la CLI Heroku :
+Native, en Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite,
+une activité en direct sur l'écran verrouillé, et une application Apple Watch.
+Voir [`ios/README.md`](ios/README.md).
 
-```bash
-heroku login
-heroku create reneuro
-heroku buildpacks:add heroku/nodejs
-heroku buildpacks:add heroku-community/nginx   # doit être le dernier
-git push heroku master
-heroku open
-```
+Elle est compilée à chaque changement par une intégration continue, et peut être
+envoyée sur TestFlight. Voir [`ios/CI.md`](ios/CI.md).
 
-> ⚠️ **Sur une application Heroku déjà existante**, les buildpacks déclarés dans
-> `app.json` ne s'appliquent pas : ce fichier ne sert qu'au bouton « Deploy to
-> Heroku » et aux applications de revue. Il faut les ajouter explicitement :
->
-> ```bash
-> heroku buildpacks            # voir ceux en place
-> heroku buildpacks:add heroku-community/nginx
-> ```
->
-> Sans le buildpack nginx, `bin/start-nginx-static` n'existe pas sur le dyno : la
-> mise en service échoue et Heroku **continue de servir la version précédente**,
-> donc l'ancienne application — sans que l'URL change.
+> Une version web du quiz a existé dans ce dépôt. Elle a été retirée : seule
+> l'application native subsiste. On la retrouve dans l'historique git si besoin.
 
-Le buildpack Node lance `heroku-postbuild`, qui construit le site
-(`npm --prefix site ci && npm --prefix site run build`) ; nginx sert ensuite
-`site/dist/`. Le `Procfile` se contente de `web: bin/start-nginx-static` : aucun
-processus applicatif. (`start-nginx-solo` existe aussi mais attend un socket
-amont : c'est le mode proxy, pas le mode statique.)
+## Les icônes
 
-> Le buildpack statique historique d'Heroku (`heroku/heroku-buildpack-static`)
-> est **archivé depuis novembre 2023** ; sa documentation renvoie elle-même vers
-> `heroku-community/nginx`, utilisé ici.
+Toutes les icônes viennent d'**un seul fichier vectoriel**,
+[`icons/icon.svg`](icons/icon.svg), rasterisé par
+[`icons/generate.ts`](icons/generate.ts) au cadrage propre à chaque plateforme
+(cercle sur watchOS, squircle sur iOS). Voir [`icons/README.md`](icons/README.md).
 
-### L'application n'est plus servie ici
+## Un fichier à ne pas supprimer par mégarde
 
-Elle vit à côté : la version iOS dans [`ios/`](ios/), et la version web qui reste
-dans ce dépôt (`npm run dev`, `npm run build`) sans être déployée. Les anciennes
-adresses `/app` et `/presentation` redirigent vers la racine.
-
-`site/public/sw.js` reste en place et **doit y rester** : c'est le service worker
-d'extinction qui retire celui que l'application avait laissé à la racine. Sans
-lui, un navigateur ayant déjà ouvert l'application continuerait de l'afficher
-depuis son cache, indéfiniment.
-
-## Ce qu'on peut apprendre
-
-- 📅 **Les jours de la semaine** — révision de la liste, puis quiz (avant/après, position, etc.)
-- 🗓️ **Les mois de l'année** — révision de la liste, puis quiz
-- 🍂 **Les saisons** — révision (avec les mois de chaque saison), quiz d'ordre et d'association mois → saison
-- 🔤 **L'alphabet** — révision en grille des 26 lettres, quiz (lettre d'avant/d'après, position)
-- 🕐 **Lire l'heure** — horloges à aiguilles dessinées en SVG : révision de 10 horloges variées, lecture de l'horloge, rôle des aiguilles et repères du cadran, projection « dans une heure ». 4 niveaux de plus en plus fins : 🌱 heures pleines, 🌿 quarts et demies, 🌳 de 5 en 5, 🏆 minute par minute (720 horaires différents), avec la forme française « moins » (2 h 40 → « trois heures moins vingt ») et la minute au féminin (« onze heures une »)
-- 📋 **Planifier** — 11 activités du quotidien décomposées en étapes qui s'enchaînent vraiment. Trois niveaux : 🌱 les étapes (par quoi on commence, ce qui suit), 🌿 l'ordre (l'étape qui manque, l'intrus, ce qui vient juste avant), 🌳 le temps (estimer une durée, calculer une heure de fin, tenir dans un créneau). Et **🗓️ Ma journée**, un planificateur : on écrit ses tâches ou on prend une activité connue avec sa durée, on les ordonne, on les coche — chacune démarre quand la précédente finit, donc l'heure de chaque tâche s'affiche et la journée se voit déborder. Chaque tâche a un **chronomètre** : on la démarre, et à l'arrêt l'app compare le temps prévu au temps réellement passé (« 15 → 25 min »), avec un bilan de la journée — c'est l'écart entre l'estimation et le réel qu'on travaille en rééducation. Un **📈 suivi sur la durée** garde le prévu et le réel de chaque journée : on voit sur dix jours si l'écart se resserre (« sur 5 jours : +18 % d'écart en moyenne, contre +45 % avant — tu progresses »)
-- 🎨 **Les couleurs** — révision avec pastilles, reconnaissance visuelle, mélanges de peinture (bleu + jaune = vert) et association objet → couleur
-- 📐 **Les formes géométriques** — 10 formes dessinées en SVG, reconnaissance visuelle, nombre de côtés et formes du quotidien (un panneau stop → octogone)
-- 🧮 **Les chiffres de 0 à 9** — révision avec le chiffre, son écriture et ses billes ; quiz de comptage de billes, d'écriture du chiffre dans les deux sens (7 ↔ sept) et de chiffre d'avant/d'après
-- 🔟 **Les nombres jusqu'à 50** — billes groupées par rangées de 10 (une couleur par dizaine), comptage, dizaines et unités, composition (« 3 dizaines et 4 unités ? ») et suites de nombres
-- 🔢 **Les nombres en lettres** — révision en accordéon : on déroule chaque dizaine pour voir tous les nombres et leur écriture ; puis quiz pour lire et écrire les nombres de 0 à 100 dans les deux sens (soixante-dix, quatre-vingts…), avec 3 niveaux
-- ➕ **Addition**
-- ➖ **Soustraction** (jamais de résultat négatif)
-- ✖️ **Multiplication**
-- ➗ **Division** (toujours des divisions exactes)
-
-Les quiz de calcul ont trois niveaux : 🌱 Facile, 🌿 Moyen, 🌳 Difficile.
-
-Chaque quiz comporte 10 questions à choix multiples, avec un score, des étoiles et des encouragements à la fin. 🌟
-
-**Répétition espacée** : quand une réponse est fausse, la même question revient plus loin dans le quiz — une première fois 3 questions plus tard, puis encore 5 questions après — pour retravailler ce qui n'est pas encore acquis. Chaque question ne programme ses reprises qu'une seule fois, pour éviter une file qui s'allonge sans fin.
-
-## Tout est en TypeScript
-
-L'application, le site et les scripts de construction sont en **TypeScript strict**,
-avec `noUncheckedIndexedAccess` : un accès de tableau rend `T | undefined` tant
-qu'on ne l'a pas justifié. Le moteur indexe beaucoup de tableaux ; plutôt que de
-parsemer le code d'assertions `!`, il passe par un accesseur `at()` qui échoue
-bruyamment si l'index sort des bornes — une hypothèse fausse se voit tout de
-suite au lieu de propager un `undefined` silencieux.
-
-Le typage n'est pas décoratif : `MELANGE_SOURCES` est typé `CategoryKey[]`, donc
-une catégorie mal orthographiée devient une erreur de compilation au lieu d'un
-thème silencieusement absent du mode Mélange.
-
-```bash
-npm run check          # vérifie les types de l'application
-npm --prefix site run check   # types du site + cohérence avec l'application
-```
-
-## Fondé sur la science de l'apprentissage 🧠
-
-L'appli s'appuie sur des principes établis des sciences cognitives :
-
-- **Récupération active** (testing effect) — on répond, on ne relit pas
-- **Feedback immédiat** — la bonne réponse est montrée tout de suite
-- **Répétition espacée** — les questions ratées reviennent à intervalles croissants
-- **Entrelacement** (mode 🧠 Mélange) — les thèmes sont alternés plutôt que révisés en blocs, ce qui force la discrimination et ancre mieux
-- **Double codage** — chaque notion associe une image (billes, formes, couleurs) et un mot
-- **Subitizing / sens du nombre** — les billes sont groupées par 5 et par 10
-- **Renforcement positif** — étoiles et encouragements pour soutenir la motivation
-- **Fonctions exécutives** — la catégorie 📋 Planifier entraîne la planification
-  (décomposer, ordonner, estimer une durée) sur des gestes du quotidien, et le
-  planificateur permet de l'appliquer à sa vraie journée
-
-## Structure
-
-```
-src/
-  questions.ts          # types, données et génération des questions
-  App.tsx               # navigation entre les écrans
-  components/
-    Menu.tsx            # menu principal
-    Category.jsx        # choix réviser / quiz (jours et mois)
-    Learn.tsx           # écran de révision
-    Levels.jsx          # choix du niveau (calcul)
-    Quiz.tsx            # déroulement du quiz
-    End.tsx             # écran de score
-  styles.css            # styles mobile first
-public/                 # icônes PWA et favicon (générés depuis icons/icon.svg)
-icons/                  # source vectorielle des icônes + script de génération
-vite.config.ts          # config Vite + manifest PWA (vite-plugin-pwa)
-config/nginx.conf.erb   # configuration nginx du déploiement statique
-Procfile                # démarre nginx (aucun serveur applicatif)
-app.json                # métadonnées pour le bouton « Deploy to Heroku »
-```
+`site/public/sw.js` n'est pas le service worker du site — le site n'en a pas.
+C'est un **service worker d'extinction** : l'ancienne version web avait laissé le
+sien à la racine du domaine, et il y répond encore, de mémoire cache, chez les
+personnes qui l'avaient ouverte. Ce fichier prend sa place, vide les caches et le
+désinscrit. À conserver tant que le site est déposé sur le même domaine qu'elle.
 
 ## Crédits
 
