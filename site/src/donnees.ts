@@ -1,13 +1,15 @@
-// Contenu du site. Les catégories reprennent celles de l'application :
-// scripts/verifie-donnees.mjs compare cette liste à src/questions.js du dépôt
-// pour qu'elles ne divergent pas en silence.
+// Contenu du site : les thèmes présentés, les supports, les principes.
+//
+// Cette liste reprend les catégories de l'application iOS (ios/), qui reste la
+// seule implémentation. Les deux sont écrites séparément : en ajouter une ici
+// suppose de la retrouver là-bas.
 
 export type Categorie = {
   readonly key: string
   readonly emoji: string
   readonly label: string
   readonly title: string
-  /** Dégradé repris de l'app, pour que les couleurs se correspondent. */
+  /** Dégradé repris de l'application, pour que les couleurs se correspondent. */
   readonly degrade: readonly [string, string]
   readonly niveaux?: readonly string[]
 }
