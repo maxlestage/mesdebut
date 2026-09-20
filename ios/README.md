@@ -25,6 +25,16 @@ Pour l'installer sur un vrai iPhone ou le publier sur l'App Store, il faut un
 *Signing & Capabilities* (choisir ton équipe ; le bundle id par défaut est
 `com.reneuro.ReNeuro`, à personnaliser).
 
+## Le nom sous l'icône
+
+L'app iPhone s'appelle **ReNeuro ‣**. Les deux autres cibles gardent
+« ReNeuro » : le widget et l'app Apple Watch n'ont pas d'icône propre sur
+l'écran d'accueil de l'iPhone.
+
+Le caractère `‣` (U+2023, *triangular bullet*) est écrit dans le projet
+sous sa forme échappée, `\U2023`, celle qu'Xcode produit lui-même pour tout
+caractère non ASCII — le `project.pbxproj` reste ainsi un fichier ASCII.
+
 ## Structure
 
 Le projet contient **trois cibles** : l'app iPhone, l'extension widget qui dessine
