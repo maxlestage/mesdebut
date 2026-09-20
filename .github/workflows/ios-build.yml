@@ -37,8 +37,19 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
             -resultBundlePath build/App.xcresult \
+            -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+      # Le nom de l'app est écrit échappé dans le projet (« \U2023 »), comme
+      # Xcode l'écrit lui-même. Lire le projet ne prouve donc pas que le
+      # caractère est bien décodé : on lit le Info.plist *produit*, celui dont
+      # l'iPhone tire le nom sous l'icône.
+      - name: Vérifier les noms affichés
+        working-directory: ios/ReNeuro
+        run: |
+          python3 ../../.github/scripts/verifier-noms-affiches.py \
+            build/DerivedData/Build/Products/Debug-iphonesimulator/ReNeuro.app
 
       # Build dédié de la montre : les erreurs propres à watchOS sont ainsi
       # attribuées directement à la bonne cible.
