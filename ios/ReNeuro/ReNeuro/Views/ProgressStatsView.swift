@@ -21,7 +21,7 @@ struct ProgressStatsView: View {
             } else {
                 Text("🧠 \(summary.mastered) notion\(summary.mastered > 1 ? "s" : "") maîtrisée\(summary.mastered > 1 ? "s" : "") · \(summary.correct)/\(summary.answered) réussies")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(Color(hex: "#4a3f8f"))
+                    .foregroundColor(.titre)
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 8) {
@@ -33,7 +33,7 @@ struct ProgressStatsView: View {
                 Button { showReset = true } label: {
                     Text("♻︎ Réinitialiser mes progrès")
                         .font(.callout.weight(.semibold))
-                        .foregroundColor(Color(hex: "#e04545"))
+                        .foregroundColor(.alerte)
                         .padding(.top, 4)
                 }
                 .buttonStyle(.plain)
@@ -71,7 +71,7 @@ struct CategoryStatRow: View {
                 HStack {
                     Text(category.label)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(Color(hex: "#4a3f8f"))
+                        .foregroundColor(.titre)
                     Spacer()
                     Text("\(Int((ratio * 100).rounded()))%")
                         .font(.caption.weight(.bold))

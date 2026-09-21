@@ -1,5 +1,26 @@
 import SwiftUI
 
+// Le fond des écrans est `Color(.systemBackground)` : blanc en thème clair,
+// noir en thème sombre. Un texte de couleur figée devient donc illisible dans
+// l'un des deux — l'énoncé du quiz tombait à 1,66:1 de contraste sur fond noir.
+// Chaque couleur posée sur ce fond a donc ses deux versions, toutes deux
+// au-dessus du seuil WCAG AA de 4,5:1. Les couleurs posées sur un fond fixe
+// (les boutons-pilules) restent figées : elles sont lisibles dans les deux cas.
+extension Color {
+    init(clair: String, sombre: String) {
+        self = Color(UIColor { traits in
+            UIColor(Color(hex: traits.userInterfaceStyle == .dark ? sombre : clair))
+        })
+    }
+
+    static let encre = Color(clair: "#333333", sombre: "#f2f2f7")
+    static let titre = Color(clair: "#4a3f8f", sombre: "#c9c0ff")
+    static let accentDoux = Color(clair: "#5d51ad", sombre: "#bcb2f2")
+    static let accentPale = Color(clair: "#6f63b0", sombre: "#a99fdd")
+    static let alerte = Color(clair: "#c23434", sombre: "#ff8f8f")
+    static let attention = Color(clair: "#9c6000", sombre: "#ffb340")
+}
+
 let brandGradient = LinearGradient(
     colors: [Color(hex: "#667eea"), Color(hex: "#764ba2")],
     startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -9,7 +30,7 @@ struct ScreenTitle: View {
     var body: some View {
         Text(text)
             .font(.title2.bold())
-            .foregroundColor(Color(hex: "#4a3f8f"))
+            .foregroundColor(.titre)
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
     }
