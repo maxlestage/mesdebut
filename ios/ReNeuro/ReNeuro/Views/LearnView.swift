@@ -10,9 +10,9 @@ struct LearnRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.label)
                     .font(.body.weight(.semibold))
-                    .foregroundColor(Color(hex: "#4a3f8f"))
+                    .foregroundColor(.titre)
                 if let sub = item.sub {
-                    Text(sub).font(.caption).foregroundColor(Color(hex: "#8a7fc9"))
+                    Text(sub).font(.caption).foregroundColor(.accentPale)
                 }
                 if let m = item.marbles {
                     MarblesView(count: m, size: item.perRow == 10 ? 14 : 16,
@@ -79,7 +79,7 @@ struct LearnView: View {
                     ForEach(letters, id: \.self) { l in
                         Text(l)
                             .font(.title3.bold())
-                            .foregroundColor(Color(hex: "#4a3f8f"))
+                            .foregroundColor(.titre)
                             .frame(maxWidth: .infinity, minHeight: 44)
                             .background(Color(hex: "#f4f2ff"))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
