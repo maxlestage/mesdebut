@@ -31,9 +31,14 @@ L'app iPhone s'appelle **ReNeuro ‣**. Les deux autres cibles gardent
 « ReNeuro » : le widget et l'app Apple Watch n'ont pas d'icône propre sur
 l'écran d'accueil de l'iPhone.
 
-Le caractère `‣` (U+2023, *triangular bullet*) est écrit dans le projet
-sous sa forme échappée, `\U2023`, celle qu'Xcode produit lui-même pour tout
-caractère non ASCII — le `project.pbxproj` reste ainsi un fichier ASCII.
+Le caractère `‣` (U+2023, *triangular bullet*) est écrit **tel quel** dans
+le `project.pbxproj`, et non sous sa forme échappée `\U2023` : le fichier
+s'ouvre sur l'en-tête `// !$*UTF8*$!`, par lequel Xcode déclare lui-même que
+son contenu est en UTF-8.
+
+Ce n'est pas une question de goût : le nom rendu est vérifié à chaque build par
+la CI, qui lit le `Info.plist` *produit par la compilation* — voir
+`.github/scripts/verifier-noms-affiches.py`.
 
 ## Structure
 
