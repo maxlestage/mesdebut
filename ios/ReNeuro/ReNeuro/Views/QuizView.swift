@@ -45,7 +45,7 @@ struct QuizView: View {
             VStack(spacing: 12) {
                 Text(question.prompt)
                     .font(.title3.bold())
-                    .foregroundColor(Color(hex: "#333333"))
+                    .foregroundColor(.encre)
                     .multilineTextAlignment(.center)
 
                 if let steps = question.steps {

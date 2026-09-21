@@ -80,3 +80,13 @@ jobs:
               || xcrun xcresulttool get --legacy --path "$bundle" --format json 2>/dev/null | head -c 30000 \
               || echo "(bundle de résultats illisible)"
           done
+
+  # Ne lit que le code source : pas besoin de macOS, facturé dix fois le tarif.
+  contraste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier la lisibilité dans les deux thèmes
+        run: python3 .github/scripts/verifier-contraste.py
