@@ -100,19 +100,45 @@ jobs:
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
-          xcodebuild \
-            -project ReNeuro.xcodeproj \
-            -scheme ReNeuro \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/ReNeuro.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
-            archive
+          profils="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+
+          archiver() {
+            xcodebuild \
+              -project ReNeuro.xcodeproj \
+              -scheme ReNeuro \
+              -configuration Release \
+              -destination 'generic/platform=iOS' \
+              -archivePath build/ReNeuro.xcarchive \
+              -allowProvisioningUpdates \
+              -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+              -authenticationKeyID "$ASC_KEY_ID" \
+              -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+              CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+              archive 2>&1 | tee "$1"
+          }
+
+          # Sur une machine neuve, aucun profil n'existe localement :
+          # -allowProvisioningUpdates les crée pendant l'archivage. Le graphe de
+          # dépendances en référence alors parfois un avant qu'il soit écrit sur
+          # le disque, et l'archivage s'arrête sur « Build input file cannot be
+          # found: …/Provisioning Profiles/….mobileprovision ». La seconde
+          # tentative les trouve en place.
+          if ! archiver /tmp/archive-1.log; then
+            if grep -q 'Build input file cannot be found' /tmp/archive-1.log \
+               && grep -q 'Provisioning Profiles/.*\.mobileprovision' /tmp/archive-1.log; then
+              echo "::warning::Profils absents au premier passage — seconde tentative."
+              echo "— profils présents sur le disque —"
+              ls -1 "$profils" 2>/dev/null || echo "(aucun)"
+              sleep 15
+              archiver /tmp/archive-2.log
+            else
+              echo "::error::L'archivage a échoué, et pas sur la création des profils."
+              echo "Les erreurs relevées :"
+              grep 'error:' /tmp/archive-1.log | sort -u | head -20
+              exit 1
+            fi
+          fi
 
       - name: Exporter l'IPA
         working-directory: ios/ReNeuro
