@@ -253,7 +253,7 @@ struct PlannerView: View {
             HStack(spacing: 8) {
                 Text(horaires[i])
                     .font(.caption.bold().monospacedDigit())
-                    .foregroundColor(Color(hex: "#6a5fbb"))
+                    .foregroundColor(.accentDoux)
                     .frame(minWidth: 52, alignment: .leading)
 
                 Button { bascule(tache) } label: {
@@ -272,7 +272,7 @@ struct PlannerView: View {
                 if tache.demarreA != nil {
                     Text("⏱ \(ecoulees(tache)) min")
                         .font(.caption.bold())
-                        .foregroundColor(Color(hex: "#e08a00"))
+                        .foregroundColor(.attention)
                 } else if let reel = tache.reel {
                     Text("\(tache.duree) → \(reel) min")
                         .font(.caption.bold())
@@ -346,7 +346,7 @@ struct PlannerView: View {
         let tout = faites == plan.taches.count
         return VStack(spacing: 2) {
             (Text("Fin prévue à ")
-             + Text(formatHeure(fh, fm)).bold().foregroundColor(Color(hex: "#4a3f8f"))
+             + Text(formatHeure(fh, fm)).bold().foregroundColor(.titre)
              + Text(" · \(total) min au total"))
             Text("\(faites) faite\(faites > 1 ? "s" : "") sur \(plan.taches.count)"
                  + (tout ? " — journée terminée ! 🎉" : ""))
@@ -354,7 +354,7 @@ struct PlannerView: View {
                 .fontWeight(tout ? .bold : .regular)
             if let bilanEstimation {
                 Text(bilanEstimation)
-                    .foregroundColor(Color(hex: "#6a5fbb"))
+                    .foregroundColor(.accentDoux)
                     .multilineTextAlignment(.center)
                     .padding(.top, 4)
             }
@@ -529,7 +529,7 @@ struct TendanceView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("📈 Mes estimations")
                 .font(.subheadline.bold())
-                .foregroundColor(Color(hex: "#4a3f8f"))
+                .foregroundColor(.titre)
                 .frame(maxWidth: .infinity)
 
             ForEach(derniers) { jour in
@@ -559,7 +559,7 @@ struct TendanceView: View {
 
             Text(message)
                 .font(.caption)
-                .foregroundColor(Color(hex: "#6a5fbb"))
+                .foregroundColor(.accentDoux)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 4)
