@@ -33,7 +33,7 @@ Dépôt → *Settings* → *Secrets and variables* → *Actions* → *New reposi
 | `ASC_KEY_ID` | oui | le Key ID de la clé API (ex. `A1B2C3D4E5`) |
 | `ASC_ISSUER_ID` | oui | l'Issuer ID (un UUID) |
 | `ASC_KEY_P8` | oui | le contenu du fichier `.p8` |
-| `APPLE_TEAM_ID` | **non** | le Team ID (ex. `1A2B3C4D5E`) |
+| `APPLE_TEAM_ID` | oui | le Team ID (ex. `1A2B3C4D5E`) |
 
 `ASC_KEY_P8` s'accepte **sous les deux formes** : le contenu du `.p8` collé
 tel quel, en-têtes `BEGIN`/`END PRIVATE KEY` compris, ou le même contenu
@@ -41,8 +41,12 @@ encodé en base64. Le workflow reconnaît laquelle des deux il a reçue, et
 refuse tout de suite un secret qui n'est pas une clé privée exploitable —
 plutôt que d'échouer trois étapes plus loin sur une erreur de signature.
 
-`APPLE_TEAM_ID` est facultatif : avec un seul compte d'équipe, la signature
-automatique la trouve seule. Ne le définis que si le compte en a plusieurs.
+`APPLE_TEAM_ID` est **obligatoire**, y compris avec une clé API : celle-ci
+authentifie, mais elle ne désigne pas l'équipe. Sans lui, l'archive échoue sur
+« Signing for "ReNeuro" requires a development team », sur les trois cibles.
+
+Il se lit sur developer.apple.com, rubrique *Membership* — ou en haut à droite
+d'App Store Connect, sous le nom du compte.
 
 > Les anciens noms — `APP_STORE_CONNECT_API_KEY_ID`,
 > `APP_STORE_CONNECT_API_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_BASE64` —
