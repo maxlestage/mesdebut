@@ -172,5 +172,43 @@ jobs:
           set -o pipefail
           IPA=$(ls build/ipa/*.ipa | head -1)
           echo "Envoi de $IPA"
+
+          # altool signale certaines erreurs sur sa sortie tout en se terminant
+          # avec un code 0 — un envoi refusé passerait alors pour un succès.
+          # On juge donc sur ce qu'il écrit, pas sur ce qu'il renvoie.
+          code=0
           xcrun altool --upload-app -f "$IPA" -t ios \
-            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID" 2>&1 | tee /tmp/envoi.log || code=$?
+
+          if [ "$code" -ne 0 ]; then
+            echo "::error::altool s'est arrêté avec le code $code."
+          elif grep -qE 'ERROR[: ]' /tmp/envoi.log; then
+            echo "::error::altool a refusé l'envoi."
+            code=1
+          elif ! grep -q 'No errors uploading' /tmp/envoi.log; then
+            echo "::error::Envoi non confirmé par altool : le message de succès attendu est absent."
+            code=1
+          fi
+
+          if [ "$code" -ne 0 ]; then
+            # L'erreur (12) est de loin la plus courante au premier envoi.
+            if grep -q 'Cannot determine the Apple ID from Bundle ID' /tmp/envoi.log; then
+              echo ""
+              echo "L'app n'existe pas encore dans App Store Connect."
+              echo ""
+              echo "Le build est pourtant bon : l'archive est signée et l'IPA"
+              echo "exporté. Il manque seulement la fiche côté Apple."
+              echo ""
+              echo "À faire une seule fois, sur appstoreconnect.apple.com :"
+              echo "  Mes apps → + → Nouvelle app"
+              echo "  Plateforme : iOS"
+              echo "  ID de lot  : com.reneuro.ReNeuro"
+              echo ""
+              echo "Si cet identifiant n'apparaît pas dans la liste, il faut"
+              echo "d'abord l'enregistrer sur developer.apple.com, rubrique"
+              echo "Identifiers."
+            fi
+            exit 1
+          fi
+          echo "Envoi accepté par Apple. Le build apparaîtra dans TestFlight"
+          echo "après quelques minutes de traitement."
