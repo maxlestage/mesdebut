@@ -45,10 +45,10 @@ jobs:
       # Xcode l'écrit lui-même. Lire le projet ne prouve donc pas que le
       # caractère est bien décodé : on lit le Info.plist *produit*, celui dont
       # l'iPhone tire le nom sous l'icône.
-      - name: Vérifier les noms affichés
+      - name: Vérifier le bundle construit
         working-directory: ios/ReNeuro
         run: |
-          python3 ../../.github/scripts/verifier-noms-affiches.py \
+          python3 ../../.github/scripts/verifier-bundle.py \
             build/DerivedData/Build/Products/Debug-iphonesimulator/ReNeuro.app
 
       # Build dédié de la montre : les erreurs propres à watchOS sont ainsi
