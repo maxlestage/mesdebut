@@ -28,18 +28,25 @@ compilation. Le second nécessite les réglages ci-dessous.
 
 Dépôt → *Settings* → *Secrets and variables* → *Actions* → *New repository secret* :
 
-| Secret | Contenu |
-|---|---|
-| `APP_STORE_CONNECT_API_KEY_ID` | le Key ID de la clé API (ex. `A1B2C3D4E5`) |
-| `APP_STORE_CONNECT_API_ISSUER_ID` | l'Issuer ID (un UUID) |
-| `APP_STORE_CONNECT_API_KEY_BASE64` | le contenu du `.p8`, encodé en base64 |
-| `APPLE_TEAM_ID` | le Team ID (ex. `1A2B3C4D5E`) |
+| Secret | Obligatoire | Contenu |
+|---|---|---|
+| `ASC_KEY_ID` | oui | le Key ID de la clé API (ex. `A1B2C3D4E5`) |
+| `ASC_ISSUER_ID` | oui | l'Issuer ID (un UUID) |
+| `ASC_KEY_P8` | oui | le contenu du fichier `.p8` |
+| `APPLE_TEAM_ID` | **non** | le Team ID (ex. `1A2B3C4D5E`) |
 
-Pour encoder la clé `.p8` en base64 :
+`ASC_KEY_P8` s'accepte **sous les deux formes** : le contenu du `.p8` collé
+tel quel, en-têtes `BEGIN`/`END PRIVATE KEY` compris, ou le même contenu
+encodé en base64. Le workflow reconnaît laquelle des deux il a reçue, et
+refuse tout de suite un secret qui n'est pas une clé privée exploitable —
+plutôt que d'échouer trois étapes plus loin sur une erreur de signature.
 
-```bash
-base64 -i AuthKey_XXXXXXXXXX.p8 | pbcopy   # macOS : le résultat est dans le presse-papier
-```
+`APPLE_TEAM_ID` est facultatif : avec un seul compte d'équipe, la signature
+automatique la trouve seule. Ne le définis que si le compte en a plusieurs.
+
+> Les anciens noms — `APP_STORE_CONNECT_API_KEY_ID`,
+> `APP_STORE_CONNECT_API_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_BASE64` —
+> restent acceptés. Le nom court l'emporte quand les deux sont définis.
 
 ## Lancer un envoi TestFlight
 
