@@ -14,9 +14,13 @@ jobs:
   testflight:
     runs-on: macos-15
     env:
-      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-      ASC_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+      # Deux jeux de noms sont acceptés : les courts (ASC_*) et les longs,
+      # historiques. Le premier défini l'emporte.
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID || secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_P8 || secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+      # Facultatif : avec un seul compte d'équipe, la signature automatique le
+      # trouve seule.
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -32,10 +36,9 @@ jobs:
       - name: Vérifier les secrets App Store Connect
         run: |
           manquants=()
-          [ -n "$ASC_KEY_ID" ]      || manquants+=("APP_STORE_CONNECT_API_KEY_ID")
-          [ -n "$ASC_ISSUER_ID" ]   || manquants+=("APP_STORE_CONNECT_API_ISSUER_ID")
-          [ -n "$ASC_KEY_CONTENT" ] || manquants+=("APP_STORE_CONNECT_API_KEY_BASE64")
-          [ -n "$APPLE_TEAM_ID" ]   || manquants+=("APPLE_TEAM_ID")
+          [ -n "$ASC_KEY_ID" ]      || manquants+=("ASC_KEY_ID")
+          [ -n "$ASC_ISSUER_ID" ]   || manquants+=("ASC_ISSUER_ID")
+          [ -n "$ASC_KEY_CONTENT" ] || manquants+=("ASC_KEY_P8")
           if [ ${#manquants[@]} -gt 0 ]; then
             echo "::error::Secrets manquants : ${manquants[*]}"
             echo ""
@@ -46,18 +49,52 @@ jobs:
             echo "Marche à suivre détaillée : ios/CI.md"
             exit 1
           fi
-          echo "Les quatre secrets sont présents."
+          echo "Clé API : les trois secrets sont présents."
+          if [ -n "$APPLE_TEAM_ID" ]; then
+            echo "Équipe imposée : $APPLE_TEAM_ID"
+          else
+            echo "APPLE_TEAM_ID non défini : la signature automatique choisira"
+            echo "l'unique équipe du compte. S'il y en a plusieurs, définis ce"
+            echo "secret pour lever l'ambiguïté."
+          fi
 
       - name: Installer la clé API App Store Connect
         run: |
           mkdir -p "$HOME/private_keys"
           # altool et xcodebuild cherchent la clé sous ce nom exact
-          echo "$ASC_KEY_CONTENT" | base64 --decode > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          cle="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+
+          # Le secret peut avoir été collé tel quel (le .p8 est déjà du texte)
+          # ou encodé en base64. On accepte les deux plutôt que d'échouer plus
+          # loin sur une erreur incompréhensible.
+          if printf '%s' "$ASC_KEY_CONTENT" | grep -q 'BEGIN PRIVATE KEY'; then
+            echo "Clé fournie en clair."
+            printf '%s\n' "$ASC_KEY_CONTENT" > "$cle"
+          else
+            echo "Clé fournie en base64, décodage."
+            printf '%s' "$ASC_KEY_CONTENT" | tr -d '[:space:]' | base64 --decode > "$cle" 2>/dev/null || true
+          fi
+          chmod 600 "$cle"
+
+          # Un secret mal collé donnerait sinon « -authenticationKeyID is
+          # required » ou une erreur de signature, trois étapes plus loin.
+          if ! openssl pkey -in "$cle" -noout 2>/dev/null; then
+            echo "::error::Le secret ASC_KEY_P8 n'est pas une clé privée exploitable."
+            echo ""
+            echo "Attendu : le contenu du fichier AuthKey_XXXXXXXXXX.p8 téléchargé"
+            echo "depuis App Store Connect (Utilisateurs et accès → Intégrations),"
+            echo "collé tel quel — en-têtes BEGIN/END PRIVATE KEY compris — ou"
+            echo "encodé en base64."
+            exit 1
+          fi
+          echo "Clé privée valide."
 
       - name: Archiver
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
+          equipe=()
+          [ -n "$APPLE_TEAM_ID" ] && equipe+=("DEVELOPMENT_TEAM=$APPLE_TEAM_ID")
           xcodebuild \
             -project ReNeuro.xcodeproj \
             -scheme ReNeuro \
@@ -68,7 +105,7 @@ jobs:
             -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            "${equipe[@]}" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive
 
@@ -76,18 +113,23 @@ jobs:
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
+          # teamID n'est écrit que s'il est connu : sans lui, la signature
+          # automatique retient l'unique équipe du compte.
+          ligne_equipe=""
+          [ -n "$APPLE_TEAM_ID" ] && ligne_equipe="  <key>teamID</key><string>${APPLE_TEAM_ID}</string>"
           cat > ExportOptions.plist <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>method</key><string>app-store-connect</string>
-            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+          ${ligne_equipe}
             <key>signingStyle</key><string>automatic</string>
             <key>destination</key><string>export</string>
           </dict>
           </plist>
           PLIST
+          echo "— ExportOptions.plist —"; cat ExportOptions.plist
           xcodebuild -exportArchive \
             -archivePath build/ReNeuro.xcarchive \
             -exportOptionsPlist ExportOptions.plist \
