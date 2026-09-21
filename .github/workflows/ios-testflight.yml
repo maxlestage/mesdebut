@@ -19,8 +19,9 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID || secrets.APP_STORE_CONNECT_API_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID || secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
       ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_P8 || secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
-      # Facultatif : avec un seul compte d'équipe, la signature automatique le
-      # trouve seule.
+      # Obligatoire : la clé API authentifie, mais elle ne désigne pas
+      # l'équipe. Sans DEVELOPMENT_TEAM, l'archive échoue sur « Signing for
+      # "ReNeuro" requires a development team » — sur les trois cibles.
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -39,6 +40,7 @@ jobs:
           [ -n "$ASC_KEY_ID" ]      || manquants+=("ASC_KEY_ID")
           [ -n "$ASC_ISSUER_ID" ]   || manquants+=("ASC_ISSUER_ID")
           [ -n "$ASC_KEY_CONTENT" ] || manquants+=("ASC_KEY_P8")
+          [ -n "$APPLE_TEAM_ID" ]   || manquants+=("APPLE_TEAM_ID")
           if [ ${#manquants[@]} -gt 0 ]; then
             echo "::error::Secrets manquants : ${manquants[*]}"
             echo ""
@@ -46,17 +48,22 @@ jobs:
             echo "À définir dans Settings → Secrets and variables → Actions :"
             for m in "${manquants[@]}"; do echo "  - $m"; done
             echo ""
+            echo ""
+            for m in "${manquants[@]}"; do
+              case "$m" in
+                APPLE_TEAM_ID)
+                  echo "APPLE_TEAM_ID : l'identifiant d'équipe, dix caractères"
+                  echo "  (ex. 1A2B3C4D5E). Il se lit sur developer.apple.com,"
+                  echo "  rubrique Membership — ou en haut à droite d'App Store"
+                  echo "  Connect, sous le nom du compte."
+                  ;;
+              esac
+            done
+            echo ""
             echo "Marche à suivre détaillée : ios/CI.md"
             exit 1
           fi
-          echo "Clé API : les trois secrets sont présents."
-          if [ -n "$APPLE_TEAM_ID" ]; then
-            echo "Équipe imposée : $APPLE_TEAM_ID"
-          else
-            echo "APPLE_TEAM_ID non défini : la signature automatique choisira"
-            echo "l'unique équipe du compte. S'il y en a plusieurs, définis ce"
-            echo "secret pour lever l'ambiguïté."
-          fi
+          echo "Les quatre secrets sont présents. Équipe : $APPLE_TEAM_ID"
 
       - name: Installer la clé API App Store Connect
         run: |
@@ -93,8 +100,6 @@ jobs:
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
-          equipe=()
-          [ -n "$APPLE_TEAM_ID" ] && equipe+=("DEVELOPMENT_TEAM=$APPLE_TEAM_ID")
           xcodebuild \
             -project ReNeuro.xcodeproj \
             -scheme ReNeuro \
@@ -105,7 +110,7 @@ jobs:
             -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            "${equipe[@]}" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive
 
@@ -113,17 +118,13 @@ jobs:
         working-directory: ios/ReNeuro
         run: |
           set -o pipefail
-          # teamID n'est écrit que s'il est connu : sans lui, la signature
-          # automatique retient l'unique équipe du compte.
-          ligne_equipe=""
-          [ -n "$APPLE_TEAM_ID" ] && ligne_equipe="  <key>teamID</key><string>${APPLE_TEAM_ID}</string>"
           cat > ExportOptions.plist <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
             <key>method</key><string>app-store-connect</string>
-          ${ligne_equipe}
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
             <key>signingStyle</key><string>automatic</string>
             <key>destination</key><string>export</string>
           </dict>
