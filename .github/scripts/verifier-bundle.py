@@ -90,7 +90,26 @@ def main(argv):
         print('\n✅ chaque bundle porte le nom voulu')
 
     echecs += controler_orientations(trouves)
+    echecs += controler_conformite(trouves)
     return 1 if echecs else 0
+
+
+def controler_conformite(trouves):
+    """Sans cette clé, App Store Connect réclame la conformité export à la
+    main pour chaque build, et le build reste invisible aux testeurs tant
+    qu'on n'a pas répondu — sans que rien, côté dépôt, ne le signale."""
+    print('\n— conformité export —')
+    if OBLIGATOIRE not in trouves:
+        return 0
+    _, chemin, plist = trouves[OBLIGATOIRE]
+    valeur = plist.get('ITSAppUsesNonExemptEncryption')
+    if valeur is None:
+        erreur(f'{OBLIGATOIRE} ne déclare pas ITSAppUsesNonExemptEncryption : '
+               'chaque build restera bloqué sur la conformité export')
+        print('     Réglage : INFOPLIST_KEY_ITSAppUsesNonExemptEncryption')
+        return 1
+    print(f'  ✅ déclarée : {valeur!r} — aucune question au dépôt  ({chemin})')
+    return 0
 
 
 def controler_orientations(trouves):
