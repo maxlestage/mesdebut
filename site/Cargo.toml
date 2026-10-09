@@ -1,0 +1,48 @@
+[package]
+name = "reneuro-site"
+version = "2.0.0"
+edition = "2024"
+rust-version = "1.90"
+description = "Site de présentation de ReNeuro, en Yew et WebAssembly"
+authors = ["Maxime Nathan Lestage"]
+publish = false
+
+[dependencies]
+yew = { version = "0.23", features = ["csr"] }
+wasm-bindgen = "0.2.129"
+js-sys = "0.3"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "AddEventListenerOptions",
+  "CanvasRenderingContext2d",
+  "CssStyleDeclaration",
+  "Document",
+  "DomRect",
+  "DomTokenList",
+  "Element",
+  "Event",
+  "EventTarget",
+  "HtmlCanvasElement",
+  "HtmlElement",
+  "ImageData",
+  "IntersectionObserver",
+  "IntersectionObserverEntry",
+  "IntersectionObserverInit",
+  "MediaQueryList",
+  "NodeList",
+  "Path2d",
+  "Performance",
+  "PointerEvent",
+  "Storage",
+  "Window",
+]
+
+# Un site vitrine : on préfère un .wasm léger à quelques pour-cent de vitesse.
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
