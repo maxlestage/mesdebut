@@ -1,0 +1,13 @@
+# Construction du site par trunk : Rust → WebAssembly, puis un dossier statique.
+[build]
+target = "index.html"
+dist = "dist"
+# Chemins relatifs : le site se dépose à la racine d'un domaine comme dans un
+# sous-dossier.
+public_url = "./"
+filehash = true
+
+# wasm-opt (binaryen) à sa dernière version publiée, plutôt que la version_123
+# que trunk prend par défaut.
+[tools]
+wasm_opt = "version_133"

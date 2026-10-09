@@ -7,28 +7,30 @@ Ce dépôt contient deux choses :
 
 | | |
 | --- | --- |
-| [`site/`](site/) | le **site de présentation**, en React + TypeScript, mobile first |
+| [`site/`](site/) | le **site de présentation**, en Rust / Yew compilé en WebAssembly, mobile first |
 | [`ios/`](ios/) | l'**application**, native, en Swift / SwiftUI (iPhone et Apple Watch) |
 
 ## Le site
 
-Une page, en React + TypeScript strict, pensée pour un téléphone d'abord. Elle
-présente les seize thèmes, la planification, les trois écrans et les principes
-d'apprentissage, puis l'offre : 4,99 € par mois, sans rien de gratuit.
+Une page, en [Yew](https://yew.rs) compilé en WebAssembly, pensée pour un
+téléphone d'abord, sombre et animée dans l'esprit de
+[zamocorp.com](https://zamocorp.com) : rideau qui compte jusqu'à 100 %,
+poussière qui se rassemble en toque au défilement, titres révélés mot à mot,
+manifeste qui s'allume, bande qui défile. Elle présente les seize thèmes, la
+planification, les deux écrans et les principes d'apprentissage, puis l'offre :
+4,99 € par mois, sans rien de gratuit.
 
 ```bash
 cd site
-npm install
-npm run dev       # serveur de développement
-npm run build     # site statique dans site/dist/
-npm run preview   # prévisualiser le build
-npm run check     # vérifier les types
+trunk serve       # serveur de développement
+./construire.sh   # site statique dans site/dist/ (installe Rust et trunk s'il le faut)
+cargo test        # tests
 ```
 
-`npm run build` produit un dossier **entièrement statique**, à chemins relatifs :
-il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un domaine
-comme dans un sous-dossier. Le dépôt contient aussi de quoi le publier sur Heroku
-(voir plus bas).
+`./construire.sh` produit un dossier **entièrement statique**, à chemins
+relatifs : il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un
+domaine comme dans un sous-dossier. Le dépôt contient aussi de quoi le publier sur
+Heroku (voir plus bas).
 
 Voir [`site/README.md`](site/README.md) pour le détail.
 
@@ -58,9 +60,12 @@ s'appliquent et ramènent à l'adresse canonique en un seul saut.
 
 Deux choses à savoir :
 
-- Le script de construction fait `npm --prefix site ci **--include=dev**`. Heroku
-  pose `NODE_ENV=production`, ce qui fait sauter les `devDependencies` — or `tsc`
-  et `vite` y vivent, et la construction échouerait sur « tsc: not found ».
+- Heroku n'a pas Rust. `npm run build` lance `site/construire.sh`, qui installe
+  la chaîne d'outils (rustup, cible `wasm32-unknown-unknown`, trunk) dans le
+  dossier temporaire, **hors du slug** — rustup y pèserait ~600 Mo, au-delà de la
+  limite de 500 Mo. La compilation (`target/`) et les outils que trunk
+  télécharge y restent aussi : le slug ne garde que `site/dist/`. Compter un peu
+  plus d'une minute de construction.
 - `serve` est une **dépendance de production** : sans cela, Heroku l'élaguerait
   après la construction et le démarrage échouerait.
 
@@ -81,10 +86,11 @@ Le workflow [`site-build.yml`](.github/workflows/site-build.yml) rejoue à chaqu
 PR **exactement** ce que fait Heroku — mêmes commandes, `NODE_ENV=production`,
 élagage des dépendances de développement — puis démarre le serveur et vérifie ce
 qu'il sert : les codes de réponse, les redirections en un saut, les en-têtes de
-cache et le contenu de la page.
+cache, le module WebAssembly (servi en `application/wasm`, gardé en cache) et le
+contenu de la page. Avant cela, il passe le code Rust à `cargo fmt`, `clippy` et
+`cargo test`.
 
-C'est ce contrôle qui aurait attrapé le « tsc: not found » avant qu'il n'échoue
-sur Heroku. Son résultat se lit depuis GitHub, sans rien installer.
+Son résultat se lit depuis GitHub, sans rien installer.
 
 ## L'application
 
