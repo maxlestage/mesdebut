@@ -25,6 +25,25 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Garder la compilation Rust d'une exécution à l'autre
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cache/trunk
+            site/target
+          key: site-${{ runner.os }}-${{ hashFiles('site/Cargo.lock', 'site/construire.sh') }}
+          restore-keys: site-${{ runner.os }}-
+
+      - name: Vérifier le code Rust (format, clippy, tests)
+        working-directory: site
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo fmt --check
+          cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings
+          cargo test --locked
+
       - name: Installer les dépendances de la racine
         run: npm ci
 
@@ -57,6 +76,8 @@ jobs:
           verifie /            200
           verifie /sw.js       200
           verifie /icon.svg    200
+          # le module WebAssembly et son chargeur, nommés par trunk avec une empreinte
+          for f in site/dist/assets/*; do verifie "/assets/$(basename "$f")" 200; done
           # les anciennes adresses de l'application web, en un seul saut
           verifie /app          301
           verifie /presentation 301
@@ -69,6 +90,20 @@ jobs:
           sw=$(curl -s -D- -o /dev/null http://localhost:3000/sw.js | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
           [ "$sw" = "no-cache" ] || { echo "::error::le service worker doit être revalidé, reçu « $sw »"; echecs=$((echecs+1)); }
           [ "$echecs" -ne "$avant" ] || echo "  ✅ page et service worker revalidés"
+
+          echo "— WebAssembly —"
+          wasm=$(cd site/dist && ls assets/*.wasm | head -1)
+          entetes=$(curl -s -D- -o /dev/null "http://localhost:3000/$wasm" | tr -d '\r')
+          # Sans ce type, le navigateur refuse la compilation en flux du module.
+          echo "$entetes" | grep -qi '^content-type: application/wasm' \
+            && echo "  ✅ $wasm servi en application/wasm" \
+            || { echo "::error::$wasm n'est pas servi en application/wasm"; echecs=$((echecs+1)); }
+          echo "$entetes" | grep -qi '^cache-control: .*immutable' \
+            && echo "  ✅ $wasm gardé en cache" \
+            || { echo "::error::$wasm devrait être gardé en cache (immutable)"; echecs=$((echecs+1)); }
+          grep -q "$wasm" site/dist/index.html \
+            && echo "  ✅ la page charge bien ce module" \
+            || { echo "::error::index.html ne référence pas $wasm"; echecs=$((echecs+1)); }
 
           echo "— contenu —"
           if curl -s http://localhost:3000/ | grep -q 'ReNeuro'; then
