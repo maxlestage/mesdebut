@@ -1,9 +1,10 @@
 {
   "name": "ReNeuro",
-  "description": "Site de présentation de ReNeuro — statique, servi par le buildpack Node",
+  "description": "Site de présentation de ReNeuro — Yew et WebAssembly, statique, servi par le buildpack Node",
   "keywords": [
-    "react",
-    "typescript",
+    "rust",
+    "yew",
+    "webassembly",
     "site",
     "éducation"
   ],
