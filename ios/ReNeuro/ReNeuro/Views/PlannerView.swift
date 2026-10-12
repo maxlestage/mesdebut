@@ -1,108 +1,8 @@
 import Combine
 import SwiftUI
 
-// MARK: - Modèle
-
-struct PlanTask: Identifiable, Codable, Equatable {
-    var id = UUID()
-    var label: String
-    var duree: Int
-    var fait: Bool = false
-    /// Clé de l'activité connue d'où vient la tâche, pour pouvoir en dérouler les étapes.
-    var routineKey: String? = nil
-    /// Instant de démarrage tant que le chrono tourne, nil sinon.
-    var demarreA: Date? = nil
-    /// Minutes réellement passées, une fois le chrono arrêté.
-    var reel: Int? = nil
-}
-
-/// Le prévu et le réel d'une journée révolue, pour suivre la tendance.
-struct JourEstime: Codable, Identifiable, Equatable {
-    var date: String
-    var nb: Int
-    var prevu: Int
-    var reel: Int
-    var id: String { date }
-
-    /// Écart en pourcentage entre le temps réel et le temps prévu.
-    var ecartPct: Int { prevu == 0 ? 0 : Int((Double(reel - prevu) / Double(prevu) * 100).rounded()) }
-    var juste: Bool { abs(ecartPct) <= 10 }
-}
-
-struct DayPlan: Codable, Equatable {
-    var date: String
-    var debutH: Int = 9
-    var debutM: Int = 0
-    var taches: [PlanTask] = []
-}
-
-/// La journée planifiée, gardée d'un lancement à l'autre.
-///
-/// Volontairement dans les réglages utilisateur et non dans la base SQLite :
-/// c'est un petit document remplacé en bloc, jamais interrogé — contrairement à
-/// la mémoire de l'apprenant, qui elle est faite de lignes qu'on requête.
-enum PlanStore {
-    private static let cle = "reneuro-journee"
-
-    static func aujourdhui() -> String {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: Date())
-    }
-
-    private static let cleHist = "reneuro-estimations"
-    private static let histMax = 60 // jours conservés
-
-    /// On repart d'une journée vide quand la date a changé : planifier, c'est
-    /// planifier aujourd'hui. La journée révolue part d'abord à l'historique,
-    /// pour que la tendance des estimations survive au changement de jour.
-    static func charge() -> DayPlan {
-        guard let data = UserDefaults.standard.data(forKey: cle),
-              let plan = try? JSONDecoder().decode(DayPlan.self, from: data)
-        else { return DayPlan(date: aujourdhui()) }
-        if plan.date != aujourdhui() {
-            archive(plan)
-            return DayPlan(date: aujourdhui())
-        }
-        return plan
-    }
-
-    /// Le prévu et le réel d'une journée, pour les tâches effectivement chronométrées.
-    static func bilan(_ plan: DayPlan) -> JourEstime {
-        let mesurees = plan.taches.filter { $0.reel != nil }
-        return JourEstime(date: plan.date, nb: mesurees.count,
-                          prevu: mesurees.reduce(0) { $0 + $1.duree },
-                          reel: mesurees.reduce(0) { $0 + ($1.reel ?? 0) })
-    }
-
-    static func chargeHistorique() -> [JourEstime] {
-        guard let data = UserDefaults.standard.data(forKey: cleHist),
-              let h = try? JSONDecoder().decode([JourEstime].self, from: data)
-        else { return [] }
-        return h
-    }
-
-    /// Range une journée révolue dans l'historique, si elle a été chronométrée.
-    /// On ne garde que `histMax` jours : c'est une tendance qu'on regarde, pas
-    /// une archive.
-    static func archive(_ plan: DayPlan) {
-        let jour = bilan(plan)
-        guard jour.nb > 0 else { return }
-        var h = chargeHistorique().filter { $0.date != plan.date }
-        h.append(jour)
-        h.sort { $0.date < $1.date }
-        if h.count > histMax { h = Array(h.suffix(histMax)) }
-        if let data = try? JSONEncoder().encode(h) {
-            UserDefaults.standard.set(data, forKey: cleHist)
-        }
-    }
-
-    static func enregistre(_ plan: DayPlan) {
-        if let data = try? JSONEncoder().encode(plan) {
-            UserDefaults.standard.set(data, forKey: cle)
-        }
-    }
-}
+// Le modèle, le stockage et les calculs de la journée sont dans
+// Services/PlanStore.swift ; les calculs eux-mêmes viennent du noyau Rust.
 
 // MARK: - Écran
 
@@ -117,71 +17,38 @@ struct PlannerView: View {
 
     private let horloge = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    private let durees = [5, 10, 15, 20, 30, 45, 60]
+    private let durees = Noyau.constantes.durees
+
+    /// Ce que le noyau calcule de la journée : heures, fin, bilan.
+    private var calcul: BilanJournee { Journee.bilan(plan) }
 
     /// Chaque tâche démarre quand la précédente se termine : c'est ce calcul qui
     /// rend le plan concret, et qui montre tout de suite si la journée déborde.
-    private var horaires: [String] {
-        var h = plan.debutH, m = plan.debutM
-        return plan.taches.map { t in
-            let debut = formatHeure(h, m)
-            (h, m) = ajouteMinutes(h, m, t.duree)
-            return debut
-        }
-    }
-
-    private var total: Int { plan.taches.reduce(0) { $0 + $1.duree } }
+    private var horaires: [String] { calcul.horaires }
 
     /// Minutes écoulées depuis le démarrage, arrondies à la minute la plus proche.
     /// On lit l'horloge à l'instant même : `maintenant` ne sert qu'à provoquer
     /// le réaffichage, sa valeur pourrait avoir jusqu'à une seconde de retard.
     private func ecoulees(_ t: PlanTask) -> Int {
-        guard let debut = t.demarreA else { return 0 }
-        return max(0, Int((Date().timeIntervalSince(debut) / 60).rounded()))
+        Journee.ecoulees(t)
     }
 
     /// Vert quand l'estimation était juste (à 20 % près), orange sinon. On ne
     /// reproche jamais un dépassement : mal estimer est précisément ce qu'on
     /// travaille, et le voir suffit à progresser.
     private func couleurEcart(_ t: PlanTask) -> Color {
-        guard let reel = t.reel else { return .secondary }
-        let marge = max(2.0, Double(t.duree) * 0.2)
-        return abs(Double(reel - t.duree)) <= marge ? Color(hex: "#2eb350") : Color(hex: "#e08a00")
+        guard let juste = Journee.estimationJuste(t) else { return .secondary }
+        return juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00")
     }
-
-    private var mesurees: [PlanTask] { plan.taches.filter { $0.reel != nil } }
 
     /// L'historique des jours passés, complété par aujourd'hui tel qu'il va —
     /// la journée en cours n'est archivée qu'au changement de date.
-    private var historique: [JourEstime] {
-        let passe = PlanStore.chargeHistorique().filter { $0.date != plan.date }
-        let ceJour = PlanStore.bilan(plan)
-        return ceJour.nb > 0 ? passe + [ceJour] : passe
-    }
+    private var historique: [JourEstime] { PlanStore.historique(avec: plan) }
 
-    private var bilanEstimation: String? {
-        guard !mesurees.isEmpty else { return nil }
-        let prevu = mesurees.reduce(0) { $0 + $1.duree }
-        let reel = mesurees.reduce(0) { $0 + ($1.reel ?? 0) }
-        let pluriel = mesurees.count > 1 ? "s" : ""
-        let debut = "Sur \(mesurees.count) tâche\(pluriel) chronométrée\(pluriel) : "
-            + "\(prevu) min prévues, \(reel) min réelles"
-        let ecart = reel - prevu
-        if abs(Double(ecart)) <= max(3.0, Double(prevu) * 0.15) {
-            return "\(debut) — tes estimations sont justes ! 🎯"
-        }
-        return ecart > 0
-            ? "\(debut) — tu as tendance à sous-estimer, c'est très courant. 🌱"
-            : "\(debut) — tu prends moins de temps que prévu."
-    }
-    private var faites: Int { plan.taches.filter(\.fait).count }
+    /// Le bilan des estimations, formulé sans jamais reprocher un dépassement.
+    private var bilanEstimation: String? { calcul.bilanEstimation }
 
-    private var dateLisible: String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "fr_FR")
-        f.dateFormat = "EEEE d MMMM"
-        return f.string(from: Date())
-    }
+    private var dateLisible: String { Journee.dateLisible(plan.date) }
 
     var body: some View {
         Group {
@@ -342,12 +209,13 @@ struct PlannerView: View {
     }
 
     private var bilan: some View {
-        let (fh, fm) = ajouteMinutes(plan.debutH, plan.debutM, total)
-        let tout = faites == plan.taches.count
+        let c = calcul
+        let faites = c.faites
+        let tout = c.terminee
         return VStack(spacing: 2) {
             (Text("Fin prévue à ")
-             + Text(formatHeure(fh, fm)).bold().foregroundColor(.titre)
-             + Text(" · \(total) min au total"))
+             + Text(c.fin).bold().foregroundColor(.titre)
+             + Text(" · \(c.total) min au total"))
             Text("\(faites) faite\(faites > 1 ? "s" : "") sur \(plan.taches.count)"
                  + (tout ? " — journée terminée ! 🎉" : ""))
                 .foregroundColor(tout ? Color(hex: "#2eb350") : .secondary)
@@ -482,59 +350,21 @@ struct TendanceView: View {
     let jours: [JourEstime]
     let dateDuJour: String
 
-    private var derniers: [JourEstime] { Array(jours.suffix(10)) }
-
-    /// Le plus grand écart affiché, pour mettre les barres à la même échelle.
-    private var pire: Int { max(60, derniers.map { abs($0.ecartPct) }.max() ?? 0) }
-
-    private func moyenne(_ liste: [JourEstime]) -> Int? {
-        guard !liste.isEmpty else { return nil }
-        let prevu = liste.reduce(0) { $0 + $1.prevu }
-        let reel = liste.reduce(0) { $0 + $1.reel }
-        guard prevu > 0 else { return nil }
-        return Int((Double(reel - prevu) / Double(prevu) * 100).rounded())
-    }
-
-    private func signe(_ n: Int) -> String { n > 0 ? "+\(n)" : "\(n)" }
-
-    private var message: String {
-        let recents = Array(jours.suffix(5))
-        let avant = Array(jours.dropLast(5).suffix(5))
-        guard let mRecents = moyenne(recents) else { return "" }
-        var texte = "Sur \(recents.count) jour\(recents.count > 1 ? "s" : "") : "
-            + "\(signe(mRecents)) % d'écart en moyenne"
-        if abs(mRecents) <= 10 {
-            texte += " — tes estimations sont fiables 🎯"
-        } else if let mAvant = moyenne(avant), abs(mRecents) < abs(mAvant) {
-            texte += " (contre \(signe(mAvant)) % avant) — tu progresses ! 🌱"
-        } else if mRecents > 0 {
-            texte += " — tu sous-estimes encore un peu"
-        }
-        return texte
-    }
-
-    /// « dim. 30 », ou « aujourd'hui » pour la journée en cours.
-    private func libelle(_ jour: JourEstime) -> String {
-        if jour.date == dateDuJour { return "aujourd'hui" }
-        let entree = DateFormatter()
-        entree.dateFormat = "yyyy-MM-dd"
-        guard let d = entree.date(from: jour.date) else { return jour.date }
-        let sortie = DateFormatter()
-        sortie.locale = Locale(identifier: "fr_FR")
-        sortie.dateFormat = "EEE d"
-        return sortie.string(from: d)
-    }
+    /// Les barres des dix derniers jours, à la même échelle, et ce qu'elles
+    /// disent : calculées par le noyau, comme sur le web.
+    private var tendance: Tendance { Journee.tendance(jours, aujourdhui: dateDuJour) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        let tendance = self.tendance
+        return VStack(alignment: .leading, spacing: 6) {
             Text("📈 Mes estimations")
                 .font(.subheadline.bold())
                 .foregroundColor(.titre)
                 .frame(maxWidth: .infinity)
 
-            ForEach(derniers) { jour in
+            ForEach(tendance.barres) { barre in
                 HStack(spacing: 8) {
-                    Text(libelle(jour))
+                    Text(barre.libelle)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .frame(width: 74, alignment: .leading)
@@ -543,21 +373,20 @@ struct TendanceView: View {
                         ZStack(alignment: .leading) {
                             Capsule().fill(Color(hex: "#f0edff"))
                             Capsule()
-                                .fill(jour.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
-                                .frame(width: geo.size.width
-                                       * min(1, Double(abs(jour.ecartPct)) / Double(pire)))
+                                .fill(barre.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
+                                .frame(width: geo.size.width * barre.part)
                         }
                     }
                     .frame(height: 10)
 
-                    Text(jour.ecartPct == 0 ? "✓" : "\(signe(jour.ecartPct)) %")
+                    Text(barre.valeur)
                         .font(.caption2.bold().monospacedDigit())
-                        .foregroundColor(jour.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
+                        .foregroundColor(barre.juste ? Color(hex: "#2eb350") : Color(hex: "#e08a00"))
                         .frame(width: 48, alignment: .trailing)
                 }
             }
 
-            Text(message)
+            Text(tendance.message)
                 .font(.caption)
                 .foregroundColor(.accentDoux)
                 .multilineTextAlignment(.center)

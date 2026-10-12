@@ -3,12 +3,22 @@
 Réapprendre les bases — les jours, l'heure, le calcul, organiser sa journée — en
 questions courtes.
 
-Ce dépôt contient deux choses :
+Ce dépôt contient trois choses :
 
 | | |
 | --- | --- |
+| [`noyau/`](noyau/) | le **noyau**, en Rust : thèmes, questions, répétition espacée, journée — un seul exemplaire pour le web, l'iPhone et la montre |
 | [`site/`](site/) | **ReNeuro sur le web** : le site de présentation (`/`) et l'application complète (`/app`), en Rust avec [Active](https://github.com/maxlestage/Active), compilés en WebAssembly, mobile first |
 | [`ios/`](ios/) | l'**application native**, en Swift / SwiftUI (iPhone et Apple Watch) |
+
+## Un seul noyau
+
+Ce que ReNeuro sait faire n'est écrit qu'une fois, dans [`noyau/`](noyau/README.md).
+Le web le compile en WebAssembly ; l'iPhone et la montre l'appellent par une
+interface C, compilée par Xcode à chaque build. Chaque plateforme ne garde que
+son interface et son stockage. Ajouter un thème, changer une question ou la
+règle des révisions se fait donc à un seul endroit, et les trois applications
+suivent.
 
 ## Le web
 
@@ -116,10 +126,11 @@ Voir [`ios/README.md`](ios/README.md).
 Elle est compilée à chaque changement par une intégration continue, et peut être
 envoyée sur TestFlight. Voir [`ios/CI.md`](ios/CI.md).
 
-L'application web (`site/src/moteur/` et `site/src/appli/`) en est un portage
-fidèle : mêmes questions, mêmes règles de mémoire et de planification. Les deux
-sont écrites séparément ; une évolution de l'une suppose de la reporter dans
-l'autre.
+Ses questions, ses révisions, sa répétition espacée et les calculs de « Ma
+journée » viennent du noyau Rust, le même que l'application web : Xcode le
+compile à chaque build, il faut donc Rust sur le Mac
+([rustup](https://rustup.rs)). Le pont entre Swift et le noyau se vérifie aussi
+sous Linux, sans Mac ([`ios/pont/`](ios/pont/verifier.sh)).
 
 ## Les icônes
 

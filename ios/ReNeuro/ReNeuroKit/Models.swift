@@ -56,7 +56,7 @@ struct LearningCategory: Identifiable {
     var hasLearn: Bool = false
     var hasLevels: Bool = false
     let gradient: [Color]
-    /// Niveaux propres à la catégorie ; vide = niveaux communs.
+    /// Niveaux de la catégorie ; vide quand elle n'en a qu'un.
     var levels: [Level] = []
     var id: String { key }
 }
@@ -67,15 +67,9 @@ struct Level: Identifiable {
     let label: String
 }
 
-let LEVELS: [Level] = [
-    Level(id: 1, emoji: "🌱", label: "Facile"),
-    Level(id: 2, emoji: "🌿", label: "Moyen"),
-    Level(id: 3, emoji: "🌳", label: "Difficile"),
-]
-
-/// Niveaux d'une catégorie : les siens s'ils sont définis, sinon les niveaux communs.
+/// Niveaux d'une catégorie, tels que les donne le noyau.
 func levelsFor(_ category: LearningCategory) -> [Level] {
-    category.levels.isEmpty ? LEVELS : category.levels
+    category.levels
 }
 
 // MARK: - Contenu des écrans de révision
@@ -108,16 +102,19 @@ enum LearnContent {
 
 // MARK: - Fin de quiz
 
-struct EndSummary {
+struct EndSummary: Decodable {
     let stars: String
     let message: String
+
+    private enum CodingKeys: String, CodingKey {
+        case stars = "etoiles"
+        case message
+    }
 }
 
+/// Les étoiles et le mot de la fin, donnés par le noyau : on encourage, on ne
+/// sanctionne pas.
 func endSummary(score: Int, total: Int) -> EndSummary {
-    let ratio = total == 0 ? 0 : Double(score) / Double(total)
-    if ratio >= 1 { return EndSummary(stars: "⭐⭐⭐⭐⭐", message: "Score parfait, tu es un champion ! 🏆") }
-    if ratio >= 0.8 { return EndSummary(stars: "⭐⭐⭐⭐", message: "Excellent travail, continue comme ça ! 🎉") }
-    if ratio >= 0.6 { return EndSummary(stars: "⭐⭐⭐", message: "Bien joué ! Encore un petit effort ! 💪") }
-    if ratio >= 0.4 { return EndSummary(stars: "⭐⭐", message: "Pas mal ! Entraîne-toi encore un peu ! 🙂") }
-    return EndSummary(stars: "⭐", message: "Courage, réessaie : c'est en s'entraînant qu'on apprend ! 🌱")
+    Noyau.appel("fin", Noyau.lignes([[score, total]]))
+        ?? EndSummary(stars: "⭐", message: "")
 }
