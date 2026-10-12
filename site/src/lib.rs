@@ -11,8 +11,10 @@
 //! quelle page il se trouve.
 
 pub mod appli;
-pub mod moteur;
 pub mod vitrine;
+
+/// Le noyau commun au web, à l'iPhone et à la montre (`noyau/`).
+pub use reneuro_noyau as moteur;
 
 #[cfg(target_arch = "wasm32")]
 mod mouvement;

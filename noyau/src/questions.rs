@@ -895,6 +895,25 @@ fn guide_par_la_memoire(
     reservoir
 }
 
+/// Où revient une question ratée à la position `i`, dans une partie de
+/// `nombre` questions : 3 questions plus loin, puis encore 5 après. Les deux
+/// positions s'appliquent l'une après l'autre (la seconde compte la première
+/// copie déjà insérée) ; en fin de partie, la question s'ajoute à la suite.
+pub fn retours(i: usize, nombre: usize) -> [usize; 2] {
+    let premiere = (i + 3).min(nombre);
+    [premiere, (i + 8).min(nombre + 1)]
+}
+
+/// Répétition espacée dans la partie : la question ratée revient deux fois,
+/// ses réponses dans un autre ordre.
+pub fn reprogrammer(questions: &mut Vec<Question>, q: &Question, i: usize) {
+    for position in retours(i, questions.len()) {
+        let mut copie = q.clone();
+        copie.rebattre();
+        questions.insert(position, copie);
+    }
+}
+
 /// Les félicitations, variées pour ne pas lasser.
 pub fn bravo() -> &'static str {
     alea::un_de(&["✅ Bravo !", "✅ Super !", "✅ Exact !", "✅ Génial !"])
@@ -903,7 +922,7 @@ pub fn bravo() -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::moteur::categories::CATEGORIES;
+    use crate::categories::CATEGORIES;
 
     #[test]
     fn chaque_theme_donne_un_quiz_complet_et_sans_doublon() {
@@ -970,6 +989,27 @@ mod tests {
         let total = qs.iter().filter(|q| q.cle.starts_with("pastille:")).count();
         assert!(total > 0);
         assert_eq!(pastilles, total, "les révisions dues d'abord");
+    }
+
+    #[test]
+    fn la_question_ratee_revient_deux_fois() {
+        alea::amorcer(4);
+        let mut qs = quiz("addition", 1, &Default::default(), 0.0);
+        let ratee = qs[2].clone();
+        reprogrammer(&mut qs, &ratee, 2);
+        assert_eq!(qs.len(), 12);
+        assert_eq!(qs[5].cle, ratee.cle);
+        assert_eq!(qs[10].cle, ratee.cle);
+        // en fin de partie, elle s'ajoute à la suite
+        let derniere = qs[11].clone();
+        reprogrammer(&mut qs, &derniere, 11);
+        assert_eq!(qs.len(), 14);
+        assert_eq!(
+            (qs[12].cle.as_str(), qs[13].cle.as_str()),
+            (derniere.cle.as_str(), derniere.cle.as_str())
+        );
+        assert_eq!(retours(0, 10), [3, 8]);
+        assert_eq!(retours(9, 10), [10, 11]);
     }
 
     #[test]

@@ -1,16 +1,20 @@
 # ReNeuro — application iOS native (SwiftUI) 🎓
 
-Version **100 % native** de l'appli, écrite en **Swift / SwiftUI**. Toute la logique
-pédagogique du quiz (génération des questions, répétition espacée, entrelacement,
-sens du nombre…) a été portée depuis la version web, et l'interface est entièrement
-native (billes, formes, accordéon, animations SwiftUI).
+L'appli iPhone et Apple Watch, en **Swift / SwiftUI**. L'interface est entièrement
+native (billes, formes, accordéon, animations SwiftUI) ; la logique pédagogique —
+génération des questions, répétition espacée, entrelacement, planification —
+vient du **noyau Rust** commun avec le web ([`../noyau/`](../noyau/README.md)).
 
 ## Ouvrir et lancer
 
 Il faut un **Mac avec Xcode 16 ou plus récent** (le projet utilise les groupes de
-fichiers synchronisés, disponibles à partir de Xcode 16).
+fichiers synchronisés, disponibles à partir de Xcode 16), et **Rust**, installé
+avec [rustup](https://rustup.rs) : Xcode compile le noyau à chaque build (phase
+« Noyau Rust », `noyau/xcode.sh`) et ajoute tout seul les cibles Apple au premier
+passage.
 
 ```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh   # une fois
 open ios/ReNeuro/ReNeuro.xcodeproj
 ```
 
@@ -44,19 +48,20 @@ la CI, qui lit le `Info.plist` *produit par la compilation* — voir
 
 Le projet contient **trois cibles** : l'app iPhone, l'extension widget qui dessine
 l'activité en direct, et l'app Apple Watch. Les dossiers `ReNeuroKit/` et
-`ReNeuroActivity/` sont partagés entre plusieurs cibles — le code du moteur n'existe
-qu'en un seul exemplaire.
+`ReNeuroActivity/` sont partagés entre plusieurs cibles. Le moteur, lui, n'est pas
+ici : il vit dans le noyau Rust, commun avec le web, que `ReNeuroKit/Noyau.swift`
+appelle par son interface C.
 
 ```
 ReNeuro.xcodeproj        # projet Xcode (versionné, 3 cibles)
 
 ReNeuroKit/              # partagé : app iPhone + app Watch
+  Noyau.swift                 # le pont vers le noyau Rust : un appel, une réponse JSON
   Models.swift                # types (Question, catégories, révision) + utilitaires (Color hex, cap)
-  QuestionEngine.swift        # port de questions.js : données + génération des questions
-  CategoryData.swift          # métadonnées des catégories + contenu des écrans de révision
-  MemoryStore.swift           # mémoire de l'apprenant en SQLite (boîtes de Leitner)
-  PlanningData.swift          # activités du quotidien décomposées en étapes
-  PlanningQuestions.swift     # questions de la catégorie « Planifier »
+  QuestionEngine.swift        # les quiz, demandés au noyau
+  CategoryData.swift          # les thèmes et le contenu des écrans de révision, du noyau
+  MemoryStore.swift           # mémoire de l'apprenant en SQLite (règle des boîtes : le noyau)
+  PlanningData.swift          # activités du quotidien décomposées en étapes, du noyau
   StepsView.swift             # étapes montrées sous l'énoncé (avec le trou)
   MarblesView.swift           # billes à compter (Circle + dégradés)
   GeometricShapeView.swift    # formes géométriques (Path/Shape)
@@ -69,6 +74,7 @@ ReNeuro/                 # app iPhone
   ReNeuroApp.swift            # point d'entrée @main
   Services/
     LiveActivity.swift        # démarre, met à jour et termine l'activité en direct
+    PlanStore.swift           # « Ma journée » : stockage, et calculs demandés au noyau
   Views/
     RootView.swift            # navigation entre les écrans
     MenuView.swift            # menu principal (grille de catégories)
@@ -211,6 +217,19 @@ liée par `OTHER_LDFLAGS = -lsqlite3`). La base est créée dans le dossier
 - **Envoi TestFlight** avec `xcodebuild` + `xcrun altool` (manuel ou tag `ios-v*`).
 
 Voir [`CI.md`](CI.md) pour la configuration des secrets et le déclenchement.
+
+## Le noyau Rust
+
+Questions, thèmes, révisions, répétition espacée et calculs de « Ma journée »
+viennent de [`../noyau/`](../noyau/README.md), le même code que l'application web.
+Swift garde l'interface et le stockage : la base SQLite de la mémoire et les
+réglages utilisateur de la journée, dont le format ne change pas.
+
+Le pont se vérifie sans Mac : [`pont/verifier.sh`](pont/verifier.sh) compile les
+fichiers sans interface de `ReNeuroKit` et `Services/PlanStore.swift` avec Swift
+sous Linux, contre le noyau, et contrôle chaque appel (thèmes, révisions, quiz de
+chaque niveau, boîtes de Leitner, journée). Le workflow `noyau.yml` le lance à
+chaque changement.
 
 ## Réglages du projet
 

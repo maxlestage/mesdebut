@@ -10,9 +10,10 @@ Pensés **mobile first** : la mise en page est écrite pour un téléphone, les
 | `/` | la présentation, sombre et animée dans l'esprit de [zamocorp.com](https://zamocorp.com) | HTML écrit par Active à la construction, puis animé par le module WebAssembly |
 | `/app` | l'application : les seize thèmes, la révision, les quiz, la mémoire, « Ma journée » | entièrement dans le navigateur, par Active (routeur, état, `<head>`) |
 
-C'est un projet **indépendant** de l'application iOS : ses propres dépendances,
-son propre build, sa propre sortie statique. Il en reprend fidèlement le
-fonctionnement (voir plus bas).
+Le moteur — thèmes, questions, mémoire, journée — n'est pas ici : c'est le
+**noyau** commun avec l'iPhone et la montre ([`../noyau/`](../noyau/README.md)),
+dont le site dépend directement. Le site a ses propres dépendances, son propre
+build et sa propre sortie statique.
 
 ## Démarrer
 
@@ -70,10 +71,10 @@ le routeur d'Active affiche l'écran de l'adresse, et le titre de l'onglet suit.
 | `/app/progres` | « 📊 Mes progrès » |
 | `/app/journee` | « 🗓️ Ma journée », le planificateur |
 
-Ce qu'elle reprend de l'application iOS, à l'identique :
+Ce qu'elle partage avec l'application iOS, par le noyau commun :
 
-- **le moteur de questions** (`src/moteur/`) : mêmes énoncés, mêmes leurres, mêmes
-  niveaux, le mode Mélange entrelacé ;
+- **le moteur de questions** : mêmes énoncés, mêmes leurres, mêmes niveaux, le
+  mode Mélange entrelacé ;
 - **la répétition espacée dans la partie** : une question ratée revient 3
   questions plus loin, puis 5 après ;
 - **la mémoire de l'apprenant** : boîtes de Leitner (1 à 5), intervalles de 1, 2,
@@ -105,7 +106,7 @@ relatifs.
 
 Rendue une fois pour toutes par l'exportateur : tout le texte est dans le HTML,
 lisible sans JavaScript et par les moteurs de recherche. Les seize thèmes y
-viennent du moteur de l'application (`moteur::categories`) : la page présente
+viennent du noyau (`moteur::categories`) : la page présente
 exactement ce que l'application propose, et chaque carte y mène.
 
 | Effet | Où |
@@ -150,15 +151,6 @@ public/                 # icon.svg, sw.js (extinction), app/*.png (icônes PWA)
 src/
   lib.rs                # point d'entrée du module : application ou présentation
   bin/exporter.rs       # écrit dist/ : pages, empreintes, manifeste, service worker
-  moteur/               # Rust pur, testé avec cargo test
-    categories.rs       #   les seize thèmes et leurs niveaux
-    donnees.rs          #   jours, mois, couleurs, formes, nombres et heures en lettres
-    question.rs         #   une question et son illustration
-    questions.rs        #   la fabrique de questions, la composition d'un quiz
-    planifier.rs        #   les onze activités du quotidien et leurs questions
-    revision.rs         #   le contenu des écrans « Réviser d'abord »
-    memoire.rs          #   boîtes de Leitner, résumé, statistiques par thème
-    journee.rs          #   le planificateur, le chronomètre, la tendance, les dates
   appli/                # l'application, en composants Active
     mod.rs              #   routes, coquille, manifeste, service worker
     ecrans.rs           #   menu, thème, niveaux, révision, progrès
@@ -174,6 +166,11 @@ src/
 
 ## Les thèmes
 
-`src/moteur/categories.rs` liste les seize thèmes. Ils reprennent ceux de
-l'application iOS : les deux listes sont écrites séparément, donc en ajouter un
-ici suppose de le retrouver là-bas, et inversement.
+`noyau/src/categories.rs` liste les seize thèmes, pour le web comme pour
+l'iPhone et la montre : en ajouter un, c'est l'ajouter partout.
+
+## Active
+
+Le site suit la branche `master` d'[Active](https://github.com/maxlestage/Active) ;
+`Cargo.lock` fixe le commit utilisé. Pour passer à la dernière version :
+`cargo update -p active`, puis `./construire.sh` et `cargo test`.
