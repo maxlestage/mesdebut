@@ -117,6 +117,18 @@ et pour la machine) et `cargo test`.
 
 Son résultat se lit depuis GitHub, sans rien installer.
 
+### Fusion automatique
+
+Toute PR vers `master` est fusionnée toute seule, en squash, dès que toutes
+ses vérifications sont vertes et qu'elle n'a pas de conflit
+([`fusion.yml`](.github/workflows/fusion.yml)). Avec le déploiement
+automatique de Heroku sur `master`, une PR verte est donc en ligne quelques
+minutes plus tard.
+
+Pour garder une PR ouverte : la marquer comme brouillon, ou nommer sa branche
+`wip/…`. Une PR qui modifie un workflow se fusionne à la main : le jeton
+d'Actions n'a pas le droit de le faire.
+
 ## L'application native
 
 En Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite, une
