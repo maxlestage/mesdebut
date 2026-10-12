@@ -144,6 +144,10 @@ mod tests {
         }
         assert!(html.contains("4,99 €"));
         assert!(html.contains(r#"href="app""#), "un lien vers l'application");
+        assert!(
+            html.contains(r#"<a href="https://maxlestage.github.io/Active/">Active</a>"#),
+            "un lien vers Active"
+        );
         assert!(html.contains(r#"import init from "./assets/reneuro-0.js""#));
     }
 

@@ -406,7 +406,17 @@ pub fn pied() -> Node {
         .child(
             div()
                 .class("pied-bas")
-                .child(p().class("credits").text("Conçu et développé par Maxime Nathan Lestage"))
+                .child(
+                    p().class("credits")
+                        .text("Conçu et développé par Maxime Nathan Lestage")
+                        .child(
+                            span()
+                                .class("fait-avec")
+                                .text("Fait avec ")
+                                .child(a().href(crate::ACTIVE).text("Active"))
+                                .text(", en Rust compilé en WebAssembly."),
+                        ),
+                )
                 .child(p().class("mention").text(
                     "ReNeuro est une application d'entraînement, pas un dispositif médical, et ne remplace \
                      aucun suivi ni aucune rééducation.",

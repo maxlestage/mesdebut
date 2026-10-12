@@ -57,6 +57,11 @@ pub fn menu() -> Node {
             footer()
                 .class("credits")
                 .child(p().text("Conçu et développé par Maxime Nathan Lestage"))
+                .child(
+                    p().text("Fait avec ")
+                        .child(a().href(crate::ACTIVE).text("Active"))
+                        .text(", en Rust et WebAssembly"),
+                )
                 // la page de présentation n'appartient pas à l'application : un
                 // chargement complet, pas le routeur
                 .child(

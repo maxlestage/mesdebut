@@ -734,6 +734,9 @@ strong { color: var(--encre); }
   margin-inline: auto;
 }
 .credits { font-weight: 600; color: var(--encre); }
+.fait-avec { display: block; margin-top: 4px; font-weight: 400; color: var(--doux); }
+.fait-avec a { color: var(--or); text-underline-offset: 3px; }
+.fait-avec a:hover { color: var(--encre); }
 .mention { max-width: 36rem; font-size: 0.85rem; color: var(--doux); }
 .retour {
   justify-self: start;
