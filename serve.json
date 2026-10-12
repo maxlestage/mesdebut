@@ -1,5 +1,20 @@
 {
   "cleanUrls": false,
+  "directoryListing": false,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/app",
+      "destination": "/app/index.html"
+    },
+    {
+      "source": "/app/**",
+      "destination": "/app/index.html"
+    }
+  ],
   "redirects": [
     {
       "source": "/index.html",
@@ -8,16 +23,6 @@
     },
     {
       "source": "/index",
-      "destination": "/",
-      "type": 301
-    },
-    {
-      "source": "/app",
-      "destination": "/",
-      "type": 301
-    },
-    {
-      "source": "/app/:reste*",
       "destination": "/",
       "type": 301
     },
@@ -43,11 +48,33 @@
       ]
     },
     {
+      "source": "app/sw.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    },
+    {
       "source": "**/*.html",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "app/manifest.webmanifest",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
         }
       ]
     },
@@ -61,7 +88,7 @@
       ]
     },
     {
-      "source": "icon.svg",
+      "source": "{icon.svg,app/*.png}",
       "headers": [
         {
           "key": "Cache-Control",

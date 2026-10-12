@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# Construit le site (Rust → WebAssembly) dans site/dist/.
+# Construit le site (Rust → WebAssembly + HTML) dans site/dist/.
 #
 # Appelé par `npm run build`, donc par Heroku (heroku-postbuild) et par le
 # workflow site-build.yml. Ni l'un ni l'autre n'a Rust : s'il manque, ce script
-# installe la chaîne d'outils et trunk *hors* du dossier construit, dans
+# installe la chaîne d'outils *hors* du dossier construit, dans
 # ${TMPDIR:-/tmp} — sinon les ~600 Mo de rustup finiraient dans le slug Heroku,
 # limité à 500 Mo.
+#
+# Trois étapes :
+#   1. la bibliothèque, compilée en WebAssembly ;
+#   2. wasm-bindgen, qui écrit le chargeur JavaScript du module ;
+#   3. l'exportateur, compilé pour la machine, qui rend les pages avec Active,
+#      nomme les fichiers d'après leur empreinte et copie public/.
 set -euo pipefail
 
-# Versions fixées, relevées sur crates.io et les publications GitHub.
-TRUNK_VERSION=0.21.14
 CIBLE=wasm32-unknown-unknown
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,22 +34,36 @@ if ! command -v cargo >/dev/null 2>&1 || ! command -v rustup >/dev/null 2>&1; th
 fi
 rustup target add "$CIBLE" >/dev/null
 
-TRUNK="$(command -v trunk || true)"
-if [ -z "$TRUNK" ] || ! "$TRUNK" --version | grep -q "$TRUNK_VERSION"; then
-  TRUNK="$OUTILS/trunk-$TRUNK_VERSION/trunk"
-  if [ ! -x "$TRUNK" ]; then
-    echo "→ téléchargement de trunk $TRUNK_VERSION"
-    mkdir -p "$(dirname "$TRUNK")"
-    curl -sSfL "https://github.com/trunk-rs/trunk/releases/download/v$TRUNK_VERSION/trunk-x86_64-unknown-linux-gnu.tar.gz" \
-      | tar -xz -C "$(dirname "$TRUNK")"
+cd "$ICI"
+
+# wasm-bindgen doit être exactement à la version de la bibliothèque du même
+# nom dans Cargo.lock : on la lit là, plutôt que de la répéter ici.
+WB_VERSION="$(awk '/^name = "wasm-bindgen"$/ { getline; gsub(/version = |"/, ""); print; exit }' Cargo.lock)"
+WASM_BINDGEN="$(command -v wasm-bindgen || true)"
+if [ -z "$WASM_BINDGEN" ] || ! "$WASM_BINDGEN" --version | grep -q " $WB_VERSION\$"; then
+  WASM_BINDGEN="$OUTILS/wasm-bindgen-$WB_VERSION/wasm-bindgen"
+  if [ ! -x "$WASM_BINDGEN" ]; then
+    echo "→ téléchargement de wasm-bindgen $WB_VERSION"
+    mkdir -p "$(dirname "$WASM_BINDGEN")"
+    curl -sSfL "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/$WB_VERSION/wasm-bindgen-$WB_VERSION-x86_64-unknown-linux-musl.tar.gz" \
+      | tar -xz -C "$(dirname "$WASM_BINDGEN")" --strip-components=1 \
+          "wasm-bindgen-$WB_VERSION-x86_64-unknown-linux-musl/wasm-bindgen"
   fi
 fi
 
-cd "$ICI"
-# Sur Heroku, la compilation et les outils que trunk télécharge restent eux
-# aussi hors du slug.
+# Sur Heroku, la compilation reste elle aussi hors du slug.
 if [ -n "${STACK:-}" ]; then
-  export CARGO_TARGET_DIR="$OUTILS/target" XDG_CACHE_HOME="$OUTILS/cache"
+  export CARGO_TARGET_DIR="$OUTILS/target"
 fi
-# trunk télécharge lui-même wasm-bindgen (à la version du Cargo.lock) et wasm-opt.
-"$TRUNK" build --release --locked
+CIBLES="${CARGO_TARGET_DIR:-$ICI/target}"
+
+echo "→ module WebAssembly"
+cargo build --locked --lib --target "$CIBLE" --profile wasm-release
+
+echo "→ chargeur JavaScript (wasm-bindgen $WB_VERSION)"
+rm -rf "$CIBLES/pkg"
+"$WASM_BINDGEN" --target web --no-typescript --out-dir "$CIBLES/pkg" \
+  "$CIBLES/$CIBLE/wasm-release/reneuro_site.wasm"
+
+echo "→ pages"
+cargo run --locked --release --bin exporter -- "$CIBLES/pkg" "$ICI/dist"
