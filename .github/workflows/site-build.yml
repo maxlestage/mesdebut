@@ -31,17 +31,19 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ~/.cache/trunk
             site/target
           key: site-${{ runner.os }}-${{ hashFiles('site/Cargo.lock', 'site/construire.sh') }}
           restore-keys: site-${{ runner.os }}-
 
+      # Deux cibles : le module du navigateur (wasm32) et l'exportateur, qui
+      # rend les pages sur la machine. Les tests tournent sur la seconde.
       - name: Vérifier le code Rust (format, clippy, tests)
         working-directory: site
         run: |
           rustup target add wasm32-unknown-unknown
           cargo fmt --check
           cargo clippy --locked --target wasm32-unknown-unknown -- -D warnings
+          cargo clippy --locked --all-targets -- -D warnings
           cargo test --locked
 
       - name: Installer les dépendances de la racine
@@ -76,20 +78,30 @@ jobs:
           verifie /            200
           verifie /sw.js       200
           verifie /icon.svg    200
-          # le module WebAssembly et son chargeur, nommés par trunk avec une empreinte
+          # le module WebAssembly, son chargeur et les styles, nommés avec une empreinte
           for f in site/dist/assets/*; do verifie "/assets/$(basename "$f")" 200; done
-          # les anciennes adresses de l'application web, en un seul saut
-          verifie /app          301
+          # l'application : la même coquille pour toute adresse /app/…
+          verifie /app                       200
+          verifie /app/                      200
+          verifie /app/heure/quiz/2          200
+          verifie /app/journee               200
+          verifie /app/sw.js                 200
+          verifie /app/manifest.webmanifest  200
+          verifie /app/pwa-192.png           200
+          # les anciennes adresses, en un seul saut ; le reste n'existe pas
           verifie /presentation 301
           verifie /index.html   301
+          verifie /nimporte     404
 
           echo "— en-têtes de cache —"
           avant=$echecs
           racine=$(curl -s -D- -o /dev/null http://localhost:3000/ | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
           [ "$racine" = "no-cache" ] || { echo "::error::la page doit être revalidée, reçu « $racine »"; echecs=$((echecs+1)); }
-          sw=$(curl -s -D- -o /dev/null http://localhost:3000/sw.js | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
-          [ "$sw" = "no-cache" ] || { echo "::error::le service worker doit être revalidé, reçu « $sw »"; echecs=$((echecs+1)); }
-          [ "$echecs" -ne "$avant" ] || echo "  ✅ page et service worker revalidés"
+          for sw in /sw.js /app/sw.js /app/heure/quiz/2; do
+            cc=$(curl -s -D- -o /dev/null "http://localhost:3000$sw" | tr -d '\r' | grep -i '^cache-control' | cut -d' ' -f2-)
+            [ "$cc" = "no-cache" ] || { echo "::error::$sw doit être revalidé, reçu « $cc »"; echecs=$((echecs+1)); }
+          done
+          [ "$echecs" -ne "$avant" ] || echo "  ✅ pages et service workers revalidés"
 
           echo "— WebAssembly —"
           wasm=$(cd site/dist && ls assets/*.wasm | head -1)
@@ -106,10 +118,21 @@ jobs:
             || { echo "::error::index.html ne référence pas $wasm"; echecs=$((echecs+1)); }
 
           echo "— contenu —"
-          if curl -s http://localhost:3000/ | grep -q 'ReNeuro'; then
-            echo "  ✅ la page est bien rendue"
+          # la présentation est rendue en HTML : son contenu est là sans WebAssembly
+          if curl -s http://localhost:3000/ | grep -q 'Seize thèmes'; then
+            echo "  ✅ la présentation est rendue"
           else
-            echo "::error::la page ne contient pas le nom du site"; echecs=$((echecs+1))
+            echo "::error::la présentation ne contient pas ses thèmes"; echecs=$((echecs+1))
           fi
+          coquille=$(curl -s http://localhost:3000/app/heure/quiz/2)
+          for motif in 'id="app"' 'rel="manifest"' '/app/sw.js' "$wasm"; do
+            echo "$coquille" | grep -q -- "$motif" \
+              && echo "  ✅ la coquille de l'application contient $motif" \
+              || { echo "::error::la coquille de l'application ne contient pas $motif"; echecs=$((echecs+1)); }
+          done
+          curl -s -D- -o /dev/null http://localhost:3000/app/manifest.webmanifest | tr -d '\r' \
+            | grep -qi '^content-type: application/manifest+json' \
+            && echo "  ✅ manifeste servi en application/manifest+json" \
+            || { echo "::error::le manifeste n'a pas le bon type"; echecs=$((echecs+1)); }
 
           [ "$echecs" -eq 0 ] || exit 1
