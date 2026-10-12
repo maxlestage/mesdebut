@@ -17,7 +17,26 @@ use super::questions::EtatNotion;
 const INTERVALLES: [f64; 5] = [1.0, 2.0, 4.0, 7.0, 15.0];
 const JOUR: f64 = 86_400.0;
 /// Une notion est maîtrisée à partir de cette boîte.
-const MAITRISE: u8 = 4;
+pub const MAITRISE: u8 = 4;
+
+/// Ce que devient une notion après une réponse : sa boîte, sa série de bonnes
+/// réponses, et sa prochaine révision (secondes depuis 1970). Une bonne réponse
+/// la fait monter d'une boîte (jusqu'à 5), une erreur redescendre (jusqu'à 1).
+///
+/// C'est toute la règle de la répétition espacée : la mémoire web s'en sert, et
+/// la base SQLite de l'iPhone aussi, par l'interface C.
+pub fn apres_reponse(boite: u8, serie: u32, juste: bool, maintenant: f64) -> (u8, u32, f64) {
+    let (boite, serie) = if juste {
+        ((boite.max(1) + 1).min(5), serie + 1)
+    } else {
+        (boite.saturating_sub(1).max(1), 0)
+    };
+    (
+        boite,
+        serie,
+        maintenant + INTERVALLES[(boite - 1) as usize] * JOUR,
+    )
+}
 /// Séances gardées : de quoi suivre une tendance, sans remplir le stockage.
 const SEANCES_MAX: usize = 500;
 
@@ -96,14 +115,11 @@ impl Memoire {
         notion.vues += 1;
         if juste {
             notion.justes += 1;
-            notion.serie += 1;
-            notion.boite = (notion.boite + 1).min(5);
         } else {
             notion.fausses += 1;
-            notion.serie = 0;
-            notion.boite = notion.boite.saturating_sub(1).max(1);
         }
-        notion.due = maintenant + INTERVALLES[(notion.boite - 1) as usize] * JOUR;
+        (notion.boite, notion.serie, notion.due) =
+            apres_reponse(notion.boite, notion.serie, juste, maintenant);
         notion.derniere = maintenant;
     }
 

@@ -292,11 +292,16 @@ pub fn charger(
 
 /// Range une journée révolue dans l'historique, si elle a été chronométrée.
 pub fn archiver(hist: &mut Vec<JourEstime>, journee: &Journee) {
-    let jour = journee.bilan();
+    archiver_jour(hist, journee.bilan());
+}
+
+/// Range le bilan d'une journée révolue dans l'historique, s'il a été
+/// chronométré : un jour par date, dans l'ordre, les 60 derniers seulement.
+pub fn archiver_jour(hist: &mut Vec<JourEstime>, jour: JourEstime) {
     if jour.nb == 0 {
         return;
     }
-    hist.retain(|j| j.date != journee.date);
+    hist.retain(|j| j.date != jour.date);
     hist.push(jour);
     hist.sort_by(|a, b| a.date.cmp(&b.date));
     if hist.len() > HISTORIQUE_MAX {
@@ -316,6 +321,50 @@ pub fn avec_aujourdhui(hist: &[JourEstime], journee: &Journee) -> Vec<JourEstime
         jours.push(ce_jour);
     }
     jours
+}
+
+/// Une barre de la tendance des estimations.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Barre {
+    pub date: String,
+    /// « dim. 30 », ou « aujourd'hui ».
+    pub libelle: String,
+    pub ecart_pct: i32,
+    pub juste: bool,
+    /// Longueur de la barre, de 0 à 1 : toutes à la même échelle.
+    pub part: f64,
+    /// « +25 % », ou « ✓ » quand le prévu tombe juste.
+    pub valeur: String,
+}
+
+/// Les barres des dix derniers jours, à la même échelle (60 % d'écart au moins,
+/// pour qu'un petit écart ne remplisse pas la barre).
+pub fn barres(jours: &[JourEstime], aujourdhui: &str) -> Vec<Barre> {
+    let derniers = &jours[jours.len().saturating_sub(10)..];
+    let pire = derniers
+        .iter()
+        .map(|j| j.ecart_pct().abs())
+        .max()
+        .unwrap_or(0)
+        .max(60);
+    derniers
+        .iter()
+        .map(|j| {
+            let ecart = j.ecart_pct();
+            Barre {
+                date: j.date.clone(),
+                libelle: date_courte(&j.date, aujourdhui),
+                ecart_pct: ecart,
+                juste: j.juste(),
+                part: (ecart.abs() as f64 / pire as f64).min(1.0),
+                valeur: if ecart == 0 {
+                    "✓".to_string()
+                } else {
+                    format!("{} %", signe(ecart))
+                },
+            }
+        })
+        .collect()
 }
 
 pub fn exporter_historique(hist: &[JourEstime]) -> String {
@@ -556,6 +605,27 @@ mod tests {
             "Sur 5 jours : +25 % d'écart en moyenne (contre +50 % avant) — tu progresses ! 🌱"
         );
         assert!(tendance(&[jour(1, 105)]).ends_with("fiables 🎯"));
+    }
+
+    #[test]
+    fn les_barres_partagent_une_echelle() {
+        let jour = |d: u32, reel| JourEstime {
+            date: iso(2026, 10, d),
+            nb: 1,
+            prevu: 100,
+            reel,
+        };
+        let jours: Vec<_> = (1..=12).map(|d| jour(d, 100 + d * 10)).collect();
+        let b = barres(&jours, "2026-10-12");
+        assert_eq!(b.len(), 10, "les dix derniers jours");
+        assert_eq!(b[0].date, "2026-10-03");
+        assert_eq!(b[9].libelle, "aujourd'hui");
+        assert_eq!(
+            (b[9].ecart_pct, b[9].part, b[9].valeur.as_str()),
+            (120, 1.0, "+120 %")
+        );
+        assert_eq!(b[0].part, 0.25);
+        assert_eq!(barres(&[jour(1, 100)], "x")[0].valeur, "✓");
     }
 
     #[test]

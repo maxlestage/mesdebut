@@ -6,14 +6,17 @@ import SQLite3
 // une bonne réponse la fait monter d'une boîte (révision plus espacée),
 // une erreur la fait redescendre. C'est de la répétition espacée qui survit
 // d'une session à l'autre — et même d'un jour à l'autre.
+//
+// La règle elle-même (boîtes, intervalles, seuil de maîtrise) vient du noyau
+// Rust, commun au web : ce fichier ne fait que la stocker.
 final class MemoryStore {
     static let shared = MemoryStore()
 
     private var db: OpaquePointer?
     // sqlite demande à recopier les chaînes liées (elles ne vivent que le temps de l'appel).
     private let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-    // intervalles de révision en jours, par boîte de Leitner (1 à 5)
-    private let intervals: [Double] = [1, 2, 4, 7, 15]
+    // boîte à partir de laquelle une notion est maîtrisée
+    private let maitrise = Noyau.constantes.maitrise
 
     private init() {
         open()
@@ -88,9 +91,13 @@ final class MemoryStore {
         }
         sqlite3_finalize(stmt)
 
-        if correct { box = min(box + 1, 5); streak += 1 }
-        else { box = max(box - 1, 1); streak = 0 }
-        let due = now + intervals[box - 1] * 86_400
+        // la boîte suivante, la série et la prochaine révision : la règle du noyau
+        struct Apres: Decodable { let boite: Int; let serie: Int; let due: Double }
+        guard let apres: Apres = Noyau.appel("noter", Noyau.lignes([[box, streak, Noyau.bool(correct), now]]))
+        else { return }
+        box = apres.boite
+        streak = apres.serie
+        let due = apres.due
         let c = Int32(correct ? 1 : 0)
         let w = Int32(correct ? 0 : 1)
 
@@ -145,7 +152,7 @@ final class MemoryStore {
     struct Summary {
         var answered: Int = 0   // nombre total de réponses données
         var correct: Int = 0    // nombre de bonnes réponses
-        var mastered: Int = 0   // notions bien ancrées (boîte ≥ 4)
+        var mastered: Int = 0   // notions bien ancrées (boîte ≥ seuil du noyau)
         var due: Int = 0        // notions à réviser maintenant
     }
 
@@ -155,7 +162,7 @@ final class MemoryStore {
         let sql = """
         SELECT COALESCE(SUM(seen), 0),
                COALESCE(SUM(correct), 0),
-               COALESCE(SUM(CASE WHEN box >= 4 THEN 1 ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN box >= \(maitrise) THEN 1 ELSE 0 END), 0),
                COALESCE(SUM(CASE WHEN due > 0 AND due <= ? THEN 1 ELSE 0 END), 0)
         FROM item_memory;
         """
@@ -186,7 +193,7 @@ final class MemoryStore {
         SELECT category,
                COALESCE(SUM(seen), 0),
                COALESCE(SUM(correct), 0),
-               COALESCE(SUM(CASE WHEN box >= 4 THEN 1 ELSE 0 END), 0)
+               COALESCE(SUM(CASE WHEN box >= \(maitrise) THEN 1 ELSE 0 END), 0)
         FROM item_memory GROUP BY category;
         """
         var s: OpaquePointer?
