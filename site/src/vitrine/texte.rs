@@ -1,28 +1,6 @@
-//! Les sections de la page, dans l'ordre où elles s'affichent.
+//! Les textes qui se révèlent mot à mot.
 
-mod bande;
-mod entete;
-mod hero;
-mod manifeste;
-mod pied;
-mod planification;
-mod principes;
-mod supports;
-mod tarif;
-mod themes;
-
-pub use bande::Bande;
-pub use entete::Entete;
-pub use hero::Hero;
-pub use manifeste::Manifeste;
-pub use pied::Pied;
-pub use planification::Planification;
-pub use principes::Principes;
-pub use supports::Supports;
-pub use tarif::Tarif;
-pub use themes::Themes;
-
-use yew::prelude::*;
+use active::prelude::*;
 
 /// Découpe un texte en mots, en notant ceux qui sont en accent : ce qui est
 /// entre `*`, un mot ou plusieurs.
@@ -42,25 +20,22 @@ pub fn decouper(texte: &str) -> Vec<(String, bool)> {
 }
 
 /// Chaque mot dans son masque, pour qu'ils montent l'un après l'autre. Le texte
-/// entier reste lisible d'un bloc par les lecteurs d'écran (voir `Titre`).
-pub fn mots(texte: &str, depart: usize) -> Html {
+/// entier reste lisible d'un bloc par les lecteurs d'écran (`aria-label`).
+pub fn mots(texte: &str) -> Vec<Node> {
     let morceaux = decouper(texte);
     let n = morceaux.len();
-    morceaux
-        .into_iter()
-        .enumerate()
-        .map(|(i, (mot, accent))| {
-            let style = format!("--i:{}", depart + i);
-            html! {
-                <>
-                    <span class="mot">
-                        <span class={classes!("mot-in", accent.then_some("accent"))} {style}>{mot}</span>
-                    </span>
-                    { if i + 1 < n { " " } else { "" } }
-                </>
-            }
-        })
-        .collect()
+    let mut noeuds = Vec::with_capacity(n * 2);
+    for (i, (mot, accent)) in morceaux.into_iter().enumerate() {
+        let mut dedans = span().class("mot-in").style(format!("--i:{i}"));
+        if accent {
+            dedans = dedans.class("accent");
+        }
+        noeuds.push(span().class("mot").child(dedans.text(mot)).into());
+        if i + 1 < n {
+            noeuds.push(text(" "));
+        }
+    }
+    noeuds
 }
 
 /// Retire les marques d'accent, pour l'étiquette lue par les lecteurs d'écran.
@@ -68,21 +43,12 @@ pub fn sans_marques(texte: &str) -> String {
     texte.replace('*', "")
 }
 
-#[derive(Properties, PartialEq)]
-pub struct TitreProps {
-    pub texte: AttrValue,
-    #[prop_or_default]
-    pub class: Classes,
-}
-
 /// Un titre de section qui se révèle mot à mot en entrant à l'écran.
-#[function_component(Titre)]
-pub fn titre(props: &TitreProps) -> Html {
-    html! {
-        <h2 class={classes!("titre", props.class.clone())} data-revele="" aria-label={sans_marques(&props.texte)}>
-            <span aria-hidden="true">{ mots(&props.texte, 0) }</span>
-        </h2>
-    }
+pub fn titre(texte: &str) -> Element {
+    h2().class("titre")
+        .attr("data-revele", "")
+        .attr("aria-label", sans_marques(texte))
+        .child(span().attr("aria-hidden", "true").children(mots(texte)))
 }
 
 #[cfg(test)]
@@ -117,15 +83,32 @@ mod tests {
             [
                 ("on".to_owned(), false),
                 ("répond,".to_owned(), true),
-                ("on".to_owned(), false),
+                ("on".to_owned(), false)
             ]
         );
     }
 
     #[test]
     fn aucune_marque_ne_reste() {
-        for texte in [crate::donnees::MANIFESTE, "Comment c'est *construit*."] {
+        for texte in [
+            super::super::donnees::MANIFESTE,
+            "Comment c'est *construit*.",
+        ] {
             assert!(decouper(texte).iter().all(|(m, _)| !m.contains('*')));
         }
+    }
+
+    #[test]
+    fn un_titre_rendu() {
+        let html = Node::from(titre("Un *prix*.")).render();
+        assert_eq!(
+            html,
+            concat!(
+                r#"<h2 class="titre" data-revele="" aria-label="Un prix."><span aria-hidden="true">"#,
+                r#"<span class="mot"><span class="mot-in" style="--i:0">Un</span></span> "#,
+                r#"<span class="mot"><span class="mot-in accent" style="--i:1">prix.</span></span>"#,
+                "</span></h2>"
+            )
+        );
     }
 }
