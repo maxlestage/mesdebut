@@ -106,7 +106,7 @@ fn partie(c: &'static Categorie, niveau: u8, resultat: State<Option<(u32, u32)>>
             plateforme::vibrer(120);
             if !reprogrammees.with(|r| r.contains(&q.cle)) {
                 reprogrammees.update(|r| r.push(q.cle.clone()));
-                questions.update(|qs| reprogrammer(qs, &q, i));
+                questions.update(|qs| questions::reprogrammer(qs, &q, i));
             }
         }
         plateforme::plus_tard(if juste { APRES_JUSTE_MS } else { APRES_FAUX_MS }, avancer);
@@ -152,17 +152,6 @@ fn partie(c: &'static Categorie, niveau: u8, resultat: State<Option<(u32, u32)>>
         )
         .child(retour(ACCUEIL, "← Abandonner"))
         .into()
-}
-
-/// Répétition espacée dans la partie : la question ratée revient 3 questions
-/// plus loin, puis encore 5 après, ses réponses dans un autre ordre.
-fn reprogrammer(questions: &mut Vec<Question>, q: &Question, i: usize) {
-    for cible in [i + 3, i + 8] {
-        let mut copie = q.clone();
-        copie.rebattre();
-        let position = cible.min(questions.len());
-        questions.insert(position, copie);
-    }
 }
 
 fn question(
@@ -235,24 +224,6 @@ fn fin(score: u32, total: u32, resultat: State<Option<(u32, u32)>>) -> Node {
 mod tests {
     use super::*;
     use crate::moteur::alea;
-
-    #[test]
-    fn la_question_ratee_revient_deux_fois() {
-        alea::amorcer(4);
-        let mut qs = questions::quiz("addition", 1, &Default::default(), 0.0);
-        let ratee = qs[2].clone();
-        reprogrammer(&mut qs, &ratee, 2);
-        assert_eq!(qs.len(), 12);
-        assert_eq!(qs[5].cle, ratee.cle);
-        assert_eq!(qs[10].cle, ratee.cle);
-        // en fin de quiz, elle s'ajoute à la suite
-        let mut qs2 = qs.clone();
-        let derniere = qs2[11].clone();
-        reprogrammer(&mut qs2, &derniere, 11);
-        assert_eq!(qs2.len(), 14);
-        assert_eq!(qs2[12].cle, derniere.cle);
-        assert_eq!(qs2[13].cle, derniere.cle);
-    }
 
     #[test]
     fn la_page_du_quiz_montre_la_premiere_question() {

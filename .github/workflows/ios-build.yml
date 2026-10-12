@@ -7,10 +7,12 @@ on:
     branches: [ master ]
     paths:
       - 'ios/**'
+      - 'noyau/**'
       - '.github/workflows/ios-build.yml'
   pull_request:
     paths:
       - 'ios/**'
+      - 'noyau/**'
       - '.github/workflows/ios-build.yml'
   workflow_dispatch:
 
@@ -25,6 +27,13 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
+
+      # Le noyau (noyau/) est en Rust : noyau/xcode.sh le compile pendant le
+      # build, pour les architectures des simulateurs.
+      - name: Installer les cibles Rust des simulateurs
+        run: |
+          rustup toolchain install stable --profile minimal \
+            --target aarch64-apple-ios-sim --target x86_64-apple-ios --target aarch64-apple-watchos-sim
 
       # Compile aussi, en dépendance, l'extension widget (activité en direct)
       # et l'app watchOS embarquée.

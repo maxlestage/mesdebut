@@ -19,11 +19,15 @@ crate-type = ["cdylib", "rlib"]
 name = "exporter"
 path = "src/bin/exporter.rs"
 
+# Active suit sa branche master ; Cargo.lock fixe le commit utilisé. Pour
+# prendre la dernière version : `cargo update -p active`.
 [dependencies]
-active = { git = "https://github.com/maxlestage/Active", rev = "131711fd00e3dbcc29637f6bd8d79c2488a5bd07" }
+# le noyau commun au web, à l'iPhone et à la montre
+reneuro-noyau = { path = "../noyau" }
+active = { git = "https://github.com/maxlestage/Active", branch = "master" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-active = { git = "https://github.com/maxlestage/Active", rev = "131711fd00e3dbcc29637f6bd8d79c2488a5bd07", features = ["client"] }
+active = { git = "https://github.com/maxlestage/Active", branch = "master", features = ["client"] }
 wasm-bindgen = "=0.2.129"
 js-sys = "0.3"
 

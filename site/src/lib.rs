@@ -11,8 +11,10 @@
 //! quelle page il se trouve.
 
 pub mod appli;
-pub mod moteur;
 pub mod vitrine;
+
+/// Le noyau commun au web, à l'iPhone et à la montre (`noyau/`).
+pub use reneuro_noyau as moteur;
 
 /// Le site d'[Active](https://github.com/maxlestage/Active), la bibliothèque avec
 /// laquelle ReNeuro est écrit pour le web : la présentation et l'application y renvoient.

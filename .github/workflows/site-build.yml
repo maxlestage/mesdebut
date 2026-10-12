@@ -5,9 +5,9 @@ name: Site
 on:
   push:
     branches: [ master ]
-    paths: [ 'site/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
+    paths: [ 'site/**', 'noyau/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
   pull_request:
-    paths: [ 'site/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
+    paths: [ 'site/**', 'noyau/**', 'package.json', 'package-lock.json', 'serve.json', 'Procfile', '.github/workflows/site-build.yml' ]
   workflow_dispatch:
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             site/target
-          key: site-${{ runner.os }}-${{ hashFiles('site/Cargo.lock', 'site/construire.sh') }}
+          key: site-${{ runner.os }}-${{ hashFiles('site/Cargo.lock', 'site/construire.sh', 'noyau/Cargo.toml') }}
           restore-keys: site-${{ runner.os }}-
 
       # Deux cibles : le module du navigateur (wasm32) et l'exportateur, qui
