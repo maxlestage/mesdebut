@@ -1,0 +1,71 @@
+name: Noyau
+
+# Le noyau Rust (noyau/) est commun au web, à l'iPhone et à la montre. Tout se
+# vérifie ici sur Linux, sans les minutes macOS, facturées dix fois le tarif :
+# ses tests, sa compilation pour chaque cible Apple, et le pont Swift qui
+# l'appelle depuis l'app.
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'noyau/**'
+      - 'ios/pont/**'
+      - 'ios/ReNeuro/ReNeuroKit/**'
+      - 'ios/ReNeuro/ReNeuro/Services/**'
+      - '.github/workflows/noyau.yml'
+  pull_request:
+    paths:
+      - 'noyau/**'
+      - 'ios/pont/**'
+      - 'ios/ReNeuro/ReNeuroKit/**'
+      - 'ios/ReNeuro/ReNeuro/Services/**'
+      - '.github/workflows/noyau.yml'
+  workflow_dispatch:
+
+jobs:
+  noyau:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: noyau
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Format, clippy, tests
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets --features ffi -- -D warnings
+          cargo test --features ffi
+
+      # Une bibliothèque statique se compile sans l'éditeur de liens d'Apple :
+      # chaque architecture que construit Xcode se vérifie donc ici.
+      - name: Compiler pour l'iPhone et la montre
+        run: |
+          stables="aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios aarch64-apple-watchos aarch64-apple-watchos-sim"
+          rustup target add $stables
+          for cible in $stables; do
+            echo "→ $cible"
+            cargo rustc --lib --crate-type staticlib --features ffi --release --target "$cible"
+          done
+          # les montres d'avant la Series 9 : bibliothèque standard recompilée par nightly
+          rustup toolchain install nightly --profile minimal --component rust-src
+          echo "→ arm64_32-apple-watchos"
+          cargo +nightly rustc -Z build-std=std,panic_abort --lib --crate-type staticlib \
+            --features ffi --release --target arm64_32-apple-watchos
+
+  pont-swift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler le noyau pour Linux
+        run: cargo rustc --manifest-path noyau/Cargo.toml --lib --crate-type staticlib --features ffi --release
+
+      # Les fichiers sans interface de l'app (ReNeuroKit, PlanStore) compilés
+      # avec Swift sous Linux, contre le noyau, et vérifiés appel par appel.
+      - name: Vérifier le pont Swift ↔ noyau
+        run: |
+          docker run --rm -v "$PWD:/depot" -w /depot swift:6.1-noble \
+            ios/pont/verifier.sh noyau/target/release

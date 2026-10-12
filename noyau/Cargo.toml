@@ -1,0 +1,22 @@
+[package]
+name = "reneuro-noyau"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.90"
+description = "Le noyau de ReNeuro : thèmes, questions, mémoire et journée, communs au web, à l'iPhone et à la montre"
+authors = ["Maxime Nathan Lestage"]
+publish = false
+
+[lib]
+name = "reneuro_noyau"
+
+[features]
+# L'interface C (`reneuro_appel`) qu'appellent l'iPhone et la montre. Absente du
+# module WebAssembly, qui utilise le noyau directement en Rust.
+ffi = []
+
+# La bibliothèque statique des appareils Apple (voir xcode.sh).
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1

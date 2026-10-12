@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "active"
 version = "0.1.0"
-source = "git+https://github.com/maxlestage/Active?rev=131711fd00e3dbcc29637f6bd8d79c2488a5bd07#131711fd00e3dbcc29637f6bd8d79c2488a5bd07"
+source = "git+https://github.com/maxlestage/Active?branch=master#131711fd00e3dbcc29637f6bd8d79c2488a5bd07"
 dependencies = [
  "wasm-bindgen",
  "web-sys",
@@ -89,11 +89,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "reneuro-noyau"
+version = "1.0.0"
+
+[[package]]
 name = "reneuro-site"
 version = "3.0.0"
 dependencies = [
  "active",
  "js-sys",
+ "reneuro-noyau",
  "wasm-bindgen",
  "web-sys",
 ]
