@@ -1,18 +1,33 @@
 [package]
 name = "reneuro-site"
-version = "2.0.0"
+version = "3.0.0"
 edition = "2024"
 rust-version = "1.90"
-description = "Site de présentation de ReNeuro, en Yew et WebAssembly"
+description = "ReNeuro sur le web : le site de présentation et l'application, écrits avec Active"
 authors = ["Maxime Nathan Lestage"]
 publish = false
+default-run = "exporter"
+
+# La bibliothèque est compilée deux fois :
+# - en WebAssembly (cdylib), c'est le module que chargent les pages ;
+# - pour la machine (rlib), c'est elle que l'exportateur utilise pour écrire le
+#   HTML des pages, et que les tests exercent.
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "exporter"
+path = "src/bin/exporter.rs"
 
 [dependencies]
-yew = { version = "0.23", features = ["csr"] }
-wasm-bindgen = "0.2.129"
+active = { git = "https://github.com/maxlestage/Active", rev = "131711fd00e3dbcc29637f6bd8d79c2488a5bd07" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+active = { git = "https://github.com/maxlestage/Active", rev = "131711fd00e3dbcc29637f6bd8d79c2488a5bd07", features = ["client"] }
+wasm-bindgen = "=0.2.129"
 js-sys = "0.3"
 
-[dependencies.web-sys]
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 version = "0.3"
 features = [
   "AddEventListenerOptions",
@@ -30,7 +45,9 @@ features = [
   "IntersectionObserver",
   "IntersectionObserverEntry",
   "IntersectionObserverInit",
+  "Location",
   "MediaQueryList",
+  "Navigator",
   "NodeList",
   "Path2d",
   "Performance",
@@ -39,9 +56,11 @@ features = [
   "Window",
 ]
 
-# Un site vitrine : on préfère un .wasm léger à quelques pour-cent de vitesse.
-[profile.release]
-opt-level = "s"
+# Le module WebAssembly : on préfère un .wasm léger à quelques pour-cent de vitesse.
+# « z » donne le plus petit fichier une fois compressé ; wasm-opt n'y gagne plus rien.
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
 lto = true
 codegen-units = 1
 panic = "abort"
