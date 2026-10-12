@@ -73,8 +73,8 @@ while IFS=$'\t' read -r numero branche sha brouillon; do
   echo "#$numero : tout est vert, fusion dans master."
   # --match-head-commit : un commit poussé entre-temps annule la fusion
   if ! gh pr merge "$numero" --squash --match-head-commit "$sha"; then
-    # par exemple une PR qui modifie un workflow : le jeton d'Actions n'a pas
-    # le droit de la fusionner, il faut le faire à la main
+    # par exemple un commit poussé entre-temps (--match-head-commit) : la
+    # vérification suivante relancera la fusion
     echo "::warning::#$numero : GitHub a refusé la fusion automatique."
     refus=$((refus + 1))
   fi
