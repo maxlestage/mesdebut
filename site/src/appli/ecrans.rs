@@ -61,15 +61,6 @@ pub fn menu() -> Node {
                     p().text("Fait avec ")
                         .child(a().href(crate::ACTIVE).text("Active"))
                         .text(", en Rust et WebAssembly"),
-                )
-                // la page de présentation n'appartient pas à l'application : un
-                // chargement complet, pas le routeur
-                .child(
-                    p().child(
-                        a().href("/")
-                            .attr("rel", "external")
-                            .text("Découvrir ReNeuro"),
-                    ),
                 ),
         )
         .into()
