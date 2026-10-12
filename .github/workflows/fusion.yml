@@ -1,0 +1,51 @@
+name: Fusion automatique
+
+# Toute PR vers master est fusionnée (en squash, comme les précédentes) dès que
+# toutes ses vérifications sont vertes et qu'elle n'a pas de conflit. Les
+# brouillons et les branches wip/… ne le sont jamais : c'est la façon de garder
+# une PR ouverte exprès. La règle est dans .github/scripts/fusionner.sh.
+#
+# Le script tourne à la fin de chaque workflow de vérification : la dernière à
+# se terminer déclenche la fusion. Il tourne aussi à l'ouverture et à chaque
+# commit d'une PR, pour celles qu'aucun workflow ne vérifie.
+#
+# Une PR qui modifie un workflow (.github/workflows/) ne peut pas être fusionnée
+# par le jeton d'Actions : celle-là se fusionne à la main.
+on:
+  workflow_run:
+    workflows: [ Site, Noyau, iOS Build ]
+    types: [ completed ]
+  pull_request:
+    types: [ opened, reopened, synchronize, ready_for_review ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+# Une seule passe à la fois : deux vérifications qui finissent ensemble ne
+# fusionnent pas deux fois la même PR.
+concurrency:
+  group: fusion-automatique
+  cancel-in-progress: false
+
+jobs:
+  fusionner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # Sur un commit tout neuf, les autres vérifications n'existent pas encore
+      # toutes : on leur laisse le temps d'apparaître.
+      - name: Laisser démarrer les vérifications
+        if: github.event_name == 'pull_request'
+        run: sleep 60
+
+      - name: Fusionner les PR entièrement vertes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          FUSION_JOB: fusionner
+        run: .github/scripts/fusionner.sh
