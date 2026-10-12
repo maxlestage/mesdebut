@@ -8,9 +8,6 @@ name: Fusion automatique
 # Le script tourne à la fin de chaque workflow de vérification : la dernière à
 # se terminer déclenche la fusion. Il tourne aussi à l'ouverture et à chaque
 # commit d'une PR, pour celles qu'aucun workflow ne vérifie.
-#
-# Une PR qui modifie un workflow (.github/workflows/) ne peut pas être fusionnée
-# par le jeton d'Actions : celle-là se fusionne à la main.
 on:
   workflow_run:
     workflows: [ Site, Noyau, iOS Build ]
