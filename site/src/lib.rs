@@ -14,6 +14,10 @@ pub mod appli;
 pub mod moteur;
 pub mod vitrine;
 
+/// Le site d'[Active](https://github.com/maxlestage/Active), la bibliothèque avec
+/// laquelle ReNeuro est écrit pour le web : la présentation et l'application y renvoient.
+pub const ACTIVE: &str = "https://maxlestage.github.io/Active/";
+
 #[cfg(target_arch = "wasm32")]
 mod mouvement;
 #[cfg(target_arch = "wasm32")]

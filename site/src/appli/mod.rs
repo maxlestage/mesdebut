@@ -311,6 +311,12 @@ mod tests {
     }
 
     #[test]
+    fn le_menu_renvoie_a_active() {
+        let html = ecran(Route::Menu).render();
+        assert!(html.contains(r#"<a href="https://maxlestage.github.io/Active/">Active</a>"#));
+    }
+
+    #[test]
     fn la_coquille_est_installable() {
         let html = coquille(
             "/assets/appli-0.css",
