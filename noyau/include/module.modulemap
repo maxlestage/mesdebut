@@ -1,0 +1,7 @@
+// Le noyau Rust, importable en Swift : `import ReNeuroNoyauC`.
+// Xcode le trouve par SWIFT_INCLUDE_PATHS ; la bibliothèque est liée d'office.
+module ReNeuroNoyauC {
+    header "reneuro.h"
+    link "reneuro_noyau"
+    export *
+}

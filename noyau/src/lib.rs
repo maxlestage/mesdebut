@@ -1,6 +1,16 @@
-//! Le moteur de ReNeuro : les thèmes, les questions, la mémoire de
-//! l'apprenant et la journée planifiée. Du Rust pur, sans navigateur : il se
-//! teste avec `cargo test`, et l'application le compile en WebAssembly.
+//! Le noyau de ReNeuro : les thèmes, les questions, la mémoire de l'apprenant
+//! et la journée planifiée.
+//!
+//! Il n'existe qu'en un exemplaire, et sert partout :
+//!
+//! - le **web** (`site/`) l'utilise directement, compilé en WebAssembly ;
+//! - l'**iPhone** et l'**Apple Watch** (`ios/`) l'appellent par son interface C
+//!   ([`ffi`], fonctionnalité `ffi`), compilé en bibliothèque statique par
+//!   `xcode.sh` pendant la construction Xcode.
+//!
+//! Du Rust pur, sans dépendance : il se teste avec `cargo test`. Ce qui reste
+//! propre à chaque plateforme, c'est l'interface et le stockage (SQLite et les
+//! réglages sur l'iPhone, `localStorage` dans le navigateur).
 
 pub mod alea;
 pub mod categories;
@@ -11,6 +21,9 @@ pub mod planifier;
 pub mod question;
 pub mod questions;
 pub mod revision;
+
+#[cfg(feature = "ffi")]
+pub mod ffi;
 
 /// Les étoiles et le mot de la fin d'un quiz : on encourage, on ne sanctionne pas.
 pub fn mot_de_la_fin(score: u32, total: u32) -> (&'static str, &'static str) {

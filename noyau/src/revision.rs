@@ -225,7 +225,7 @@ pub fn revision(categorie: &str) -> Option<Revision> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::moteur::categories::CATEGORIES;
+    use crate::categories::CATEGORIES;
 
     #[test]
     fn chaque_theme_a_reviser_a_sa_revision() {

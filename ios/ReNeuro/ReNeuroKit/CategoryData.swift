@@ -1,137 +1,58 @@
 import SwiftUI
 
-// Catégories (métadonnées + couleurs) et contenu des écrans de révision.
+// Les thèmes et le contenu des écrans de révision, tels que les donne le noyau
+// Rust — la même liste que sur le web.
 extension QuestionEngine {
 
-    static let categories: [LearningCategory] = [
-        LearningCategory(key: "melange", emoji: "🧠", label: "Mélange", title: "Quiz mélangé",
-                         gradient: [Color(hex: "#26a69a"), Color(hex: "#00695c")]),
-        LearningCategory(key: "jours", emoji: "📅", label: "Les jours", title: "Les jours de la semaine",
-                         hasLearn: true, gradient: [Color(hex: "#f6a821"), Color(hex: "#f68f21")]),
-        LearningCategory(key: "mois", emoji: "🗓️", label: "Les mois", title: "Les mois de l'année",
-                         hasLearn: true, gradient: [Color(hex: "#21b3f6"), Color(hex: "#2179f6")]),
-        LearningCategory(key: "saisons", emoji: "🍂", label: "Les saisons", title: "Les saisons",
-                         hasLearn: true, gradient: [Color(hex: "#8bc34a"), Color(hex: "#5a9216")]),
-        LearningCategory(key: "alphabet", emoji: "🔤", label: "L'alphabet", title: "L'alphabet",
-                         hasLearn: true, gradient: [Color(hex: "#26c6da"), Color(hex: "#0097a7")]),
-        LearningCategory(key: "heure", emoji: "🕐", label: "L'heure", title: "Lire l'heure",
-                         hasLearn: true, hasLevels: true,
-                         gradient: [Color(hex: "#ab47bc"), Color(hex: "#6a1b9a")],
-                         // niveaux propres à l'heure : de l'heure pile à la minute près
-                         levels: [
-                             Level(id: 1, emoji: "🌱", label: "Heures pleines"),
-                             Level(id: 2, emoji: "🌿", label: "Quarts et demies"),
-                             Level(id: 3, emoji: "🌳", label: "De 5 en 5"),
-                             Level(id: 4, emoji: "🏆", label: "Minute par minute"),
-                         ]),
-        LearningCategory(key: "planifier", emoji: "📋", label: "Planifier",
-                         title: "Apprendre à planifier",
-                         hasLearn: true, hasLevels: true,
-                         gradient: [Color(hex: "#26c6da"), Color(hex: "#00838f")],
-                         // du plus concret au plus abstrait : les étapes, leur ordre, le temps
-                         levels: [
-                             Level(id: 1, emoji: "🌱", label: "Les étapes"),
-                             Level(id: 2, emoji: "🌿", label: "L'ordre"),
-                             Level(id: 3, emoji: "🌳", label: "Le temps"),
-                         ]),
-        LearningCategory(key: "couleurs", emoji: "🎨", label: "Les couleurs", title: "Les couleurs",
-                         hasLearn: true, gradient: [Color(hex: "#ff8a65"), Color(hex: "#d84315")]),
-        LearningCategory(key: "formes", emoji: "📐", label: "Les formes", title: "Les formes géométriques",
-                         hasLearn: true, gradient: [Color(hex: "#78909c"), Color(hex: "#455a64")]),
-        LearningCategory(key: "chiffres", emoji: "🧮", label: "Les chiffres", title: "Les chiffres de 0 à 9",
-                         hasLearn: true, gradient: [Color(hex: "#ffca28"), Color(hex: "#f57f17")]),
-        LearningCategory(key: "cinquante", emoji: "🔟", label: "Jusqu'à 50", title: "Les nombres jusqu'à 50",
-                         hasLearn: true, gradient: [Color(hex: "#ec407a"), Color(hex: "#ad1457")]),
-        LearningCategory(key: "nombres", emoji: "🔢", label: "Les nombres", title: "Les nombres en lettres",
-                         hasLearn: true, hasLevels: true, gradient: [Color(hex: "#5c6bc0"), Color(hex: "#3949ab")]),
-        LearningCategory(key: "addition", emoji: "➕", label: "Addition", title: "Addition",
-                         hasLevels: true, gradient: [Color(hex: "#4cd964"), Color(hex: "#2eb350")]),
-        LearningCategory(key: "soustraction", emoji: "➖", label: "Soustraction", title: "Soustraction",
-                         hasLevels: true, gradient: [Color(hex: "#ff6b6b"), Color(hex: "#e04545")]),
-        LearningCategory(key: "multiplication", emoji: "✖️", label: "Multiplication", title: "Multiplication",
-                         hasLevels: true, gradient: [Color(hex: "#a76bff"), Color(hex: "#7d45e0")]),
-        LearningCategory(key: "division", emoji: "➗", label: "Division", title: "Division",
-                         hasLevels: true, gradient: [Color(hex: "#ff6bd5"), Color(hex: "#e045a8")]),
-    ]
+    static let categories: [LearningCategory] =
+        (Noyau.appel("categories", comme: [NoyauCategorie].self) ?? []).map { c in
+            LearningCategory(key: c.cle, emoji: c.emoji, label: c.libelle, title: c.titre,
+                             hasLearn: c.revision, hasLevels: !c.niveaux.isEmpty,
+                             gradient: c.degrade.map { Color(hex: $0) },
+                             levels: c.niveaux.map { Level(id: $0.id, emoji: $0.emoji, label: $0.libelle) })
+        }
 
     static func category(_ key: String) -> LearningCategory {
         categories.first { $0.key == key } ?? categories[0]
     }
 
-    // MARK: - Contenu des révisions
-
-    /// Item de révision pour une horloge : le libellé et le repère de la grande
-    /// aiguille sont déduits de l'horaire, donc toujours cohérents entre eux.
-    static func clockLearnItem(_ h: Int, _ m: Int) -> LearnItem {
-        LearnItem(label: timeToWords(h, m).capFirst,
-                  sub: "la grande aiguille est sur le \(m == 0 ? 12 : m / 5)",
-                  clockHours: h, clockMinutes: m)
-    }
-
     static func learnContent(_ key: String) -> LearnContent {
-        switch key {
-        case "jours":
-            return .list(title: "📖 Les 7 jours de la semaine", intro: nil,
-                         items: jours.map { LearnItem(label: $0.capFirst) })
-        case "mois":
-            return .list(title: "📖 Les 12 mois de l'année", intro: nil,
-                         items: mois.map { LearnItem(label: $0.capFirst) })
-        case "saisons":
-            return .list(title: "📖 Les 4 saisons", intro: nil, items: [
-                LearnItem(label: "🌸 Printemps", sub: "mars, avril, mai"),
-                LearnItem(label: "☀️ Été", sub: "juin, juillet, août"),
-                LearnItem(label: "🍂 Automne", sub: "septembre, octobre, novembre"),
-                LearnItem(label: "❄️ Hiver", sub: "décembre, janvier, février"),
-            ])
-        case "alphabet":
-            return .grid(title: "📖 Les 26 lettres de l'alphabet", letters: alphabet)
-        case "heure":
-            // des heures variées, du plus simple au plus fin
-            let horaires = [(1, 0), (6, 0), (10, 0),
-                            (2, 15), (5, 30), (8, 45),
-                            (4, 5), (9, 20), (11, 40), (12, 50)]
-            return .list(title: "📖 Lire l'heure",
-                         intro: "La petite aiguille donne les heures, la grande donne les minutes. "
-                              + "Entre deux chiffres du cadran, il y a 5 minutes.",
-                         items: horaires.map { clockLearnItem($0.0, $0.1) })
-        case "couleurs":
-            return .list(title: "📖 Les 11 couleurs", intro: nil,
-                         items: couleurs.map { LearnItem(label: $0.name.capFirst, colorHex: $0.hex) })
-        case "formes":
-            return .list(title: "📖 Les 10 formes géométriques", intro: nil,
-                         items: formes.map { LearnItem(label: $0.name.capFirst, sub: $0.sub, shapeName: $0.name) })
-        case "chiffres":
-            return .list(title: "📖 Les chiffres de 0 à 9", intro: nil,
-                         items: (0...9).map { LearnItem(label: unites[$0].capFirst, num: $0, marbles: $0) })
-        case "cinquante":
-            return .list(title: "📖 Les dizaines jusqu'à 50",
-                         intro: "Une rangée de 10 billes = 1 dizaine",
-                         items: [10, 20, 30, 40, 50].map {
-                             LearnItem(label: numberToWords($0).capFirst,
-                                       sub: "\($0 / 10) dizaine\($0 > 10 ? "s" : "")",
-                                       num: $0, marbles: $0, perRow: 10, colorByRow: true)
-                         })
-        case "planifier":
-            return .accordion(
-                title: "📖 Les étapes des activités",
-                intro: "Appuie sur une activité pour dérouler ses étapes, dans l'ordre",
-                groups: ROUTINES.map { r in
-                    LearnGroup(label: "\(r.emoji) \(r.label) — \(r.duree) min",
-                               items: r.etapes.enumerated().map { i, etape in
-                                   LearnItem(label: etape, num: i + 1)
-                               })
-                })
-
-        case "nombres":
-            var groups: [LearnGroup] = (0..<10).map { d in
-                LearnGroup(label: "De \(d * 10) à \(d * 10 + 9)",
-                           items: (d * 10 ... d * 10 + 9).map { LearnItem(label: numberToWords($0).capFirst, num: $0) })
-            }
-            groups.append(LearnGroup(label: "Cent", items: [LearnItem(label: numberToWords(100).capFirst, num: 100)]))
-            return .accordion(title: "📖 Les nombres en lettres",
-                              intro: "Appuie sur une dizaine pour dérouler tous les nombres", groups: groups)
-        default:
+        // `null` pour un thème sans révision : un Optional à décoder, pas une erreur
+        guard let r = Noyau.appel("revision", key, comme: NoyauRevision?.self) ?? nil else {
             return .list(title: "📖", intro: nil, items: [])
+        }
+        switch r.genre {
+        case "lettres":
+            return .grid(title: r.titre, letters: r.lettres ?? [])
+        case "accordeon":
+            return .accordion(title: r.titre, intro: r.intro, groups: (r.groupes ?? []).map {
+                LearnGroup(label: $0.libelle, items: $0.fiches.map(LearnItem.init(noyau:)))
+            })
+        default:
+            return .list(title: r.titre, intro: r.intro,
+                         items: (r.fiches ?? []).map(LearnItem.init(noyau:)))
+        }
+    }
+}
+
+extension LearnItem {
+    init(noyau f: NoyauFiche) {
+        self.init(label: f.libelle, sub: f.detail, num: f.numero)
+        guard let i = f.image else { return }
+        switch i.genre {
+        case "billes":
+            marbles = i.nombre
+            perRow = i.parRang ?? 5
+            colorByRow = i.couleurParRang ?? false
+        case "pastille":
+            colorHex = i.hex
+        case "forme":
+            shapeName = i.nom
+        case "horloge":
+            clockHours = i.heures
+            clockMinutes = i.minutes ?? 0
+        default:
+            break
         }
     }
 }

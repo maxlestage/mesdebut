@@ -175,11 +175,12 @@ struct QuizView: View {
         guard !scheduled.contains(q.dedupKey) else { return } // une seule fois par question
         scheduled.insert(q.dedupKey)
         var next = questions
-        for t in [i + 3, i + 8] {
+        // les positions, et la règle « 3 puis 5 plus loin », viennent du noyau
+        for position in QuestionEngine.retryPositions(after: i, count: next.count) {
             var copy = q
             copy.id = UUID()
             copy.options = ([q.answer] + q.choices).shuffled()
-            next.insert(copy, at: min(t, next.count))
+            next.insert(copy, at: position)
         }
         questions = next
     }

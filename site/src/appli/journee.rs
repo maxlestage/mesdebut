@@ -6,7 +6,7 @@ use active::prelude::*;
 use super::dessins::etapes;
 use super::{gros_bouton, plateforme, retour_menu, sous_titre, stock, titre};
 use crate::moteur::journee::{
-    DUREES, JourEstime, Journee, Tache, avec_aujourdhui, date_courte, date_lisible, signe, tendance,
+    DUREES, JourEstime, Journee, Tache, avec_aujourdhui, barres, date_lisible, tendance,
 };
 use crate::moteur::planifier::{ROUTINES, format_heure, routine};
 use crate::moteur::s;
@@ -343,34 +343,21 @@ fn bilan(j: &Journee) -> Node {
 
 /// Les dix derniers jours : l'écart entre le prévu et le réel se resserre-t-il ?
 fn tendance_vue(jours: &[JourEstime], aujourdhui: &str) -> Node {
-    let derniers = &jours[jours.len().saturating_sub(10)..];
-    // la même échelle pour toutes les barres
-    let pire = derniers
-        .iter()
-        .map(|j| j.ecart_pct().abs())
-        .max()
-        .unwrap_or(0)
-        .max(60);
     div()
         .class("tendance")
         .child(h2().text("📈 Mes estimations"))
-        .child(ul().children(derniers.iter().map(|j| {
-            let ecart = j.ecart_pct();
-            let largeur = (ecart.abs() as f64 / pire as f64 * 100.0).min(100.0);
-            let classe = if j.juste() { "juste" } else { "ecart" };
-            li().class(classe)
-                .child(span().class("jour").text(date_courte(&j.date, aujourdhui)))
-                .child(
-                    span()
-                        .class("barre")
-                        .child(span().style(format!("width:{largeur:.0}%"))),
-                )
-                .child(span().class("valeur").text(if ecart == 0 {
-                    "✓".to_string()
-                } else {
-                    format!("{} %", signe(ecart))
-                }))
-        })))
+        .child(
+            ul().children(barres(jours, aujourdhui).into_iter().map(|b| {
+                li().class(if b.juste { "juste" } else { "ecart" })
+                    .child(span().class("jour").text(b.libelle))
+                    .child(
+                        span()
+                            .class("barre")
+                            .child(span().style(format!("width:{:.0}%", b.part * 100.0))),
+                    )
+                    .child(span().class("valeur").text(b.valeur))
+            })),
+        )
         .child(p().class("estimation").text(tendance(jours)))
         .into()
 }
