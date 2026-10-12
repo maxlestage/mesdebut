@@ -2,7 +2,7 @@
   "name": "reneuro",
   "private": true,
   "version": "1.0.0",
-  "description": "Site de présentation de ReNeuro",
+  "description": "ReNeuro sur le web : le site de présentation et l'application, écrits avec Active",
   "author": "Maxime Nathan Lestage",
   "engines": {
     "node": "22.x"
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "bash site/construire.sh",
     "heroku-postbuild": "npm run build",
-    "start": "serve site/dist --config ../../serve.json --single --no-clipboard --listen tcp://0.0.0.0:${PORT:-3000}"
+    "start": "serve site/dist --config ../../serve.json --no-clipboard --listen tcp://0.0.0.0:${PORT:-3000}"
   },
   "dependencies": {
     "serve": "^14.2.6"

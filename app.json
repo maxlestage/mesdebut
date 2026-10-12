@@ -1,9 +1,9 @@
 {
   "name": "ReNeuro",
-  "description": "Site de présentation de ReNeuro — Yew et WebAssembly, statique, servi par le buildpack Node",
+  "description": "ReNeuro sur le web — présentation et application, en Rust avec Active et WebAssembly, statique, servi par le buildpack Node",
   "keywords": [
     "rust",
-    "yew",
+    "active",
     "webassembly",
     "site",
     "éducation"

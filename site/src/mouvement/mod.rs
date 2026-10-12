@@ -3,9 +3,9 @@
 //! des titres qui montent mot à mot, un manifeste qui s'allume, une bande qui
 //! défile, un curseur à anneau et des boutons aimantés.
 //!
-//! Règle : rien ici ne crée, ne supprime ni ne déplace un nœud rendu par Yew.
+//! Règle : rien ici ne crée, ne supprime ni ne déplace un nœud de la page rendue.
 //! On pose des classes, des variables CSS et `translate` ; le seul nœud retiré
-//! est le rideau, qui appartient à index.html.
+//! est le rideau.
 //!
 //! Sous « réduire les animations », seul le rideau se lève et la toque se
 //! dessine, immobile : le reste de la page est déjà en place (classe `calme`).

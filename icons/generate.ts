@@ -29,6 +29,13 @@ const CIBLES: readonly Cible[] = [
     taille: 1024, echelle: 1.16, note: 'iPhone — masque en squircle' },
   { fichier: 'ios/ReNeuro/ReNeuroWatch/Assets.xcassets/AppIcon.appiconset/icon-1024.png',
     taille: 1024, echelle: 1, note: 'Apple Watch — masque en cercle' },
+  // L'application web, installable : icônes du manifeste (site/src/appli/mod.rs).
+  { fichier: 'site/public/app/pwa-192.png',
+    taille: 192, echelle: 1.16, note: 'PWA' },
+  { fichier: 'site/public/app/pwa-512.png',
+    taille: 512, echelle: 1.16, note: 'PWA, et écran d\'accueil iOS' },
+  { fichier: 'site/public/app/pwa-maskable-512.png',
+    taille: 512, echelle: 1, note: 'PWA maskable — zone sûre = cercle central' },
 ]
 
 const svg = readFileSync(SVG, 'utf8')

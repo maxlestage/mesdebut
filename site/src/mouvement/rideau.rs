@@ -1,5 +1,5 @@
-//! Le rideau de index.html : il compte jusqu'à 100 en CSS (`@property`), puis
-//! l'application le lève. Une fois par session seulement ; ensuite il s'efface
+//! Le rideau de la page : il compte jusqu'à 100 en CSS (`@property`), puis
+//! le module le lève. Une fois par session seulement ; ensuite il s'efface
 //! dès que la page est prête.
 
 use crate::outils::{self, document, maintenant, plus_tard};

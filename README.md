@@ -7,30 +7,38 @@ Ce dépôt contient deux choses :
 
 | | |
 | --- | --- |
-| [`site/`](site/) | le **site de présentation**, en Rust / Yew compilé en WebAssembly, mobile first |
-| [`ios/`](ios/) | l'**application**, native, en Swift / SwiftUI (iPhone et Apple Watch) |
+| [`site/`](site/) | **ReNeuro sur le web** : le site de présentation (`/`) et l'application complète (`/app`), en Rust avec [Active](https://github.com/maxlestage/Active), compilés en WebAssembly, mobile first |
+| [`ios/`](ios/) | l'**application native**, en Swift / SwiftUI (iPhone et Apple Watch) |
 
-## Le site
+## Le web
 
-Une page, en [Yew](https://yew.rs) compilé en WebAssembly, pensée pour un
-téléphone d'abord, sombre et animée dans l'esprit de
-[zamocorp.com](https://zamocorp.com) : rideau qui compte jusqu'à 100 %,
-poussière qui se rassemble en toque au défilement, titres révélés mot à mot,
-manifeste qui s'allume, bande qui défile. Elle présente les seize thèmes, la
-planification, les deux écrans et les principes d'apprentissage, puis l'offre :
-4,99 € par mois, sans rien de gratuit.
+Écrit en Rust avec [Active](https://github.com/maxlestage/Active) : composants,
+état, routage et balises SEO, rendus à la construction ou dans le navigateur.
+
+- **`/`, la présentation** — une page sombre et animée dans l'esprit de
+  [zamocorp.com](https://zamocorp.com) : rideau qui compte jusqu'à 100 %,
+  poussière qui se rassemble en toque au défilement, titres révélés mot à mot,
+  manifeste qui s'allume, bande qui défile. Son HTML est écrit par Active à la
+  construction : tout son contenu est lisible sans JavaScript.
+- **`/app`, l'application** — les seize thèmes, la révision, les quiz de dix
+  questions, la mémoire de ce qui résiste (boîtes de Leitner), « Mes progrès »
+  et « Ma journée » avec son chronomètre et le suivi des estimations : tout ce
+  que fait l'iPhone, dans le navigateur. Rendue par Active côté client, chaque
+  écran a son adresse ; elle s'installe sur l'écran d'accueil et fonctionne
+  hors ligne.
 
 ```bash
 cd site
-trunk serve       # serveur de développement
-./construire.sh   # site statique dans site/dist/ (installe Rust et trunk s'il le faut)
-cargo test        # tests
+./construire.sh   # tout le site dans site/dist/ (installe Rust et wasm-bindgen s'il le faut)
+cargo test        # moteur, pages, écrans
 ```
 
-`./construire.sh` produit un dossier **entièrement statique**, à chemins
-relatifs : il se dépose tel quel sur n'importe quel hébergeur, à la racine d'un
-domaine comme dans un sous-dossier. Le dépôt contient aussi de quoi le publier sur
-Heroku (voir plus bas).
+Puis, depuis la racine : `npm ci && npm start`, et <http://localhost:3000>.
+
+`./construire.sh` produit un dossier **entièrement statique**. La présentation
+garde des chemins relatifs ; l'application, qui répond à toute adresse
+`/app/…`, se dépose à la racine d'un domaine. Le dépôt contient de quoi le
+publier sur Heroku (voir plus bas).
 
 Voir [`site/README.md`](site/README.md) pour le détail.
 
@@ -48,24 +56,30 @@ Le buildpack construit le site (`heroku-postbuild`), puis `npm start` le sert av
 du registre npm — aucun serveur n'est écrit ici. Le `Procfile` se contente de
 `web: npm start`.
 
-`serve.json` définit le comportement : les anciennes adresses de l'application
-web (`/app`, `/presentation`) redirigent vers la racine, les fichiers d'assets
-sont gardés un an (leur nom porte une empreinte), et l'index comme le service
-worker sont toujours revalidés.
+`serve.json` définit le comportement : toute adresse `/app/…` reçoit la
+coquille de l'application (`app/index.html`), dont le routeur affiche l'écran ;
+l'ancienne adresse `/presentation` redirige vers la racine ; les fichiers
+d'assets sont gardés un an (leur nom porte une empreinte), et les pages comme
+les service workers sont toujours revalidés. Une adresse inconnue hors de
+`/app` répond 404.
 
 `cleanUrls` y est **désactivé** volontairement. Activé — c'est le défaut de
 `serve` —, il retire le `.html` avant même de regarder les redirections, ce qui
 enchaînait `/index.html` → `/index` → `/`. Désactivé, nos propres redirections
-s'appliquent et ramènent à l'adresse canonique en un seul saut.
+s'appliquent et ramènent à l'adresse canonique en un seul saut. Conséquence :
+`serve` ne cherche plus seul `index.html` dans un dossier, d'où la réécriture
+explicite de `/`. L'option `--single` n'est pas utilisée : elle ajoute sa propre
+réécriture de **toute** adresse vers `/index.html`, *avant* celles du fichier,
+ce qui enverrait la présentation à la place de l'application.
 
 Deux choses à savoir :
 
 - Heroku n'a pas Rust. `npm run build` lance `site/construire.sh`, qui installe
-  la chaîne d'outils (rustup, cible `wasm32-unknown-unknown`, trunk) dans le
-  dossier temporaire, **hors du slug** — rustup y pèserait ~600 Mo, au-delà de la
-  limite de 500 Mo. La compilation (`target/`) et les outils que trunk
-  télécharge y restent aussi : le slug ne garde que `site/dist/`. Compter un peu
-  plus d'une minute de construction.
+  la chaîne d'outils (rustup, cible `wasm32-unknown-unknown`, wasm-bindgen) dans
+  le dossier temporaire, **hors du slug** — rustup y pèserait ~600 Mo, au-delà de
+  la limite de 500 Mo. La compilation (`target/`) y reste aussi : le slug ne
+  garde que `site/dist/`. Compter deux minutes environ de construction : le
+  module WebAssembly, puis l'exportateur qui écrit les pages.
 - `serve` est une **dépendance de production** : sans cela, Heroku l'élaguerait
   après la construction et le démarrage échouerait.
 
@@ -85,24 +99,27 @@ Aucun buildpack à ajouter : `heroku/nodejs`, celui par défaut, suffit.
 Le workflow [`site-build.yml`](.github/workflows/site-build.yml) rejoue à chaque
 PR **exactement** ce que fait Heroku — mêmes commandes, `NODE_ENV=production`,
 élagage des dépendances de développement — puis démarre le serveur et vérifie ce
-qu'il sert : les codes de réponse, les redirections en un saut, les en-têtes de
-cache, le module WebAssembly (servi en `application/wasm`, gardé en cache) et le
-contenu de la page. Avant cela, il passe le code Rust à `cargo fmt`, `clippy` et
-`cargo test`.
+qu'il sert : les codes de réponse, les adresses de l'application, les
+redirections en un saut, les en-têtes de cache, le module WebAssembly (servi en
+`application/wasm`, gardé en cache), le manifeste et le contenu des pages.
+Avant cela, il passe le code Rust à `cargo fmt`, `clippy` (pour le navigateur
+et pour la machine) et `cargo test`.
 
 Son résultat se lit depuis GitHub, sans rien installer.
 
-## L'application
+## L'application native
 
-Native, en Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite,
-une activité en direct sur l'écran verrouillé, et une application Apple Watch.
+En Swift / SwiftUI : seize thèmes, une mémoire de l'apprenant en SQLite, une
+activité en direct sur l'écran verrouillé, et une application Apple Watch.
 Voir [`ios/README.md`](ios/README.md).
 
 Elle est compilée à chaque changement par une intégration continue, et peut être
 envoyée sur TestFlight. Voir [`ios/CI.md`](ios/CI.md).
 
-> Une version web du quiz a existé dans ce dépôt. Elle a été retirée : seule
-> l'application native subsiste. On la retrouve dans l'historique git si besoin.
+L'application web (`site/src/moteur/` et `site/src/appli/`) en est un portage
+fidèle : mêmes questions, mêmes règles de mémoire et de planification. Les deux
+sont écrites séparément ; une évolution de l'une suppose de la reporter dans
+l'autre.
 
 ## Les icônes
 
@@ -113,10 +130,11 @@ Toutes les icônes viennent d'**un seul fichier vectoriel**,
 
 ## Un fichier à ne pas supprimer par mégarde
 
-`site/public/sw.js` n'est pas le service worker du site — le site n'en a pas.
-C'est un **service worker d'extinction** : l'ancienne version web avait laissé le
-sien à la racine du domaine, et il y répond encore, de mémoire cache, chez les
-personnes qui l'avaient ouverte. Ce fichier prend sa place, vide les caches et le
+`site/public/sw.js` n'est pas le service worker de l'application — lui est écrit
+par l'exportateur à `/app/sw.js`, avec la portée `/app/`. C'est un **service
+worker d'extinction** : la toute première version web avait laissé le sien à la
+racine du domaine, et il y répond encore, de mémoire cache, chez les personnes
+qui l'avaient ouverte. Ce fichier prend sa place, vide les caches et le
 désinscrit. À conserver tant que le site est déposé sur le même domaine qu'elle.
 
 ## Crédits
