@@ -129,24 +129,24 @@ pub fn service_worker(version: &str, fichiers: &[&str]) -> ServiceWorker {
 
 /// La page que le serveur envoie pour toute adresse de l'application.
 pub fn coquille(css: &str, js: &str, wasm: &str) -> String {
-    let attente = div().id("app").child(
-        div().class("ecran").child(
-            main()
-                .class("carte attente")
-                .child(
-                    img()
-                        .attr("src", "/icon.svg")
-                        .attr("alt", "")
-                        .attr("width", "72")
-                        .attr("height", "72"),
-                )
-                .child(p().text("Chargement de ReNeuro…"))
-                .child(noscript().child(p().text(
-                    "ReNeuro a besoin de JavaScript et de WebAssembly pour fonctionner. \
+    // le même cadre que l'application : rien ne bouge quand elle démarre, et
+    // l'accueil reste à portée même sans JavaScript
+    let attente = div().id("app").child(cadre(
+        main()
+            .class("carte attente")
+            .child(
+                img()
+                    .attr("src", "/icon.svg")
+                    .attr("alt", "")
+                    .attr("width", "72")
+                    .attr("height", "72"),
+            )
+            .child(p().text("Chargement de ReNeuro…"))
+            .child(noscript().child(p().text(
+                "ReNeuro a besoin de JavaScript et de WebAssembly pour fonctionner. \
                              Active-les dans ton navigateur, puis recharge la page.",
-                ))),
-        ),
-    );
+            ))),
+    ));
     Document::new(attente)
         .lang("fr")
         .viewport("width=device-width, initial-scale=1, viewport-fit=cover")
@@ -175,15 +175,40 @@ pub fn lancer() {
 #[cfg(target_arch = "wasm32")]
 fn racine() -> Node {
     let chemin = active::location();
+    cadre(
+        main()
+            .class("carte")
+            // répété ici pour que le titre garde son modèle quand l'écran change
+            .child(seo_du_site())
+            .children_dyn(move || vec![ecran(route(&chemin.get()))]),
+    )
+}
+
+/// Le cadre de chaque écran : la barre qui ramène à l'accueil du site, puis la
+/// carte de l'écran.
+pub fn cadre(carte: Element) -> Node {
     div()
         .class("ecran")
-        // répété ici pour que le titre garde son modèle quand l'écran change
-        .child(seo_du_site())
         .child(
-            main()
-                .class("carte")
-                .children_dyn(move || vec![ecran(route(&chemin.get()))]),
+            header().class("entete").child(
+                // la présentation n'appartient pas à l'application : un
+                // chargement complet, pas le routeur
+                a().class("vers-accueil")
+                    .href("/")
+                    .attr("rel", "external")
+                    .attr("aria-label", "Revenir à l'accueil de ReNeuro")
+                    .child(span().class("fleche").attr("aria-hidden", "true").text("←"))
+                    .child(
+                        img()
+                            .attr("src", "/icon.svg")
+                            .attr("alt", "")
+                            .attr("width", "24")
+                            .attr("height", "24"),
+                    )
+                    .child(span().text("Accueil")),
+            ),
         )
+        .child(carte)
         .into()
 }
 
@@ -308,6 +333,20 @@ mod tests {
             let html = ecran(route(&chemin)).render();
             assert!(html.contains("titre-ecran"), "{chemin} : {html}");
         }
+    }
+
+    #[test]
+    fn chaque_ecran_a_son_bouton_accueil() {
+        let html = cadre(
+            main()
+                .class("carte")
+                .child(ecran(route("/app/heure/quiz/2"))),
+        )
+        .render();
+        assert!(html.starts_with(r#"<div class="ecran"><header class="entete"><a class="vers-accueil" href="/" rel="external""#), "{html}");
+        // la coquille servie avant le démarrage a le même cadre
+        let coquille = coquille("/a.css", "/a.js", "/a.wasm");
+        assert!(coquille.contains(r#"<div id="app"><div class="ecran"><header class="entete"><a class="vers-accueil" href="/""#));
     }
 
     #[test]
