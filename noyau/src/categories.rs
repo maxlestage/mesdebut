@@ -1,4 +1,4 @@
-//! Les seize thèmes : leur nom, leurs couleurs, leurs niveaux.
+//! Les dix-sept thèmes : leur nom, leurs couleurs, leurs niveaux.
 //!
 //! Une seule liste pour tout le site : la page de présentation et l'application
 //! la lisent toutes deux. Elle reprend celle de l'application iOS
@@ -232,6 +232,32 @@ pub const CATEGORIES: &[Categorie] = &[
         revision: false,
         niveaux: TROIS,
         degrade: ("#ff6bd5", "#e045a8"),
+    },
+    Categorie {
+        cle: "logique",
+        emoji: "🧩",
+        libelle: "Logique",
+        titre: "Jeux de logique",
+        revision: true,
+        // ce qui se voit, ce qui se compare, ce qui se déduit
+        niveaux: &[
+            Niveau {
+                id: 1,
+                emoji: "🌱",
+                libelle: "Les suites",
+            },
+            Niveau {
+                id: 2,
+                emoji: "🌿",
+                libelle: "L'intrus",
+            },
+            Niveau {
+                id: 3,
+                emoji: "🌳",
+                libelle: "Les déductions",
+            },
+        ],
+        degrade: ("#ffa726", "#6d4c41"),
     },
 ];
 
