@@ -13,7 +13,7 @@ on:
 jobs:
   testflight:
     runs-on: macos-15
-    # L'envoi prend un quart d'heure ; le traitement par Apple, jusqu'à 25 minutes.
+    # Construire et envoyer : un quart d'heure ; attendre Apple : jusqu'à 35 minutes.
     timeout-minutes: 60
     env:
       # Deux jeux de noms sont acceptés : les courts (ASC_*) et les longs,
@@ -103,6 +103,17 @@ jobs:
       # précompilée : nightly la recompile (rust-src).
       - name: Installer Rust et les cibles Apple
         run: |
+          # noyau/xcode.sh cherche rustup dans $CARGO_HOME/bin (~/.cargo/bin par
+          # défaut), là où l'installe rustup.rs. Les images macOS de GitHub ne
+          # l'y mettent plus toujours (un autre rustup peut être dans le PATH) :
+          # on l'y installe.
+          cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
+          if [ ! -x "$cargo_bin/rustup" ]; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --profile minimal --default-toolchain none --no-modify-path
+          fi
+          export PATH="$cargo_bin:$PATH"
+          echo "rustup : $(command -v rustup)"
           rustup toolchain install stable --profile minimal \
             --target aarch64-apple-ios --target aarch64-apple-watchos
           rustup toolchain install nightly --profile minimal --component rust-src
@@ -232,7 +243,8 @@ jobs:
       # on attend son verdict, et on renseigne la conformité à l'export s'il
       # la réclame.
       - name: Attendre le verdict d'Apple
-        timeout-minutes: 28
+        # 25 minutes de traitement au plus, puis 10 pour la mise à disposition
+        timeout-minutes: 38
         run: |
           ASC_KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
           BUNDLE_ID=com.reneuro.ReNeuro \
