@@ -119,7 +119,7 @@ jobs:
 
           echo "— contenu —"
           # la présentation est rendue en HTML : son contenu est là sans WebAssembly
-          if curl -s http://localhost:3000/ | grep -q 'Seize thèmes'; then
+          if curl -s http://localhost:3000/ | grep -q 'Dix-sept thèmes'; then
             echo "  ✅ la présentation est rendue"
           else
             echo "::error::la présentation ne contient pas ses thèmes"; echecs=$((echecs+1))
