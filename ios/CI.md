@@ -77,6 +77,10 @@ marketing (`MARKETING_VERSION`, ex. 1.0) se change dans le projet Xcode.
   TestFlight. Le workflow interroge l'API App Store Connect jusqu'au verdict, et
   échoue si Apple rejette le build — le motif (code ITMS-9xxxx) arrive alors par
   courriel au titulaire du compte.
+- Validé ne veut pas encore dire visible : le workflow attend ensuite que le build
+  soit **disponible pour les testeurs internes** (`IN_BETA_TESTING`). S'il est
+  seulement prêt, il l'ajoute à chaque groupe de tests internes ; si l'app n'en a
+  aucun, il échoue en disant comment en créer un.
 - La **conformité à l'export** est déclarée dans l'app
   (`ITSAppUsesNonExemptEncryption = NO` : aucun chiffrement propre). Sans elle,
   chaque build restait bloqué en « Conformité manquante », invisible pour les
