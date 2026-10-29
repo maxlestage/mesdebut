@@ -32,6 +32,7 @@ trois applications suivent à leur prochaine construction.
 | `planifier.rs` | les onze activités du quotidien et leurs questions |
 | `revision.rs` | le contenu des écrans « Réviser d'abord » |
 | `memoire.rs` | les boîtes de Leitner, le résumé, les statistiques par thème |
+| `hanoi.rs` | le mini-jeu des tours de Hanoï : règles, coups, bilan |
 | `journee.rs` | « Ma journée » : heures, chronomètre, bilan, historique, tendance |
 | `alea.rs` | le hasard des questions (xorshift, sans dépendance) |
 | `ffi.rs` | l'interface C, pour Swift (fonctionnalité `ffi`) |

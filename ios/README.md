@@ -62,6 +62,7 @@ ReNeuroKit/              # partagé : app iPhone + app Watch
   CategoryData.swift          # les thèmes et le contenu des écrans de révision, du noyau
   MemoryStore.swift           # mémoire de l'apprenant en SQLite (règle des boîtes : le noyau)
   PlanningData.swift          # activités du quotidien décomposées en étapes, du noyau
+  HanoiEngine.swift           # les tours de Hanoï, jouées par le noyau
   StepsView.swift             # étapes montrées sous l'énoncé (avec le trou)
   MarblesView.swift           # billes à compter (Circle + dégradés)
   GeometricShapeView.swift    # formes géométriques (Path/Shape)
@@ -84,6 +85,7 @@ ReNeuro/                 # app iPhone
     EndView.swift             # score et étoiles
     ProgressStatsView.swift   # écran « Mes progrès » (stats SQLite par catégorie)
     PlannerView.swift         # « 🗓️ Ma journée » : le planificateur
+    HanoiView.swift           # « 🗼 Tours de Hanoï » : le mini-jeu
     Haptics.swift             # retour tactile natif sur les réponses
     Theme.swift               # fonds, boutons, carte réutilisables
   Assets.xcassets/            # icône de l'app + couleur d'accent

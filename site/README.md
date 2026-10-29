@@ -70,6 +70,8 @@ le routeur d'Active affiche l'écran de l'adresse, et le titre de l'onglet suit.
 | `/app/heure/quiz/2` | le quiz, au niveau 2 |
 | `/app/progres` | « 📊 Mes progrès » |
 | `/app/journee` | « 🗓️ Ma journée », le planificateur |
+| `/app/hanoi` | « 🗼 Tours de Hanoï », le mini-jeu : choix du nombre de disques |
+| `/app/hanoi/2` | les tours de Hanoï, au niveau 2 (4 disques) |
 
 Ce qu'elle partage avec l'application iOS, par le noyau commun :
 
@@ -156,6 +158,7 @@ src/
     ecrans.rs           #   menu, thème, niveaux, révision, progrès
     quiz.rs             #   le quiz et l'écran de fin
     journee.rs          #   « Ma journée »
+    hanoi.rs            #   le mini-jeu des tours de Hanoï
     dessins.rs          #   horloge, billes, formes, pastilles, étapes
     stock.rs            #   ce qui est gardé sur l'appareil
     plateforme.rs       #   heure, stockage, minuteries (et leurs équivalents hors navigateur)
