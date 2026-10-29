@@ -71,6 +71,14 @@ marketing (`MARKETING_VERSION`, ex. 1.0) se change dans le projet Xcode.
   (`xcodebuild archive`, `xcodebuild -exportArchive`, puis `xcrun altool --upload-app`).
 - La signature utilise la **signature automatique « cloud »** (`-allowProvisioningUpdates`
   + clé API) : pas besoin de gérer manuellement certificats et profils.
-- Le workflow n'attend pas la fin du traitement Apple. Le build apparaît dans
-  TestFlight quelques minutes plus tard ; pense à remplir les informations de
-  conformité export si demandé.
+- Le workflow **attend le verdict d'Apple** ([`testflight-verdict.py`](../.github/scripts/testflight-verdict.py)).
+  « UPLOAD SUCCEEDED » dit seulement qu'Apple a reçu le fichier : c'est le
+  traitement qui suit (5 à 15 minutes) qui décide si le build apparaît dans
+  TestFlight. Le workflow interroge l'API App Store Connect jusqu'au verdict, et
+  échoue si Apple rejette le build — le motif (code ITMS-9xxxx) arrive alors par
+  courriel au titulaire du compte.
+- La **conformité à l'export** est déclarée dans l'app
+  (`ITSAppUsesNonExemptEncryption = NO` : aucun chiffrement propre). Sans elle,
+  chaque build restait bloqué en « Conformité manquante », invisible pour les
+  testeurs. Le workflow la renseigne aussi sur le build si Apple la réclame
+  encore.
