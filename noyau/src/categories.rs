@@ -1,4 +1,4 @@
-//! Les dix-sept thèmes : leur nom, leurs couleurs, leurs niveaux.
+//! Les dix-huit thèmes : leur nom, leurs couleurs, leurs niveaux.
 //!
 //! Une seule liste pour tout le site : la page de présentation et l'application
 //! la lisent toutes deux. Elle reprend celle de l'application iOS
@@ -258,6 +258,32 @@ pub const CATEGORIES: &[Categorie] = &[
             },
         ],
         degrade: ("#ffa726", "#6d4c41"),
+    },
+    Categorie {
+        cle: "casse-tete",
+        emoji: "🤔",
+        libelle: "Casse-tête",
+        titre: "Casse-tête",
+        revision: true,
+        // un calcul à défaire, deux égalités à enchaîner, des mots imagés
+        niveaux: &[
+            Niveau {
+                id: 1,
+                emoji: "🌱",
+                libelle: "Les nombres cachés",
+            },
+            Niveau {
+                id: 2,
+                emoji: "🌿",
+                libelle: "Les balances",
+            },
+            Niveau {
+                id: 3,
+                emoji: "🌳",
+                libelle: "Les devinettes",
+            },
+        ],
+        degrade: ("#29b6f6", "#283593"),
     },
 ];
 
