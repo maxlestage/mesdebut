@@ -30,7 +30,7 @@ suivent.
   poussière qui se rassemble en toque au défilement, titres révélés mot à mot,
   manifeste qui s'allume, bande qui défile. Son HTML est écrit par Active à la
   construction : tout son contenu est lisible sans JavaScript.
-- **`/app`, l'application** — les dix-sept thèmes, la révision, les quiz de dix
+- **`/app`, l'application** — les dix-huit thèmes, la révision, les quiz de dix
   questions, la mémoire de ce qui résiste (boîtes de Leitner), « Mes progrès »
   et « Ma journée » avec son chronomètre et le suivi des estimations : tout ce
   que fait l'iPhone, dans le navigateur. Rendue par Active côté client, chaque
@@ -130,7 +130,7 @@ Pour garder une PR ouverte : la marquer comme brouillon, ou nommer sa branche
 
 ## L'application native
 
-En Swift / SwiftUI : dix-sept thèmes, une mémoire de l'apprenant en SQLite, une
+En Swift / SwiftUI : dix-huit thèmes, une mémoire de l'apprenant en SQLite, une
 activité en direct sur l'écran verrouillé, et une application Apple Watch.
 Voir [`ios/README.md`](ios/README.md).
 

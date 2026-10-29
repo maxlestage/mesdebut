@@ -238,6 +238,22 @@ pub fn revision(categorie: &str) -> Option<Revision> {
                     .detail("L'ordre est Léa, Tom, Sam : Léa arrive en premier"),
             ],
         ),
+        "casse-tete" => liste(
+            "📖 Les trois casse-tête",
+            Some("Lis bien chaque indice : la réponse se cache dedans."),
+            vec![
+                Fiche::new("🌱 Les nombres cachés")
+                    .detail("Un nombre est remplacé par « ? » : retrouve-le"),
+                Fiche::new("? + 3 = 7").detail("Combien faut-il ajouter à 3 pour faire 7 ? → 4"),
+                Fiche::new("🌿 Les balances")
+                    .detail("Chaque fruit cache un nombre, toujours le même"),
+                Fiche::new("🍎 + 🍎 = 8").detail("Deux pommes font 8, donc une pomme vaut 4"),
+                Fiche::new("🌳 Les devinettes")
+                    .detail("Un objet parle de lui : les mots ne sont pas toujours à prendre au pied de la lettre"),
+                Fiche::new("J'ai des dents, mais je ne mange jamais.")
+                    .detail("Les dents d'un peigne : c'est un peigne"),
+            ],
+        ),
         _ => None,
     }
 }
