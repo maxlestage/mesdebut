@@ -16,6 +16,7 @@ pub mod alea;
 pub mod categories;
 pub mod donnees;
 pub mod journee;
+pub mod logique;
 pub mod memoire;
 pub mod planifier;
 pub mod question;
