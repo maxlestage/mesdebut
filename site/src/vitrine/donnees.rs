@@ -27,7 +27,7 @@ pub const SUPPORTS: &[Support] = &[
         emoji: "💻",
         nom: "Navigateur",
         detail: "L'application complète, sur le web, sans rien installer.",
-        note: "Les dix-sept thèmes, la mémoire de ce qui résiste et « Ma journée », dans n'importe quel navigateur.",
+        note: "Les dix-huit thèmes, la mémoire de ce qui résiste et « Ma journée », dans n'importe quel navigateur.",
     },
 ];
 
@@ -83,7 +83,7 @@ pub const OFFRE: Offre = Offre {
     prix: "4,99 €",
     periode: "par mois",
     inclus: &[
-        "Les dix-sept thèmes, sans exception",
+        "Les dix-huit thèmes, sans exception",
         "L'iPhone, l'Apple Watch et le navigateur",
         "La progression retenue d'une séance à l'autre",
         "Le planificateur de journée et son suivi",

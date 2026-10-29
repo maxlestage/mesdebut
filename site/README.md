@@ -8,7 +8,7 @@ Pensés **mobile first** : la mise en page est écrite pour un téléphone, les
 | Adresse | Quoi | Rendu |
 | --- | --- | --- |
 | `/` | la présentation, sombre et animée dans l'esprit de [zamocorp.com](https://zamocorp.com) | HTML écrit par Active à la construction, puis animé par le module WebAssembly |
-| `/app` | l'application : les dix-sept thèmes, la révision, les quiz, la mémoire, « Ma journée » | entièrement dans le navigateur, par Active (routeur, état, `<head>`) |
+| `/app` | l'application : les dix-huit thèmes, la révision, les quiz, la mémoire, « Ma journée » | entièrement dans le navigateur, par Active (routeur, état, `<head>`) |
 
 Le moteur — thèmes, questions, mémoire, journée — n'est pas ici : c'est le
 **noyau** commun avec l'iPhone et la montre ([`../noyau/`](../noyau/README.md)),
@@ -63,7 +63,7 @@ le routeur d'Active affiche l'écran de l'adresse, et le titre de l'onglet suit.
 
 | Adresse | Écran |
 | --- | --- |
-| `/app/` | le menu des dix-sept thèmes |
+| `/app/` | le menu des dix-huit thèmes |
 | `/app/heure` | « Réviser d'abord » ou « Faire le quiz » |
 | `/app/heure/reviser` | la révision (liste, grille de lettres ou accordéon) |
 | `/app/heure/niveaux` | le choix du niveau |
@@ -105,7 +105,7 @@ relatifs.
 ## La présentation, `/`
 
 Rendue une fois pour toutes par l'exportateur : tout le texte est dans le HTML,
-lisible sans JavaScript et par les moteurs de recherche. Les dix-sept thèmes y
+lisible sans JavaScript et par les moteurs de recherche. Les dix-huit thèmes y
 viennent du noyau (`moteur::categories`) : la page présente
 exactement ce que l'application propose, et chaque carte y mène.
 
@@ -116,7 +116,7 @@ exactement ce que l'application propose, et chaque carte y mène.
 | Poussière qui se rassemble en toque au défilement, balayage de lumière, grains écartés par le pointeur | `mouvement/poussiere.rs` (canvas) |
 | Titre géant révélé ligne par ligne, titres de section mot à mot | CSS · `mouvement/revelation.rs` |
 | Manifeste qui s'allume mot à mot au défilement | `mouvement/defilement.rs` |
-| Bande des dix-sept thèmes qui défile, et penche avec la vitesse du défilement | CSS · `mouvement/defilement.rs` |
+| Bande des dix-huit thèmes qui défile, et penche avec la vitesse du défilement | CSS · `mouvement/defilement.rs` |
 | Nombres qui défilent jusqu'à leur valeur (720, +18 %, 4,99 €) | `mouvement/revelation.rs` |
 | Curseur à anneau, boutons aimantés, cartes qui s'inclinent, lueur du tarif | `mouvement/pointeur.rs` (souris seulement) |
 | Entête qui s'efface en descendant, barre de progression, parallaxes | `mouvement/defilement.rs` |
@@ -166,7 +166,7 @@ src/
 
 ## Les thèmes
 
-`noyau/src/categories.rs` liste les dix-sept thèmes, pour le web comme pour
+`noyau/src/categories.rs` liste les dix-huit thèmes, pour le web comme pour
 l'iPhone et la montre : en ajouter un, c'est l'ajouter partout.
 
 ## Active
