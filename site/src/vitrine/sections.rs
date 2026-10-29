@@ -87,7 +87,7 @@ pub fn hero() -> Node {
                                 .class("hero-bas")
                                 .child(p().class("sous-accroche").text(format!(
                                     "Les jours, l'heure, le calcul, les couleurs, organiser sa journée{NBSP}: \
-                                     dix-sept thèmes, en questions courtes."
+                                     dix-huit thèmes, en questions courtes."
                                 )))
                                 .child(
                                     div()
@@ -152,7 +152,7 @@ pub fn bande() -> Node {
     };
     div()
         .class("bande")
-        .attr("aria-label", "Les dix-sept thèmes")
+        .attr("aria-label", "Les dix-huit thèmes")
         .child(
             div()
                 .class("bande-defile")
@@ -169,7 +169,7 @@ pub fn themes() -> Node {
         .id("themes")
         .class("section")
         .child(etiquette("(02) — Les thèmes"))
-        .child(titre("Dix-sept thèmes, *dix* questions à la fois."))
+        .child(titre("Dix-huit thèmes, *dix* questions à la fois."))
         .child(
             p().class("intro")
                 .attr("data-revele", "")

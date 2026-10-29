@@ -6,6 +6,7 @@
 use std::collections::{HashMap, HashSet};
 
 use super::alea;
+use super::casse_tete;
 use super::donnees::*;
 use super::logique;
 use super::planifier;
@@ -767,12 +768,13 @@ pub fn question(categorie: &str, niveau: u8) -> Question {
         "nombres" => nombres(niveau),
         "planifier" => planifier::question(niveau),
         "logique" => logique::question(niveau),
+        "casse-tete" => casse_tete::question(niveau),
         operation => calcul(operation, niveau),
     }
 }
 
 /// Les thèmes que le mode Mélange entrelace.
-pub const SOURCES_MELANGE: [&str; 16] = [
+pub const SOURCES_MELANGE: [&str; 17] = [
     "chiffres",
     "cinquante",
     "nombres",
@@ -789,6 +791,7 @@ pub const SOURCES_MELANGE: [&str; 16] = [
     "heure",
     "planifier",
     "logique",
+    "casse-tete",
 ];
 
 /// Thèmes à ensemble de questions fini : on peut y faire revenir en priorité

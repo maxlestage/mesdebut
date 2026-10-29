@@ -91,7 +91,7 @@ fn amorcer_si_besoin() {
 /// | --- | --- | --- |
 /// | `amorcer` | `graine` | `null` (rejoue les mêmes tirages, pour les tests) |
 /// | `constantes` | | `{nb_questions, maitrise, durees}` |
-/// | `categories` | | les dix-sept thèmes |
+/// | `categories` | | les dix-huit thèmes |
 /// | `revision` | `cle` | ce que montre « Réviser d'abord », ou `null` |
 /// | `quiz` | `categorie niveau maintenant`, puis une ligne `cle boite due` par notion connue | les questions |
 /// | `bravo` | | une félicitation |
@@ -508,10 +508,10 @@ mod tests {
     }
 
     #[test]
-    fn les_dix_sept_themes() {
+    fn les_dix_huit_themes() {
         let json = appel("categories", "");
         assert!(json.starts_with(r##"[{"cle":"melange","emoji":"🧠","libelle":"Mélange","titre":"Quiz mélangé","revision":false,"niveaux":[],"degrade":["#26a69a","#00695c"]}"##), "{json}");
-        assert_eq!(json.matches(r#""cle":"#).count(), 17);
+        assert_eq!(json.matches(r#""cle":"#).count(), 18);
     }
 
     #[test]
