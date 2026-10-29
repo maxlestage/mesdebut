@@ -469,3 +469,66 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ─── Tours de Hanoï ───────────────────────────────────────────────────────── */
+
+.tiges { display: flex; gap: 8px; align-items: stretch; }
+.tige {
+  position: relative;
+  flex: 1;
+  min-height: 190px;
+  padding: 0 4px 14px;
+  border: 3px solid var(--bord);
+  border-radius: var(--rayon);
+  background: var(--fond-option);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+/* la tige elle-même, et son socle */
+.tige::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  bottom: 10px;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: var(--accent-pale);
+  opacity: 0.45;
+}
+.tige::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 8px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--accent-pale);
+  opacity: 0.45;
+}
+.tige.arrivee { border-style: dashed; }
+.tige.prise { border-color: var(--marque-a); background: var(--fond-doux); }
+.disque {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s;
+}
+.disque.leve { transform: translateY(-14px); }
+@media (prefers-reduced-motion: reduce) {
+  .tige, .disque { transition: none; }
+}

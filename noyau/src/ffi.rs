@@ -22,6 +22,7 @@ use std::ffi::{CStr, CString, c_char};
 use std::hash::{BuildHasher, Hasher};
 
 use crate::categories::CATEGORIES;
+use crate::hanoi::{self, Hanoi};
 use crate::journee::{self, DUREES, JourEstime, Journee};
 use crate::memoire::{self, MAITRISE};
 use crate::planifier::ROUTINES;
@@ -104,6 +105,9 @@ fn amorcer_si_besoin() {
 /// | `archiver` | le jour `date nb prevu reel`, puis l'historique, une ligne par jour | l'historique |
 /// | `tendance` | `aujourdhui`, puis une ligne `date nb prevu reel` par jour | `{barres, message}` |
 /// | `date_lisible` | `aaaa-mm-jj` | « lundi 12 octobre » |
+/// | `hanoi_niveaux` | | les niveaux des tours de Hanoï |
+/// | `hanoi_depart` | `disques` | la partie au départ |
+/// | `hanoi_deplacer` | `de vers coups disques`, puis une ligne par tige (ses disques, du bas vers le haut) | `{accepte, …la partie}` |
 ///
 /// Les instants sont en secondes depuis 1970 (`maintenant`), sauf ceux du
 /// chronomètre, en millisecondes. Les booléens s'écrivent `0` ou `1`.
@@ -257,6 +261,34 @@ pub fn appeler(fonction: &str, arguments: &str) -> Result<String, String> {
             ])
         }
         "date_lisible" => chaine(&journee::date_lisible(tete.texte())),
+        "hanoi_niveaux" => tableau(hanoi::NIVEAUX.iter().map(|n| {
+            objet(&[
+                ("id", n.id.to_string()),
+                ("emoji", chaine(n.emoji)),
+                ("libelle", chaine(n.libelle)),
+                ("disques", n.disques.to_string()),
+            ])
+        })),
+        "hanoi_depart" => hanoi_json(&Hanoi::new(tete.nombre("disques")?), true),
+        "hanoi_deplacer" => {
+            let (de, vers): (usize, usize) = (tete.nombre("de")?, tete.nombre("vers")?);
+            let coups = tete.nombre("coups")?;
+            let disques = tete.nombre("disques")?;
+            let mut tours: [Vec<u8>; 3] = Default::default();
+            for tour in &mut tours {
+                let ligne = lignes.next().unwrap_or("");
+                for disque in ligne.split('\t').filter(|d| !d.is_empty()) {
+                    tour.push(Champs::new(disque).nombre("disque")?);
+                }
+            }
+            let mut jeu = Hanoi {
+                tours,
+                coups,
+                disques,
+            };
+            let accepte = jeu.deplacer(de, vers);
+            hanoi_json(&jeu, accepte)
+        }
         autre => return Err(format!("fonction inconnue : « {autre} »")),
     })
 }
@@ -360,6 +392,28 @@ fn tableau(valeurs: impl IntoIterator<Item = String>) -> String {
 
 fn optionnel(valeur: Option<String>) -> String {
     valeur.unwrap_or_else(|| "null".into())
+}
+
+fn hanoi_json(jeu: &Hanoi, accepte: bool) -> String {
+    let (etoiles, message) = jeu.bilan();
+    let gagne = jeu.gagne();
+    objet(&[
+        ("accepte", accepte.to_string()),
+        (
+            "tours",
+            tableau(
+                jeu.tours
+                    .iter()
+                    .map(|t| tableau(t.iter().map(u8::to_string))),
+            ),
+        ),
+        ("coups", jeu.coups.to_string()),
+        ("disques", jeu.disques.to_string()),
+        ("minimum", jeu.minimum().to_string()),
+        ("gagne", gagne.to_string()),
+        ("etoiles", optionnel(gagne.then(|| chaine(etoiles)))),
+        ("message", optionnel(gagne.then(|| chaine(&message)))),
+    ])
 }
 
 fn illustration_json(i: &Illustration) -> String {
@@ -505,6 +559,34 @@ mod tests {
             reneuro_liberer(r);
             texte
         }
+    }
+
+    #[test]
+    fn les_tours_de_hanoi_se_jouent_par_l_interface() {
+        let depart = appeler("hanoi_depart", "3").unwrap();
+        assert_eq!(
+            depart,
+            r#"{"accepte":true,"tours":[[3,2,1],[],[]],"coups":0,"disques":3,"minimum":7,"gagne":false,"etoiles":null,"message":null}"#
+        );
+        // le 1 sur la troisième tige, puis un coup interdit
+        let un = appeler("hanoi_deplacer", "0\t2\t0\t3\n3\t2\t1\n\n").unwrap();
+        assert!(
+            un.starts_with(r#"{"accepte":true,"tours":[[3,2],[],[1]],"coups":1"#),
+            "{un}"
+        );
+        let refuse = appeler("hanoi_deplacer", "0\t2\t1\t3\n3\t2\n\n1").unwrap();
+        assert!(
+            refuse.starts_with(r#"{"accepte":false,"tours":[[3,2],[],[1]],"coups":1"#),
+            "{refuse}"
+        );
+        // le dernier coup d'une partie gagnée apporte le bilan
+        let fin = appeler("hanoi_deplacer", "0\t2\t6\t3\n1\n\n3\t2").unwrap();
+        assert!(fin.contains(r#""gagne":true,"etoiles":"⭐⭐⭐""#), "{fin}");
+        assert!(
+            appeler("hanoi_niveaux", "")
+                .unwrap()
+                .contains(r#""disques":5"#)
+        );
     }
 
     #[test]

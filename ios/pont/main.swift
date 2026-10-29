@@ -79,6 +79,21 @@ verifie(QuestionEngine.pickPraise().hasPrefix("✅"), "des félicitations")
 verifie(endSummary(score: 10, total: 10).stars == "⭐⭐⭐⭐⭐", "cinq étoiles pour un sans-faute")
 verifie(endSummary(score: 0, total: 10).message.hasPrefix("Courage"), "on encourage, on ne sanctionne pas")
 
+print("— tours de Hanoï —")
+verifie(HanoiEngine.levels.map(\.disques) == [3, 4, 5], "trois niveaux : 3, 4 et 5 disques")
+if var partie = HanoiEngine.start(disks: 3) {
+    verifie(partie.tours == [[3, 2, 1], [], []] && partie.minimum == 7, "la pile au départ, 7 coups au minimum")
+    let interdit = HanoiEngine.move(HanoiEngine.move(partie, from: 0, to: 2)!, from: 0, to: 2)!
+    verifie(!interdit.accepte && interdit.coups == 1, "un grand disque ne va pas sur un petit")
+    // la solution en 7 coups
+    for (de, vers) in [(0, 2), (0, 1), (2, 1), (0, 2), (1, 0), (1, 2), (0, 2)] {
+        partie = HanoiEngine.move(partie, from: de, to: vers)!
+    }
+    verifie(partie.gagne && partie.coups == 7 && partie.etoiles == "⭐⭐⭐", "gagné au minimum : trois étoiles")
+} else {
+    verifie(false, "hanoi_depart répond")
+}
+
 print("— mémoire —")
 MemoryStore.shared.reset()
 for _ in 0..<3 { MemoryStore.shared.recordAnswer(key: "jours:x", category: "jours", correct: true) }
