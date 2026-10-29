@@ -13,7 +13,8 @@ on:
 jobs:
   testflight:
     runs-on: macos-15
-    timeout-minutes: 30
+    # L'envoi prend un quart d'heure ; le traitement par Apple, jusqu'à 25 minutes.
+    timeout-minutes: 60
     env:
       # Deux jeux de noms sont acceptés : les courts (ASC_*) et les longs,
       # historiques. Le premier défini l'emporte.
@@ -225,3 +226,14 @@ jobs:
           fi
           echo "Envoi accepté par Apple. Le build apparaîtra dans TestFlight"
           echo "après quelques minutes de traitement."
+
+      # « UPLOAD SUCCEEDED » dit seulement qu'Apple a reçu le fichier. C'est
+      # le traitement qui suit qui décide si le build apparaît dans TestFlight :
+      # on attend son verdict, et on renseigne la conformité à l'export s'il
+      # la réclame.
+      - name: Attendre le verdict d'Apple
+        timeout-minutes: 28
+        run: |
+          ASC_KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+          BUNDLE_ID=com.reneuro.ReNeuro \
+            python3 .github/scripts/testflight-verdict.py

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Vérifie ce que contient réellement une app iOS construite.
 
-Deux contrôles, tous deux portant sur les `Info.plist` *produits par la
+Trois contrôles, tous portant sur les `Info.plist` *produits par la
 compilation* — les seuls qui décrivent ce qu'Apple recevra :
 
 1. le nom affiché de chaque bundle ;
-2. les orientations iPad, qu'Apple refuse au dépôt si elles sont incomplètes.
+2. les orientations iPad, qu'Apple refuse au dépôt si elles sont incomplètes ;
+3. la déclaration de conformité à l'export, sans laquelle TestFlight bloque
+   chaque build.
 
 Le `project.pbxproj` écrit le nom de l'app sous forme échappée (`\\U2023`),
 comme Xcode le fait lui-même. Lire le projet ne prouve donc rien : seul le
@@ -90,6 +92,7 @@ def main(argv):
         print('\n✅ chaque bundle porte le nom voulu')
 
     echecs += controler_orientations(trouves)
+    echecs += controler_conformite(trouves)
     return 1 if echecs else 0
 
 
@@ -117,6 +120,22 @@ def controler_orientations(trouves):
         return 1
     print(f'  ✅ compatible iPad, les quatre orientations sont déclarées  ({chemin})')
     return 0
+
+
+def controler_conformite(trouves):
+    """Sans cette clé, chaque build reste bloqué dans TestFlight en
+    « Conformité à l'export manquante », invisible pour les testeurs."""
+    print('\n— conformité à l\'export —')
+    if OBLIGATOIRE not in trouves:
+        return 0
+    _, chemin, plist = trouves[OBLIGATOIRE]
+    if plist.get('ITSAppUsesNonExemptEncryption') is False:
+        print(f'  ✅ ITSAppUsesNonExemptEncryption = NO  ({chemin})')
+        return 0
+    erreur(f'{OBLIGATOIRE} : ITSAppUsesNonExemptEncryption doit valoir NO '
+           f'(trouvé : {plist.get("ITSAppUsesNonExemptEncryption")!r})')
+    print('     Réglage à corriger : INFOPLIST_KEY_ITSAppUsesNonExemptEncryption')
+    return 1
 
 
 if __name__ == '__main__':
