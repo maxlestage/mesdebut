@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-    private enum Screen { case menu, category, learn, levels, quiz, end, progress, planner }
+    private enum Screen { case menu, category, learn, levels, quiz, end, progress, planner, hanoiLevels, hanoi }
 
     @State private var screen: Screen = .menu
     @State private var categoryKey: String = "melange"
@@ -9,6 +9,8 @@ struct RootView: View {
     @State private var resultScore = 0
     @State private var resultTotal = 0
     @State private var quizID = UUID()
+    @State private var hanoiLevel = 1
+    @State private var hanoiID = UUID()
 
     private var cat: LearningCategory { QuestionEngine.category(categoryKey) }
 
@@ -22,7 +24,8 @@ struct RootView: View {
     @ViewBuilder private var content: some View {
         switch screen {
         case .menu:
-            MenuView(onSelect: open, onProgress: { screen = .progress })
+            MenuView(onSelect: open, onProgress: { screen = .progress },
+                     onHanoi: { screen = .hanoiLevels })
         case .category:
             CategoryView(category: cat,
                          onLearn: { screen = .learn },
@@ -43,6 +46,13 @@ struct RootView: View {
             ProgressStatsView(onBack: goMenu)
         case .planner:
             PlannerView(onBack: goMenu)
+        case .hanoiLevels:
+            HanoiLevelsView(onSelect: startHanoi, onBack: goMenu)
+        case .hanoi:
+            if let level = HanoiEngine.levels.first(where: { $0.id == hanoiLevel }) {
+                HanoiView(level: level, onLevels: { screen = .hanoiLevels }, onNext: startHanoi)
+                    .id(hanoiID)
+            }
         }
     }
 
@@ -66,6 +76,12 @@ struct RootView: View {
         level = lvl
         quizID = UUID()
         screen = .quiz
+    }
+
+    private func startHanoi(_ id: Int) {
+        hanoiLevel = id
+        hanoiID = UUID()
+        screen = .hanoi
     }
 
     private func finish(_ score: Int, _ total: Int) {
