@@ -13,7 +13,7 @@ on:
 jobs:
   testflight:
     runs-on: macos-15
-    # L'envoi prend un quart d'heure ; le traitement par Apple, jusqu'à 25 minutes.
+    # Construire et envoyer : un quart d'heure ; attendre Apple : jusqu'à 35 minutes.
     timeout-minutes: 60
     env:
       # Deux jeux de noms sont acceptés : les courts (ASC_*) et les longs,
@@ -232,7 +232,8 @@ jobs:
       # on attend son verdict, et on renseigne la conformité à l'export s'il
       # la réclame.
       - name: Attendre le verdict d'Apple
-        timeout-minutes: 28
+        # 25 minutes de traitement au plus, puis 10 pour la mise à disposition
+        timeout-minutes: 38
         run: |
           ASC_KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
           BUNDLE_ID=com.reneuro.ReNeuro \

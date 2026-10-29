@@ -87,7 +87,9 @@ def appel(methode: str, chemin: str, corps=None):
     )
     try:
         with urllib.request.urlopen(requete, timeout=60) as reponse:
-            return json.load(reponse)
+            corps_reponse = reponse.read()
+            # un ajout de relation répond 204, sans corps
+            return json.loads(corps_reponse) if corps_reponse else {}
     except urllib.error.HTTPError as erreur:
         detail = erreur.read().decode(errors='replace')
         raise SystemExit(f'::error::App Store Connect a répondu {erreur.code} sur {chemin} :\n{detail}')
@@ -140,29 +142,86 @@ def main() -> int:
     return 1
 
 
+# L'état TestFlight du build pour les testeurs internes. Il n'existe qu'un
+# moment après la validation : juste après, Apple répond encore sans lui.
+DISPONIBLE = 'IN_BETA_TESTING'
+PRET = 'READY_FOR_BETA_TESTING'
+ECHECS = ('PROCESSING_EXCEPTION', 'EXPIRED')
+ATTENTE_BETA = 10 * 60
+
+
+def etat_beta(app: str):
+    _, beta = chercher_build(app)
+    return (beta or {}).get('attributes', {}).get('internalBuildState')
+
+
+def groupes_du_build(build_id: str) -> list:
+    reponse = appel('GET', f'/builds/{build_id}/betaGroups?fields[betaGroups]=name,isInternalGroup')
+    return [g['attributes']['name'] for g in reponse['data']]
+
+
+def distribuer(app: str, build_id: str) -> list:
+    """Ajoute le build à chaque groupe de testeurs internes de l'app."""
+    groupes = appel('GET', f'/apps/{app}/betaGroups?fields[betaGroups]=name,isInternalGroup&limit=50')['data']
+    internes = [g for g in groupes if g['attributes'].get('isInternalGroup')]
+    for g in internes:
+        appel('POST', f'/betaGroups/{g["id"]}/relationships/builds',
+              {'data': [{'type': 'builds', 'id': build_id}]})
+    return [g['attributes']['name'] for g in internes]
+
+
 def conclure(app: str, build, beta) -> int:
     attributs = build['attributes']
-    interne = (beta or {}).get('attributes', {}).get('internalBuildState')
-    print(f'  build {BUILD} validé par Apple ; état TestFlight : {interne}')
-    if attributs.get('usesNonExemptEncryption') is None or interne == 'MISSING_EXPORT_COMPLIANCE':
-        # L'app ne chiffre rien elle-même : on le déclare, comme le ferait le
-        # questionnaire de conformité d'App Store Connect.
-        appel('PATCH', f"/builds/{build['id']}", {
-            'data': {
-                'type': 'builds',
-                'id': build['id'],
-                'attributes': {'usesNonExemptEncryption': False},
-            },
-        })
-        print('  conformité à l\'export renseignée : aucun chiffrement propre.')
-        _, beta = chercher_build(app)
-        interne = (beta or {}).get('attributes', {}).get('internalBuildState')
-        print(f'  état TestFlight : {interne}')
     if attributs.get('expired'):
         print(f'::error::Le build {BUILD} est expiré.')
         return 1
-    print(f'Le build {BUILD} est dans TestFlight.')
-    return 0
+    if attributs.get('usesNonExemptEncryption') is None:
+        # L'app ne chiffre rien elle-même : on le déclare, comme le ferait le
+        # questionnaire de conformité d'App Store Connect.
+        declarer_conformite(build)
+
+    # « Validé » ne suffit pas : on attend qu'Apple dise où en est le build
+    # pour les testeurs, et on le leur donne s'il est prêt sans l'être.
+    debut, dernier, distribue = time.time(), object(), False
+    while time.time() - debut < ATTENTE_BETA:
+        interne = etat_beta(app)
+        if interne != dernier:
+            print(f'  état TestFlight : {interne or "pas encore connu"}')
+            dernier = interne
+        if interne == DISPONIBLE:
+            groupes = groupes_du_build(build['id'])
+            print(f'Le build {BUILD} est disponible pour les testeurs internes '
+                  f'({", ".join(groupes) or "groupe sans nom"}).')
+            return 0
+        if interne == 'MISSING_EXPORT_COMPLIANCE':
+            declarer_conformite(build)
+        elif interne == PRET and not distribue:
+            noms = distribuer(app, build['id'])
+            distribue = True
+            if not noms:
+                print(f'::error::Le build {BUILD} est prêt, mais l\'app n\'a aucun groupe de testeurs internes.')
+                print('À créer une fois : App Store Connect → ReNeuro → TestFlight → Tests internes → +,')
+                print('avec ton identifiant Apple dedans, et « Accès automatique à tous les builds ».')
+                return 1
+            print(f'  build ajouté aux groupes internes : {", ".join(noms)}')
+        elif interne in ECHECS:
+            print(f'::error::TestFlight refuse le build {BUILD} ({interne}).')
+            return 1
+        time.sleep(INTERVALLE)
+    print(f"::error::Build {BUILD} validé, mais toujours pas disponible pour les testeurs après "
+          f"{ATTENTE_BETA // 60} minutes (dernier état : {dernier}).")
+    return 1
+
+
+def declarer_conformite(build) -> None:
+    appel('PATCH', f"/builds/{build['id']}", {
+        'data': {
+            'type': 'builds',
+            'id': build['id'],
+            'attributes': {'usesNonExemptEncryption': False},
+        },
+    })
+    print('  conformité à l\'export renseignée : aucun chiffrement propre.')
 
 
 if __name__ == '__main__':
