@@ -13,6 +13,7 @@
 //! réglages sur l'iPhone, `localStorage` dans le navigateur).
 
 pub mod alea;
+pub mod casse_tete;
 pub mod categories;
 pub mod donnees;
 pub mod journee;

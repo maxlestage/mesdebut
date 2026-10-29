@@ -1,6 +1,6 @@
 # Le noyau de ReNeuro 🧠
 
-Tout ce que ReNeuro **sait faire**, en un seul exemplaire, en Rust : les dix-sept
+Tout ce que ReNeuro **sait faire**, en un seul exemplaire, en Rust : les dix-huit
 thèmes, la fabrique de questions, la répétition espacée, les révisions et « Ma
 journée ». Le web, l'iPhone et l'Apple Watch s'en servent tous les trois ; seuls
 l'interface et le stockage restent propres à chaque plateforme.
@@ -23,10 +23,11 @@ trois applications suivent à leur prochaine construction.
 
 | Fichier | |
 | --- | --- |
-| `categories.rs` | les dix-sept thèmes, leurs niveaux et leurs couleurs |
+| `categories.rs` | les dix-huit thèmes, leurs niveaux et leurs couleurs |
 | `donnees.rs` | jours, mois, couleurs, formes, nombres et heures en toutes lettres |
 | `question.rs` | une question et ce qui l'illustre (billes, horloge, forme…) |
 | `questions.rs` | la fabrique de questions, la composition d'un quiz, ce qui revient |
+| `casse_tete.rs` | les casse-tête : nombres cachés, balances, devinettes |
 | `logique.rs` | les jeux de logique : suites, intrus, déductions |
 | `planifier.rs` | les onze activités du quotidien et leurs questions |
 | `revision.rs` | le contenu des écrans « Réviser d'abord » |
