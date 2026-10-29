@@ -290,7 +290,8 @@ a { color: inherit; }
 .quiz-tete { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--secondaire); }
 .question { display: flex; flex-direction: column; gap: 14px; animation: arrivee 0.25s ease-out; }
 @keyframes arrivee { from { opacity: 0; transform: translateY(6px); } }
-.enonce { margin: 0; font-size: 1.25rem; line-height: 1.3; text-align: center; color: var(--encre); }
+/* pre-line : les énoncés à plusieurs indices (jeux de logique) vont à la ligne */
+.enonce { margin: 0; font-size: 1.25rem; line-height: 1.3; text-align: center; color: var(--encre); white-space: pre-line; }
 .illustration { display: flex; justify-content: center; padding: 4px 0; }
 .options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .option {
