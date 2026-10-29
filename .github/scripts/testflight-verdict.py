@@ -75,7 +75,7 @@ def jeton() -> str:
     return f'{entete}.{charge}.{b64url(der_vers_brut(der))}'
 
 
-def appel(methode: str, chemin: str, corps=None):
+def appel(methode: str, chemin: str, corps=None, tolerer=False):
     requete = urllib.request.Request(
         API + chemin,
         method=methode,
@@ -92,6 +92,9 @@ def appel(methode: str, chemin: str, corps=None):
             return json.loads(corps_reponse) if corps_reponse else {}
     except urllib.error.HTTPError as erreur:
         detail = erreur.read().decode(errors='replace')
+        if tolerer:
+            print(f'  (App Store Connect a répondu {erreur.code} sur {chemin} : ignoré)')
+            return None
         raise SystemExit(f'::error::App Store Connect a répondu {erreur.code} sur {chemin} :\n{detail}')
 
 
@@ -156,8 +159,11 @@ def etat_beta(app: str):
 
 
 def groupes_du_build(build_id: str) -> list:
-    reponse = appel('GET', f'/builds/{build_id}/betaGroups?fields[betaGroups]=name,isInternalGroup')
-    return [g['attributes']['name'] for g in reponse['data']]
+    """Les groupes qui ont reçu le build, pour l'affichage seulement : une
+    erreur ici ne change rien au verdict, déjà rendu."""
+    reponse = appel('GET', f'/betaGroups?filter[builds]={build_id}&fields[betaGroups]=name',
+                    tolerer=True)
+    return [g['attributes']['name'] for g in (reponse or {}).get('data', [])]
 
 
 def distribuer(app: str, build_id: str) -> list:
