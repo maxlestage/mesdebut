@@ -103,6 +103,17 @@ jobs:
       # précompilée : nightly la recompile (rust-src).
       - name: Installer Rust et les cibles Apple
         run: |
+          # noyau/xcode.sh cherche rustup dans $CARGO_HOME/bin (~/.cargo/bin par
+          # défaut), là où l'installe rustup.rs. Les images macOS de GitHub ne
+          # l'y mettent plus toujours (un autre rustup peut être dans le PATH) :
+          # on l'y installe.
+          cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
+          if [ ! -x "$cargo_bin/rustup" ]; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --profile minimal --default-toolchain none --no-modify-path
+          fi
+          export PATH="$cargo_bin:$PATH"
+          echo "rustup : $(command -v rustup)"
           rustup toolchain install stable --profile minimal \
             --target aarch64-apple-ios --target aarch64-apple-watchos
           rustup toolchain install nightly --profile minimal --component rust-src
