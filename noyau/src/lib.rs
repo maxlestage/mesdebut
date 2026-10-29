@@ -16,6 +16,7 @@ pub mod alea;
 pub mod casse_tete;
 pub mod categories;
 pub mod donnees;
+pub mod hanoi;
 pub mod journee;
 pub mod logique;
 pub mod memoire;

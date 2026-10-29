@@ -32,7 +32,8 @@ suivent.
   construction : tout son contenu est lisible sans JavaScript.
 - **`/app`, l'application** — les dix-huit thèmes, la révision, les quiz de dix
   questions, la mémoire de ce qui résiste (boîtes de Leitner), « Mes progrès »
-  et « Ma journée » avec son chronomètre et le suivi des estimations : tout ce
+  « Ma journée » avec son chronomètre et le suivi des estimations, et le
+  mini-jeu des tours de Hanoï : tout ce
   que fait l'iPhone, dans le navigateur. Rendue par Active côté client, chaque
   écran a son adresse ; elle s'installe sur l'écran d'accueil et fonctionne
   hors ligne.
