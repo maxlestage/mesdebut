@@ -51,7 +51,8 @@ pub fn menu() -> Node {
             div()
                 .class("pilules")
                 .child((resume.repondues > 0).then(|| retour("/app/progres", "📊 Mes progrès")))
-                .child(retour("/app/journee", "🗓️ Ma journée")),
+                .child(retour("/app/journee", "🗓️ Ma journée"))
+                .child(retour("/app/hanoi", "🗼 Mini-jeu : Hanoï")),
         )
         .child(
             footer()

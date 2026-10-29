@@ -3,6 +3,7 @@ import SwiftUI
 struct MenuView: View {
     let onSelect: (String) -> Void
     var onProgress: () -> Void
+    var onHanoi: () -> Void
 
     @State private var summary = MemoryStore.Summary()
 
@@ -51,6 +52,7 @@ struct MenuView: View {
                 .buttonStyle(.plain)
                 .padding(.top, 4)
             }
+            BackButton(title: "🗼 Mini-jeu : Hanoï", action: onHanoi)
             Text("Conçu et développé par Maxime Nathan Lestage")
                 .font(.caption2)
                 .foregroundColor(.secondary)

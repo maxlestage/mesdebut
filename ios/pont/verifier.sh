@@ -21,7 +21,7 @@ BIB="$(cd "${1:?dossier contenant libreneuro_noyau.a}" && pwd)"
 T="$(mktemp -d)"
 
 # SwiftUI n'existe pas ici : ces fichiers n'en utilisent que `Color`, imité par Shim.swift.
-for f in Noyau QuestionEngine CategoryData Models PlanningData MemoryStore; do
+for f in Noyau QuestionEngine CategoryData Models PlanningData MemoryStore HanoiEngine; do
   sed 's/^import SwiftUI$/import Foundation/' "$APP/ReNeuroKit/$f.swift" > "$T/$f.swift"
 done
 cp "$APP/ReNeuro/Services/PlanStore.swift" "$ICI/Shim.swift" "$ICI/main.swift" "$T/"

@@ -14,9 +14,12 @@
 //! | `/app/heure/quiz/2` | le quiz, au niveau 2 |
 //! | `/app/progres` | mes progrès |
 //! | `/app/journee` | ma journée, le planificateur |
+//! | `/app/hanoi` | les tours de Hanoï : le choix du nombre de disques |
+//! | `/app/hanoi/2` | les tours de Hanoï, au niveau 2 |
 
 mod dessins;
 mod ecrans;
+mod hanoi;
 mod journee;
 pub mod plateforme;
 mod quiz;
@@ -36,6 +39,8 @@ pub enum Route {
     Menu,
     Progres,
     Journee,
+    HanoiNiveaux,
+    Hanoi(u8),
     Theme(&'static Categorie),
     Revision(&'static Categorie),
     Niveaux(&'static Categorie),
@@ -53,6 +58,11 @@ pub fn route(chemin: &str) -> Route {
         [] => Route::Menu,
         ["progres"] => Route::Progres,
         ["journee"] => Route::Journee,
+        ["hanoi"] => Route::HanoiNiveaux,
+        ["hanoi", n] => match n.parse::<u8>() {
+            Ok(n) if crate::moteur::hanoi::niveau(n).is_some() => Route::Hanoi(n),
+            _ => Route::Introuvable,
+        },
         [cle, suite @ ..] => {
             let Some(c) = categorie(cle) else {
                 return Route::Introuvable;
@@ -217,6 +227,8 @@ pub fn ecran(r: Route) -> Node {
         Route::Menu => ecrans::menu(),
         Route::Progres => ecrans::progres(),
         Route::Journee => journee::journee(),
+        Route::HanoiNiveaux => hanoi::niveaux(),
+        Route::Hanoi(n) => hanoi::page(n),
         Route::Theme(c) => ecrans::theme(c),
         Route::Revision(c) => ecrans::revision(c),
         Route::Niveaux(c) => ecrans::niveaux(c),
@@ -269,6 +281,8 @@ mod tests {
             Route::Menu => "menu".into(),
             Route::Progres => "progres".into(),
             Route::Journee => "journee".into(),
+            Route::HanoiNiveaux => "hanoi".into(),
+            Route::Hanoi(n) => format!("hanoi:{n}"),
             Route::Theme(c) => format!("theme:{}", c.cle),
             Route::Revision(c) => format!("revision:{}", c.cle),
             Route::Niveaux(c) => format!("niveaux:{}", c.cle),
@@ -284,6 +298,9 @@ mod tests {
             ("/app/", "menu"),
             ("/app/progres", "progres"),
             ("/app/journee/", "journee"),
+            ("/app/hanoi", "hanoi"),
+            ("/app/hanoi/3", "hanoi:3"),
+            ("/app/hanoi/4", "introuvable"),
             ("/app/heure", "theme:heure"),
             ("/app/heure/reviser", "revision:heure"),
             ("/app/heure/niveaux", "niveaux:heure"),
@@ -320,6 +337,9 @@ mod tests {
             "/app/".to_string(),
             "/app/progres".into(),
             "/app/journee".into(),
+            "/app/hanoi".into(),
+            "/app/hanoi/1".into(),
+            "/app/hanoi/3".into(),
             "/app/x".into(),
         ];
         for c in crate::moteur::categories::CATEGORIES {
