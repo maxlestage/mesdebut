@@ -17,7 +17,7 @@ func verifie(_ condition: Bool, _ quoi: @autoclosure () -> String,
 
 print("— thèmes —")
 let themes = QuestionEngine.categories
-verifie(themes.count == 16, "seize thèmes (\(themes.count))")
+verifie(themes.count == 17, "dix-sept thèmes (\(themes.count))")
 verifie(themes.first?.key == "melange" && themes.first?.hasLevels == false, "le Mélange d'abord, sans niveau")
 let heure = QuestionEngine.category("heure")
 verifie(heure.title == "Lire l'heure" && heure.hasLearn, "« Lire l'heure » se révise")

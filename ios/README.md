@@ -175,9 +175,9 @@ moteur est partagé ; le planificateur, lui, reste sur l'iPhone.
 
 ## Fonctionnalités
 
-Parité complète avec la version web : les 16 catégories (mélange, jours, mois,
+Parité complète avec la version web : les 17 catégories (mélange, jours, mois,
 saisons, alphabet, heure, planifier, couleurs, formes, chiffres, jusqu'à 50,
-nombres, et les 4 opérations), les 3 niveaux, la révision (avec accordéon pour les nombres), la
+nombres, les 4 opérations et les jeux de logique), les 3 niveaux, la révision (avec accordéon pour les nombres), la
 répétition espacée en cas d'erreur, et le mode Mélange entrelacé.
 
 Touches natives : **retour tactile** (haptique) sur les bonnes/mauvaises réponses,

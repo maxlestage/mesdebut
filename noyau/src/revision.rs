@@ -218,6 +218,26 @@ pub fn revision(categorie: &str) -> Option<Revision> {
                 groupes,
             })
         }
+        "logique" => liste(
+            "📖 Les trois jeux de logique",
+            Some(
+                "Prends ton temps : chaque réponse se trouve en réfléchissant, \
+                 sans rien avoir appris par cœur.",
+            ),
+            vec![
+                Fiche::new("🌱 Les suites")
+                    .detail("Trouve la règle, puis continue : 2, 4, 6, 8… → 10"),
+                Fiche::new("🔴 🔵 🔴 🔵 …").detail("Les symboles se répètent : après 🔵 vient 🔴"),
+                Fiche::new("🌿 L'intrus")
+                    .detail("Trois mots vont ensemble, un seul n'est pas de la famille"),
+                Fiche::new("Pomme, poire, cerise, vélo")
+                    .detail("Trois fruits et un véhicule : l'intrus est vélo"),
+                Fiche::new("🌳 Les déductions")
+                    .detail("Assemble les indices un par un pour tout remettre en ordre"),
+                Fiche::new("Léa arrive avant Tom. Sam arrive après Tom.")
+                    .detail("L'ordre est Léa, Tom, Sam : Léa arrive en premier"),
+            ],
+        ),
         _ => None,
     }
 }
