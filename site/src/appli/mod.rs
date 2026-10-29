@@ -7,7 +7,7 @@
 //!
 //! | Adresse | Écran |
 //! | --- | --- |
-//! | `/app/` | le menu des seize thèmes |
+//! | `/app/` | le menu des dix-sept thèmes |
 //! | `/app/heure` | réviser ou faire le quiz |
 //! | `/app/heure/reviser` | la révision |
 //! | `/app/heure/niveaux` | le choix du niveau |
@@ -97,7 +97,7 @@ pub fn seo_du_site() -> Seo {
         .title_template("%s · ReNeuro")
         .description(
             "Réapprendre les bases en questions courtes : les jours, l'heure, le calcul, les couleurs, \
-             organiser sa journée. Seize thèmes, une mémoire de ce qui résiste.",
+             organiser sa journée. Dix-sept thèmes, une mémoire de ce qui résiste.",
         )
 }
 
